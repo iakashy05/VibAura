@@ -70,31 +70,49 @@ export async function renderLibraryPage() {
     const btn = contentArea.querySelector('#mobile-create-pl-btn');
     if (btn) btn.addEventListener('click', () => window.openCreatePlaylistModal());
 
-    contentArea.querySelectorAll('.mobile-playlist-item').forEach(item => {
-      let timer; let isLongPress = false;
-      const startPress = (e) => {
-        if (timer) clearTimeout(timer); if (e.type === 'mousedown' && e.button !== 0) return;
-        isLongPress = false; timer = setTimeout(() => {
-          isLongPress = true; if (navigator.vibrate) navigator.vibrate(50);
-          if (window.BottomSheetManager) window.BottomSheetManager.open('library-playlist', { _id: item.dataset.id, name: item.dataset.name, isOwner: item.dataset.isOwner === 'true', coverImageUrl: item.dataset.cover });
-        }, 600);
-      };
-      const cancelPress = () => { if (timer) clearTimeout(timer); };
-      const handleClick = (e) => {
-        if (isLongPress) { e.preventDefault(); e.stopPropagation(); isLongPress = false; return; }
-        if (item.dataset.id === 'recently-played') window.location.hash = '#/recently-played';
-        else if (item.dataset.id === 'liked-songs') window.location.hash = '#liked-songs';
-        else window.location.hash = `#/playlist/${item.dataset.id}`;
-      };
-      item.addEventListener('touchstart', startPress, { passive: false });
-      item.addEventListener('touchend', cancelPress);
-      item.addEventListener('touchcancel', cancelPress);
-      item.addEventListener('touchmove', cancelPress);
-      item.addEventListener('mousedown', startPress);
-      item.addEventListener('mouseup', cancelPress);
-      item.addEventListener('mouseleave', cancelPress);
-      item.addEventListener('click', handleClick);
-    });
+    const libraryListContainer = contentArea.querySelector('.library-list');
+    if (libraryListContainer) {
+      let longPressTimer;
+      const holdDuration = 600;
+
+      libraryListContainer.addEventListener('click', (e) => {
+        const item = e.target.closest('.mobile-playlist-item');
+        if (!item) return;
+
+        if (item.dataset.longPressTriggered === 'true') {
+          item.dataset.longPressTriggered = 'false';
+          return;
+        }
+
+        const id = item.dataset.id;
+        if (id === 'recently-played') window.location.hash = '#/recently-played';
+        else if (id === 'liked-songs') window.location.hash = '#liked-songs';
+        else window.location.hash = `#/playlist/${id}`;
+      });
+
+      libraryListContainer.addEventListener('touchstart', (e) => {
+        const item = e.target.closest('.mobile-playlist-item');
+        if (!item) return;
+
+        item.dataset.longPressTriggered = 'false';
+        longPressTimer = setTimeout(() => {
+          item.dataset.longPressTriggered = 'true';
+          if (navigator.vibrate) navigator.vibrate(50);
+          if (window.BottomSheetManager) {
+            window.BottomSheetManager.open('library-playlist', { 
+              _id: item.dataset.id, 
+              name: item.dataset.name, 
+              isOwner: item.dataset.isOwner === 'true', 
+              coverImageUrl: item.dataset.cover 
+            });
+          }
+        }, holdDuration);
+      }, { passive: true });
+
+      const cancelPress = () => clearTimeout(longPressTimer);
+      libraryListContainer.addEventListener('touchend', cancelPress);
+      libraryListContainer.addEventListener('touchmove', cancelPress);
+    }
   } catch (err) {
     console.error("Failed to load mobile library", err);
     contentArea.innerHTML = `<div class="error-message">Failed to load library: ${err.message}</div>`;

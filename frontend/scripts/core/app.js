@@ -24,10 +24,8 @@
 
 // Import initialization functions from their respective modules
 import { initThemeManager } from "../ui/themeManager.js";
-import { initPlayer } from "../player/playerController.js";
-import { initScrollController } from "../ui/scrollController.js";
-import { initSplashScreen } from "../ui/splashScreen.js";
-import { initSearch } from "../ui/search.js";
+import { initPlayer } from "../player/playerProxy.js";
+import { initSearch } from "../ui/searchProxy.js";
 import { initAuthUI } from "../auth/authUI.js";
 import { LibraryManager } from "../ui/libraryManager.js";
 

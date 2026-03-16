@@ -1,4 +1,4 @@
-import { playSongFromPlaylist } from "../../player/playerController.js";
+import { playSongFromPlaylist } from "../../player/playerProxy.js";
 import { formatTime } from "../../utils/utils.js";
 import { PlaylistService } from "../../services/playlistService.js";
 import { HistoryService } from "../../services/historyService.js";
@@ -155,38 +155,49 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
       const handleSort = (criteria) => renderPlaylistPage(playlistId, criteria);
       const sortOptionsArr = [{ label: 'Recents', value: 'recents' }, { label: 'Title (A-Z)', value: 'title' }, { label: 'Artist', value: 'artist' }, { label: 'Album', value: 'album' }];
 
-      contentArea.querySelectorAll('.playlist-song-row').forEach(row => {
-        let timer; let isLongPress = false;
-        const startPress = (e) => {
-          if (e.type === 'mousedown' && e.button !== 0) return;
-          isLongPress = false;
-          timer = setTimeout(() => {
-            isLongPress = true;
-            if (navigator.vibrate) navigator.vibrate(50);
-            const song = songs[parseInt(row.dataset.index)];
-            if (window.BottomSheetManager && song) window.BottomSheetManager.open('song', song);
-          }, 500);
-        };
-        const cancelPress = () => clearTimeout(timer);
-        const handleClick = (e) => {
+      const songListContainer = contentArea.querySelector('.playlist-songs-list');
+      if (songListContainer) {
+        let longPressTimer;
+        const holdDuration = 500;
+
+        songListContainer.addEventListener('click', (e) => {
+          const row = e.target.closest('.playlist-song-row');
+          if (!row) return;
+
+          const songIndex = parseInt(row.dataset.index);
+          const song = songs[songIndex];
+
           if (e.target.closest('.card-options-btn')) {
             e.stopPropagation();
-            const song = songs[parseInt(row.dataset.index)];
             if (window.BottomSheetManager && song) window.BottomSheetManager.open('song', song);
             return;
           }
-          if (isLongPress) { e.preventDefault(); isLongPress = false; return; }
-          playSongFromPlaylist(songs, parseInt(row.dataset.index));
-        };
-        row.addEventListener('touchstart', startPress, { passive: true });
-        row.addEventListener('touchend', cancelPress);
-        row.addEventListener('touchmove', cancelPress);
-        row.addEventListener('mousedown', startPress);
-        row.addEventListener('mouseup', cancelPress);
-        row.addEventListener('mouseleave', cancelPress);
-        row.addEventListener('click', handleClick);
-        row.addEventListener('contextmenu', (e) => e.preventDefault());
-      });
+
+          if (row.dataset.longPressTriggered === 'true') {
+            row.dataset.longPressTriggered = 'false';
+            return;
+          }
+
+          playSongFromPlaylist(songs, songIndex);
+        });
+
+        songListContainer.addEventListener('touchstart', (e) => {
+          const row = e.target.closest('.playlist-song-row');
+          if (!row || e.target.closest('.card-options-btn')) return;
+
+          row.dataset.longPressTriggered = 'false';
+          longPressTimer = setTimeout(() => {
+            row.dataset.longPressTriggered = 'true';
+            if (navigator.vibrate) navigator.vibrate(50);
+            const song = songs[parseInt(row.dataset.index)];
+            if (window.BottomSheetManager && song) window.BottomSheetManager.open('song', song);
+          }, holdDuration);
+        }, { passive: true });
+
+        const cancelPress = () => clearTimeout(longPressTimer);
+        songListContainer.addEventListener('touchend', cancelPress);
+        songListContainer.addEventListener('touchmove', cancelPress);
+      }
 
       const playBtn = contentArea.querySelector("#mobile-play-btn");
       if (playBtn && songs.length > 0) playBtn.addEventListener("click", () => playSongFromPlaylist(songs, 0));
@@ -258,12 +269,15 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
     const mainPlayBtn = contentArea.querySelector("#playlist-play-btn");
     if (songs.length > 0 && mainPlayBtn) mainPlayBtn.addEventListener("click", () => playSongFromPlaylist(songs, 0));
 
-    contentArea.querySelectorAll(".song-item").forEach((item) => {
-      item.addEventListener("click", (e) => {
-        if (e.target.closest('.remove-song-btn')) return;
+    // DESKTOP EVENT DELEGATION
+    const desktopSongContainer = contentArea.querySelector(".playlist-song-list");
+    if (desktopSongContainer) {
+      desktopSongContainer.addEventListener("click", (e) => {
+        const item = e.target.closest('.song-item');
+        if (!item || e.target.closest('.remove-song-btn')) return;
         playSongFromPlaylist(songs, parseInt(item.dataset.index));
       });
-    });
+    }
 
     if (isOwner) {
       contentArea.querySelectorAll(".remove-song-btn").forEach(btn => {
@@ -361,7 +375,16 @@ export async function renderLikedSongsPage(sortCriteria = 'recents') {
             <div class="playlist-songs-list">${songListHTML}</div>
           </div>`;
 
-      contentArea.querySelectorAll('.playlist-song-row').forEach(row => { row.addEventListener('click', () => playSongFromPlaylist(likedSongs, parseInt(row.dataset.index))); });
+      // MOBILE LIKED DELEGATION
+      const container = contentArea.querySelector('.playlist-songs-list');
+      if (container) {
+        container.addEventListener('click', (e) => {
+          const row = e.target.closest('.playlist-song-row');
+          if (!row || e.target.closest('.card-options-btn')) return;
+          playSongFromPlaylist(likedSongs, parseInt(row.dataset.index));
+        });
+      }
+
       const stickyHeader = contentArea.querySelector("#liked-sticky-header");
       if (stickyHeader && scrollContainer) { scrollContainer.onscroll = () => { if (scrollContainer.scrollTop > 150) stickyHeader.classList.add("visible"); else stickyHeader.classList.remove("visible"); }; }
       const mbSortBtn = contentArea.querySelector("#liked-mobile-sort-btn");
@@ -389,7 +412,17 @@ export async function renderLikedSongsPage(sortCriteria = 'recents') {
           </div>`;
 
       if (scrollContainer) { scrollContainer.onscroll = () => { const y = scrollContainer.scrollTop; if (y > 300) stickyGroup.classList.add("stuck"); else stickyGroup.classList.remove("stuck"); if (mainHeader) mainHeader.style.opacity = Math.max(0, 1 - (y/280)); }; }
-      contentArea.querySelectorAll(".song-item").forEach(item => { item.addEventListener("click", (e) => { if (!e.target.closest('.remove-song-btn')) playSongFromPlaylist(likedSongs, parseInt(item.dataset.index)); }); });
+      
+      // DESKTOP LIKED DELEGATION
+      const desktopContainer = contentArea.querySelector(".playlist-song-list");
+      if (desktopContainer) {
+        desktopContainer.addEventListener("click", (e) => {
+          const item = e.target.closest('.song-item');
+          if (!item || e.target.closest('.remove-song-btn')) return;
+          playSongFromPlaylist(likedSongs, parseInt(item.dataset.index));
+        });
+      }
+
       contentArea.querySelectorAll(".remove-song-btn").forEach(btn => { btn.addEventListener("click", async (e) => { e.stopPropagation(); try { await PlaylistService.removeFromLikedSongs(btn.dataset.songId); renderLikedSongsPage(); } catch (err) { alert("Failed to unlike song"); } }); });
       const dkSortBtn = contentArea.querySelector("#liked-dk-sort-btn");
       if (dkSortBtn) dkSortBtn.addEventListener("click", () => { const choice = prompt(`Sort By:\nrecents, title, artist`, sortCriteria); if (choice && ['recents', 'title', 'artist'].includes(choice)) renderLikedSongsPage(choice); });
@@ -442,7 +475,23 @@ export async function renderRecentlyPlayedPage(sortCriteria = 'recents') {
 
       if (scrollContainer) { scrollContainer.onscroll = () => { if (scrollContainer.scrollTop > 150) stickyHeader.classList.add("visible"); else stickyHeader.classList.remove("visible"); }; }
       const stickyHeader = contentArea.querySelector("#mobile-history-sticky");
-      contentArea.querySelectorAll('.playlist-song-row').forEach(row => { row.addEventListener('click', (e) => { const index = parseInt(row.dataset.index); if (e.target.closest('.card-options-btn')) { if (window.BottomSheetManager) window.BottomSheetManager.open('song', sortedSongs[index]); } else playSongFromPlaylist(sortedSongs, index); }); });
+      
+      // MOBILE HISTORY DELEGATION
+      const container = contentArea.querySelector('.playlist-songs-list');
+      if (container) {
+        container.addEventListener('click', (e) => {
+          const row = e.target.closest('.playlist-song-row');
+          if (!row) return;
+          const index = parseInt(row.dataset.index);
+          const song = sortedSongs[index];
+          if (e.target.closest('.card-options-btn')) {
+            if (window.BottomSheetManager) window.BottomSheetManager.open('song', song);
+          } else {
+            playSongFromPlaylist(sortedSongs, index);
+          }
+        });
+      }
+
       const mbSortBtn = contentArea.querySelector("#history-mobile-sort-btn");
       if (mbSortBtn && window.BottomSheetManager) mbSortBtn.addEventListener("click", () => window.BottomSheetManager.open('sort-options', { options: [{ label: 'Recently Played', value: 'recents' }, { label: 'Title (A-Z)', value: 'title' }, { label: 'Artist', value: 'artist' }], onSelect: (c) => renderRecentlyPlayedPage(c) }));
     } else {
@@ -462,7 +511,16 @@ export async function renderRecentlyPlayedPage(sortCriteria = 'recents') {
       if (playBtn && sortedSongs.length > 0) playBtn.onclick = () => playSongFromPlaylist(sortedSongs, 0);
       const dkSortBtn = contentArea.querySelector("#history-dk-sort-btn");
       if (dkSortBtn) dkSortBtn.onclick = () => { const c = prompt("Sort By: recents, title, artist", sortCriteria); if (c && ['recents', 'title', 'artist'].includes(c)) renderRecentlyPlayedPage(c); };
-      contentArea.querySelectorAll(".song-item").forEach(item => { item.onclick = () => playSongFromPlaylist(sortedSongs, parseInt(item.dataset.index)); });
+      
+      // DESKTOP HISTORY DELEGATION
+      const desktopHistoryContainer = contentArea.querySelector(".playlist-song-list");
+      if (desktopHistoryContainer) {
+        desktopHistoryContainer.addEventListener("click", (e) => {
+          const item = e.target.closest('.song-item');
+          if (!item) return;
+          playSongFromPlaylist(sortedSongs, parseInt(item.dataset.index));
+        });
+      }
     }
   } catch (err) { console.error("Error history:", err); contentArea.innerHTML = `<div class="page-view"><p>Error history</p></div>`; }
 }
@@ -476,3 +534,4 @@ export function renderDetailPage(type, name) {
   contentArea.innerHTML = `<div class="page-view"><button class="back-btn">&#10094; Go Back</button><h1>${type}: ${name}</h1><p>Built in future phase.</p></div>`;
   contentArea.querySelector(".back-btn").addEventListener("click", () => window.history.back());
 }
+

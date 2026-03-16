@@ -1,4 +1,4 @@
-import { playSongFromPlaylist } from "../../player/playerController.js";
+import { playSongFromPlaylist } from "../../player/playerProxy.js";
 import { formatTime } from "../../utils/utils.js";
 import { 
   getContentArea, 
@@ -156,40 +156,49 @@ export async function renderArtistPage(artistId, sortCriteria = 'recents') {
         playBtn.addEventListener("click", () => playSongFromPlaylist(normalizedSongs, 0));
       }
 
-      contentArea.querySelectorAll('.mobile-artist-song-item').forEach(item => {
-        let timer;
-        let isLongPress = false;
-        const startPress = (e) => {
-          if (e.type === 'mousedown' && e.button !== 0) return;
-          isLongPress = false;
-          timer = setTimeout(() => {
-            isLongPress = true;
-            if (navigator.vibrate) navigator.vibrate(50);
-            const songIndex = parseInt(item.dataset.index);
-            const song = normalizedSongs[songIndex];
-            if (window.BottomSheetManager && song) window.BottomSheetManager.open('song', song);
-          }, 500);
-        };
-        const cancelPress = () => clearTimeout(timer);
-        const handleClick = (e) => {
+      const songListContainer = contentArea.querySelector('.mobile-artist-song-list');
+      if (songListContainer) {
+        let longPressTimer;
+        const holdDuration = 500;
+
+        songListContainer.addEventListener('click', (e) => {
+          const item = e.target.closest('.mobile-artist-song-item');
+          if (!item) return;
+
+          const songIndex = parseInt(item.dataset.index);
+          const song = normalizedSongs[songIndex];
+
           if (e.target.closest('.mobile-artist-song-more')) {
             e.stopPropagation();
-            const songIndex = parseInt(e.target.closest('.mobile-artist-song-more').dataset.songIndex);
-            if (window.BottomSheetManager) window.BottomSheetManager.open('song', normalizedSongs[songIndex]);
+            if (window.BottomSheetManager) window.BottomSheetManager.open('song', song);
             return;
           }
-          if (isLongPress) { e.preventDefault(); isLongPress = false; return; }
-          playSongFromPlaylist(normalizedSongs, parseInt(item.dataset.index));
-        };
-        item.addEventListener('touchstart', startPress, { passive: true });
-        item.addEventListener('touchend', cancelPress);
-        item.addEventListener('touchmove', cancelPress);
-        item.addEventListener('mousedown', startPress);
-        item.addEventListener('mouseup', cancelPress);
-        item.addEventListener('mouseleave', cancelPress);
-        item.addEventListener('click', handleClick);
-        item.addEventListener('contextmenu', (e) => e.preventDefault());
-      });
+
+          if (item.dataset.longPressTriggered === 'true') {
+            item.dataset.longPressTriggered = 'false';
+            return;
+          }
+
+          playSongFromPlaylist(normalizedSongs, songIndex);
+        });
+
+        songListContainer.addEventListener('touchstart', (e) => {
+          const item = e.target.closest('.mobile-artist-song-item');
+          if (!item || e.target.closest('.mobile-artist-song-more')) return;
+
+          item.dataset.longPressTriggered = 'false';
+          longPressTimer = setTimeout(() => {
+            item.dataset.longPressTriggered = 'true';
+            if (navigator.vibrate) navigator.vibrate(50);
+            const songIndex = parseInt(item.dataset.index);
+            if (window.BottomSheetManager) window.BottomSheetManager.open('song', normalizedSongs[songIndex]);
+          }, holdDuration);
+        }, { passive: true });
+
+        const cancelPress = () => clearTimeout(longPressTimer);
+        songListContainer.addEventListener('touchend', cancelPress);
+        songListContainer.addEventListener('touchmove', cancelPress);
+      }
 
       return;
     }

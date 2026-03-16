@@ -1,10 +1,11 @@
-import { playSongFromPlaylist } from "../../player/playerController.js";
+import { playSongFromPlaylist } from "../../player/playerProxy.js";
 import { BottomSheetManager } from "../bottomSheetManager.js";
 import { openAddToPlaylistModal } from "./modals.js";
 import { createScrollButton } from "./scroll.js";
 
 /**
  * Creates a complete section with a title and a scrollable card grid.
+ * Uses event delegation for performance.
  */
 export function createSectionElement(section) {
   const fragment = document.createDocumentFragment();
@@ -28,6 +29,60 @@ export function createSectionElement(section) {
     cardContainer.appendChild(createCardElement(item, section, index));
   });
 
+  // --- EVENT DELEGATION ---
+  let longPressTimer;
+  const holdDuration = 500;
+
+  const handleAction = (e) => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+
+    const index = parseInt(card.dataset.index);
+    const item = items[index];
+
+    // Handle Options Button
+    if (e.target.closest('.card-options-btn')) {
+      e.stopPropagation();
+      openAddToPlaylistModal(item);
+      return;
+    }
+
+    // Standard Click Action
+    if (card.dataset.longPressTriggered === 'true') {
+      card.dataset.longPressTriggered = 'false';
+      return;
+    }
+
+    if (section.type === "song") {
+      playSongFromPlaylist(items, index);
+    } else {
+      window.location.hash = `#/${section.type}/${item._id}`;
+    }
+  };
+
+  cardContainer.addEventListener("click", handleAction);
+
+  // Mobile Long Press Delegation
+  cardContainer.addEventListener('touchstart', (e) => {
+    const card = e.target.closest('.card');
+    if (!card || e.target.closest('.card-options-btn')) return;
+
+    card.dataset.longPressTriggered = 'false';
+    longPressTimer = setTimeout(() => {
+      card.dataset.longPressTriggered = 'true';
+      if (navigator.vibrate) navigator.vibrate(50);
+      const index = parseInt(card.dataset.index);
+      BottomSheetManager.open(section.type, items[index]);
+    }, holdDuration);
+  }, { passive: true });
+
+  const cancelLongPress = (e) => {
+    if (longPressTimer) clearTimeout(longPressTimer);
+  };
+
+  cardContainer.addEventListener('touchend', cancelLongPress);
+  cardContainer.addEventListener('touchmove', cancelLongPress);
+
   wrapper.appendChild(createScrollButton("scroll-left"));
   wrapper.appendChild(cardContainer);
   wrapper.appendChild(createScrollButton("scroll-right"));
@@ -37,75 +92,13 @@ export function createSectionElement(section) {
 }
 
 /**
- * Creates an individual clickable card for a song, artist, or playlist.
+ * Creates an individual card shell. Listeners are handled via delegation.
  */
 export function createCardElement(item, section, index) {
   const card = document.createElement("div");
   card.className = "card";
-
-  const handleClick = (callback) => {
-    return (e) => {
-      if (e.target.closest('.card-options-btn')) return;
-      if (card.dataset.longPressTriggered === 'true') {
-        card.dataset.longPressTriggered = 'false';
-        return;
-      }
-      callback(e);
-    };
-  };
-
-  if (section.type === "song") {
-    card.addEventListener("click", handleClick(() => {
-      playSongFromPlaylist(section.songs, index);
-    }));
-
-    const optionsBtn = document.createElement('button');
-    optionsBtn.className = 'card-options-btn';
-    optionsBtn.innerHTML = '<img src="images/icons/more.png" style="width:16px; height:16px;">';
-    optionsBtn.title = "Add to playlist";
-    optionsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      openAddToPlaylistModal(item);
-    });
-    card.appendChild(optionsBtn);
-    card.addEventListener('mouseenter', () => optionsBtn.style.opacity = '1');
-    card.addEventListener('mouseleave', () => optionsBtn.style.opacity = '0');
-
-  } else {
-    card.addEventListener("click", handleClick(() => {
-      window.location.hash = `#/${section.type}/${item._id}`;
-    }));
-  }
-
-  // --- LONG PRESS DETECTION (Mobile) ---
-  let longPressTimer;
-  const holdDuration = 500;
-
-  card.addEventListener('touchstart', (e) => {
-    if (e.target.closest('.card-options-btn')) return;
-
-    card.dataset.longPressTriggered = 'false';
-    longPressTimer = setTimeout(() => {
-      card.dataset.longPressTriggered = 'true';
-      if (navigator.vibrate) navigator.vibrate(50);
-      BottomSheetManager.open(section.type, item);
-    }, holdDuration);
-  }, { passive: true });
-
-  card.addEventListener('touchend', () => {
-    if (longPressTimer) clearTimeout(longPressTimer);
-  });
-
-  card.addEventListener('touchmove', () => {
-    if (longPressTimer) clearTimeout(longPressTimer);
-  });
-
-  card.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
-  });
+  card.dataset.index = index;
+  card.dataset.id = item._id;
 
   const imgDiv = document.createElement("div");
   imgDiv.className = "card-img-div";
@@ -113,6 +106,14 @@ export function createCardElement(item, section, index) {
 
   if (section.type === "song") {
     img.src = item.artworkUrl;
+    
+    const optionsBtn = document.createElement('button');
+    optionsBtn.className = 'card-options-btn';
+    optionsBtn.innerHTML = '<img src="images/icons/more.png" style="width:16px; height:16px;">';
+    optionsBtn.title = "Add to playlist";
+    card.appendChild(optionsBtn);
+    
+    // Simple hover effect can stay or be CSS-based (prefer CSS)
   } else if (section.type === "artist") {
     img.src = item.artworkUrl || "images/Artist.webp";
   } else if (section.type === "playlist") {
@@ -145,3 +146,4 @@ export function createCardElement(item, section, index) {
 
   return card;
 }
+

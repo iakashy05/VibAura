@@ -25,7 +25,7 @@
  * ============================================================================
  */
 
-import { playSongFromPlaylist } from "../player/playerController.js";
+import { playSongFromPlaylist } from "../player/playerProxy.js";
 import { router } from "../core/router.js";
 
 // --- Module-level state variables ---
