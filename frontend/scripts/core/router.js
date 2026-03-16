@@ -16,20 +16,23 @@
  * ============================================================================
 */
 
+import { renderHomePage } from "../ui/renderers/home.js";
+import { renderArtistPage } from "../ui/renderers/artist.js";
+import { 
+  renderPlaylistPage, 
+  renderLikedSongsPage, 
+  renderRecentlyPlayedPage 
+} from "../ui/renderers/playlist.js";
+import { renderLibraryPage } from "../ui/renderers/library.js";
+import { renderSearchPage } from "../ui/renderers/search.js";
+
 import {
-  renderHomePage,
-  renderArtistPage,
-  renderPlaylistPage,
-  renderLibraryPage,
-  renderSearchPage,
   renderLoginPage,
   renderSignupPage,
   renderForgotPasswordPage,
   renderResetPasswordPage,
-  renderLikedSongsPage,
-  renderRecentlyPlayedPage,
   setAuthMode
-} from "../ui/pageRenderer.js";
+} from "../auth/authUI.js";
 
 // DOM elements for routing and navigation state
 const mobileHeader = document.querySelector(".mobile-header");

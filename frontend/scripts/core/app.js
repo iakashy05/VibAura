@@ -28,7 +28,7 @@ import { initPlayer } from "../player/playerController.js";
 import { initScrollController } from "../ui/scrollController.js";
 import { initSplashScreen } from "../ui/splashScreen.js";
 import { initSearch } from "../ui/search.js";
-import { initAuthUI } from "../ui/authUI.js";
+import { initAuthUI } from "../auth/authUI.js";
 import { LibraryManager } from "../ui/libraryManager.js";
 
 // Import modules that self-initialize or are needed for side-effects (like router)

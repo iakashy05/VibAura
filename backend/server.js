@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const compression = require("compression");
 const path = require("path");
 const mongoose = require("mongoose");
 
@@ -20,14 +21,19 @@ const PORT = process.env.PORT || 3000;
 const { debug, info, warn, error } = require("./utils/logger");
 
 // Middleware
+// Enable Gzip/Brotli compression for all responses
+app.use(compression());
+
 // Request log (debug-level; no output unless DEBUG=true)
 app.use((req, res, next) => {
   debug(`[REQ] ${req.method} ${req.path}`);
   next();
 });
 
-app.use(express.static(path.join(__dirname, "../frontend/public")));
-app.use(express.static(path.join(__dirname, "../frontend"))); // serve scripts and other static files
+// Serve static files with 1-year browser cache for assets
+const staticCacheOptions = { maxAge: "1y", etag: true };
+app.use(express.static(path.join(__dirname, "../frontend/public"), staticCacheOptions));
+app.use(express.static(path.join(__dirname, "../frontend"), staticCacheOptions));
 app.use(express.json());
 
 // ==================
