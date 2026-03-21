@@ -60,7 +60,18 @@ const mobileNavLinks = document.querySelectorAll(".mobile-nav .nav-link");
  * @returns {void}
  */
 export async function router() {
-  const hash = window.location.hash;
+  // Close any open modals on route change
+  const openModals = document.querySelectorAll('.modal, #create-playlist-modal');
+  openModals.forEach(modal => {
+    if (modal.style.display === 'flex' || modal.style.display === 'block') {
+      modal.style.display = 'none';
+      // If there's a form inside, reset it
+      const form = modal.querySelector('form');
+      if (form) form.reset();
+    }
+  });
+
+  const hash = window.location.hash || "#home";
 
   console.log(`[Router] Processing route: ${hash || "(home)"}`);
 
@@ -196,7 +207,4 @@ export async function router() {
     renderHomePage();
   }
 }
-
-// Initialize router on page load (DOMContentLoaded) and listen for hash changes
-window.addEventListener("DOMContentLoaded", router);
-window.addEventListener("hashchange", router);
+// Router logic only. Initialization is now handled by app.js to ensure proper sequencing.

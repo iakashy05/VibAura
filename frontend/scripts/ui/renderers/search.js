@@ -20,12 +20,12 @@ export function renderSearchPage() {
         <img src="images/music.webp" alt="VibAura" class="auth-logo">
         <div class="search-bar-container">
           <img src="images/icons/search.png" alt="Search" class="search-icon" />
-          <input type="text" id="vibAura-search-input" class="vibAura-search-input" placeholder="What do you want to play?" autocomplete="off" aria-label="Search" readonly />
-          <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear" style="display: none;">✕</button>
+          <input type="text" id="mobile-search-input" class="vibAura-search-input" placeholder="What do you want to play?" autocomplete="off" aria-label="Search" />
+          <button class="search-clear-btn" id="mobile-search-clear-btn" aria-label="Clear" style="display: none;">✕</button>
         </div>
         <img src="${userAvatar}" alt="User Avatar" class="search-avatar" />
       </div>
-      <div class="search-results-dropdown" id="search-results" style="position: relative; top: 0; left: 0; right: 0; border: none; max-height: none;">
+      <div class="search-results-dropdown" id="mobile-search-results" style="position: relative; top: 0; left: 0; right: 0; border: none; max-height: none;">
         <div class="search-loading" style="display: none;"><span class="loading-text">Searching…</span></div>
         <div class="search-no-results" style="display: none;"><span class="no-results-text">No results found</span></div>
         <div class="search-results-content"></div>
