@@ -31,8 +31,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Hide mobile header on artist pages for full-screen hero */
-body.artist-page-active .mobile-header {
+/* Hide mobile header on specific pages for full-screen feel */
+body.artist-page-active .mobile-header,
+body.library-page-active .mobile-header,
+body.search-page-active .mobile-header {
   display: none !important;
 }
 

@@ -17,7 +17,7 @@ export function renderSearchPage() {
   <div class="page-view search-page">
     <div class="search-page-container">
       <div class="search-page-input-wrapper">
-        <img src="images/music.webp" alt="VibAura" class="auth-logo">
+        <img src="images/music.webp" alt="VibAura" class="search-logo">
         <div class="search-bar-container">
           <img src="images/icons/search.png" alt="Search" class="search-icon" />
           <input type="text" id="mobile-search-input" class="vibAura-search-input" placeholder="What do you want to play?" autocomplete="off" aria-label="Search" />

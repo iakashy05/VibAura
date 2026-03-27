@@ -1,8 +1,48 @@
-import { login, signup, isAuthenticated, getCurrentUser, logout } from './authService.js';
-import { LibraryManager } from '../ui/libraryManager.js';
+import { login, signup, isAuthenticated, getCurrentUser, logout } from '/scripts/auth/authService.js';
+import { LibraryManager } from '/scripts/ui/libraryManager.js';
 
 /**
- * Initializes the Auth UI, mostly updating the header based on auth state.
+ * Helper to render the common professional Auth layout (Split screen desktop, centered mobile).
+ */
+function renderAuthLayout(formHTML, title, subtitle) {
+    const authRoot = document.getElementById("auth-root");
+    if (!authRoot) return;
+
+    authRoot.innerHTML = `
+    <div class="auth-view">
+        <div class="auth-split-layout">
+            <!-- Left Side: Branding (Desktop Only) -->
+            <div class="auth-brand-side">
+                <div class="auth-brand-content">
+                    <img src="images/music.webp" alt="VibAura" class="auth-brand-logo">
+                    <h1 class="auth-brand-title">VibAura</h1>
+                    <p class="auth-brand-tagline">Your music, your vibe, your way. Immerse yourself in the sound.</p>
+                </div>
+            </div>
+
+            <!-- Right Side: Form Content -->
+            <div class="auth-form-side">
+                <div class="auth-card">
+                    <!-- Mobile Logo (Visible on mobile only) -->
+                    <div class="auth-brand-mobile">
+                        <img src="images/music.webp" alt="VibAura">
+                    </div>
+
+                    <div class="auth-header">
+                        <h1>${title}</h1>
+                        <p>${subtitle}</p>
+                    </div>
+
+                    ${formHTML}
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+/**
+ * Initializes the Auth UI.
  */
 export function initAuthUI() {
     updateHeader();
@@ -13,20 +53,16 @@ export function initAuthUI() {
  */
 function updateHeader() {
     const userProfiles = document.querySelectorAll('.user-profile');
-
     if (isAuthenticated()) {
         const user = getCurrentUser();
         userProfiles.forEach(profile => {
             profile.innerHTML = `
-            <img src="https://ui-avatars.com/api/?name=${user.email}&background=2563EB&color=fff" alt="User Avatar" style="cursor: pointer;" title="Click to Logout" />
+            <img src="https://ui-avatars.com/api/?name=${user.email}&background=6366f1&color=fff" alt="User Avatar" style="cursor: pointer; border: 2px solid var(--auth-primary);" title="Click to Logout" />
         `;
             profile.addEventListener('click', () => {
                 if (confirm("Are you sure you want to logout?")) {
                     logout();
                     initAuthUI();
-                    if (LibraryManager && typeof LibraryManager.renderLibrary === 'function') {
-                        LibraryManager.renderLibrary();
-                    }
                     window.location.hash = "#/login";
                 }
             });
@@ -34,7 +70,7 @@ function updateHeader() {
     } else {
         userProfiles.forEach(profile => {
             profile.innerHTML = `
-        <a href="#/login" style="text-decoration: none; color: inherit; font-size: 0.9rem; font-weight: 600; padding: 0.5rem 1rem; border: 1px solid currentColor; border-radius: 20px;">
+        <a href="#/login" class="auth-link" style="font-size: 0.9rem; font-weight: 600; padding: 0.5rem 1rem; border: 2px solid var(--auth-primary); border-radius: 20px; color: var(--auth-primary);">
           Login
         </a>
       `;
@@ -50,19 +86,22 @@ function updateHeader() {
 export function setAuthMode(isAuth) {
     const appRoot = document.getElementById("app-root");
     const authRoot = document.getElementById("auth-root");
+    const body = document.body;
 
     if (isAuth) {
         if (appRoot) appRoot.style.display = "none";
         if (authRoot) {
             authRoot.style.display = "block";
-            document.body.classList.add("auth-mode");
+            body.classList.add("auth-mode");
+            body.classList.remove("app-active");
         }
     } else {
         if (appRoot) appRoot.style.display = "block";
         if (authRoot) {
             authRoot.style.display = "none";
-            authRoot.innerHTML = ""; 
-            document.body.classList.remove("auth-mode");
+            authRoot.innerHTML = "";
+            body.classList.remove("auth-mode");
+            body.classList.add("app-active");
         }
     }
 }
@@ -72,47 +111,36 @@ export function setAuthMode(isAuth) {
  */
 export function renderLoginPage() {
     setAuthMode(true);
-    const contentArea = document.getElementById("auth-root");
-    if (!contentArea) return;
-
-    contentArea.innerHTML = `
-    <div class="auth-view">
-      <div class="auth-wrapper">
-        <div class="auth-container fade-in">
-          <img src="images/music.webp" alt="VibAura" class="auth-logo">
-          <h1 class="auth-title">Welcome Back</h1>
-          <p class="auth-subtitle">Login to continue your vibe</p>
-          <form id="login-form">
-            <div class="input-group">
-              <label class="form-label">Email</label>
-              <div class="input-wrapper">
-                <img src="images/icons/mail.png" class="input-icon-left" alt="">
-                <input type="email" id="email" class="form-input" placeholder="hello@example.com" required>
-              </div>
+    const formHTML = `
+    <form id="login-form">
+        <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-container">
+                <input type="email" id="email" class="auth-input" placeholder=" " required>
+                <img src="images/icons/mail.png" alt="">
             </div>
-            <div class="input-group" style="margin-top: 1rem;">
-              <label class="form-label">Password</label>
-              <div class="input-wrapper">
-                <img src="images/icons/lock.png" class="input-icon-left" alt="">
-                <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                <button type="button" class="toggle-password" id="toggle-password">
-                  <img src="images/icons/eye.png" class="eye-icon" alt="Show">
-                </button>
-              </div>
-            </div>
-            <div style="text-align: right; margin-top: 0.5rem;">
-              <a href="#/forgot-password" class="auth-link" style="font-size: 0.9rem;">Forgot Password?</a>
-            </div>
-            <button type="submit" class="btn-submit">Login</button>
-            <div class="auth-footer">
-              Don't have an account? <a href="#/signup" class="auth-link">Sign Up</a>
-            </div>
-          </form>
         </div>
-      </div>
-    </div>
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-container">
+                <input type="password" id="password" class="auth-input" placeholder=" " required>
+                <img src="images/icons/lock.png" alt="">
+                <button type="button" class="toggle-password" id="toggle-password">
+                    <img src="images/icons/eye.png" alt="Show">
+                </button>
+            </div>
+        </div>
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <a href="#/forgot-password" class="auth-link" style="font-size: 0.85rem;">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn-auth-submit">Sign In</button>
+        <div class="auth-footer">
+            New to VibAura? <a href="#/signup" class="auth-link">Create Account</a>
+        </div>
+    </form>
     `;
 
+    renderAuthLayout(formHTML, "Welcome Back", "Login to continue your vibe");
     setupPasswordToggle();
 
     const form = document.getElementById("login-form");
@@ -120,15 +148,26 @@ export function renderLoginPage() {
         e.preventDefault();
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
+        const btn = form.querySelector(".btn-auth-submit");
 
         try {
+            btn.disabled = true;
+            btn.textContent = "Verifying...";
             await login(email, password);
             initAuthUI();
+            
+            // Refresh library sidebar immediately after login to sync state
             if (LibraryManager && typeof LibraryManager.renderLibrary === 'function') {
                 LibraryManager.renderLibrary();
             }
+
             window.location.hash = "#";
         } catch (error) {
+            btn.disabled = false;
+            btn.textContent = "Sign In";
+            const card = document.querySelector(".auth-card");
+            card.classList.add("shake");
+            setTimeout(() => card.classList.remove("shake"), 400);
             alert("Login failed: " + error.message);
         }
     });
@@ -139,44 +178,33 @@ export function renderLoginPage() {
  */
 export function renderSignupPage() {
     setAuthMode(true);
-    const contentArea = document.getElementById("auth-root");
-    if (!contentArea) return;
-
-    contentArea.innerHTML = `
-    <div class="auth-view">
-      <div class="auth-wrapper">
-        <div class="auth-container fade-in">
-          <img src="images/music.webp" alt="VibAura" class="auth-logo">
-          <h1 class="auth-title">Join VibAura</h1>
-          <p class="auth-subtitle">Create an account to start listening</p>
-          <form id="signup-form">
-            <div class="input-group">
-              <label class="form-label">Email</label>
-              <div class="input-wrapper">
-                <img src="images/icons/mail.png" class="input-icon-left" alt="">
-                <input type="email" id="email" class="form-input" placeholder="hello@example.com" required>
-              </div>
+    const formHTML = `
+    <form id="signup-form">
+        <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-container">
+                <input type="email" id="email" class="auth-input" placeholder=" " required>
+                <img src="images/icons/mail.png" alt="">
             </div>
-            <div class="input-group" style="margin-top: 1rem;">
-              <label class="form-label">Password</label>
-              <div class="input-wrapper">
-                <img src="images/icons/lock.png" class="input-icon-left" alt="">
-                <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                <button type="button" class="toggle-password" id="toggle-password">
-                  <img src="images/icons/eye.png" class="eye-icon" alt="Show">
-                </button>
-              </div>
-            </div>
-            <button type="submit" class="btn-submit">Sign Up</button>
-            <div class="auth-footer">
-              Already have an account? <a href="#/login" class="auth-link">Login</a>
-            </div>
-          </form>
         </div>
-      </div>
-    </div>
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-container">
+                <input type="password" id="password" class="auth-input" placeholder=" " required>
+                <img src="images/icons/lock.png" alt="">
+                <button type="button" class="toggle-password" id="toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; opacity: 0.5; z-index: 10;">
+                    <img src="images/icons/eye.png" style="position: static; width: 18px;" alt="Show">
+                </button>
+            </div>
+        </div>
+        <button type="submit" class="btn-auth-submit">Create Account</button>
+        <div class="auth-footer">
+            Already have an account? <a href="#/login" class="auth-link">Sign In</a>
+        </div>
+    </form>
     `;
 
+    renderAuthLayout(formHTML, "Join VibAura", "Start your musical journey today");
     setupPasswordToggle();
 
     const form = document.getElementById("signup-form");
@@ -184,12 +212,17 @@ export function renderSignupPage() {
         e.preventDefault();
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
+        const btn = form.querySelector(".btn-auth-submit");
 
         try {
+            btn.disabled = true;
+            btn.textContent = "Creating...";
             await signup(email, password);
             alert("Account created! Please login.");
             window.location.hash = "#/login";
         } catch (error) {
+            btn.disabled = false;
+            btn.textContent = "Create Account";
             alert("Signup failed: " + error.message);
         }
     });
@@ -200,39 +233,29 @@ export function renderSignupPage() {
  */
 export function renderForgotPasswordPage() {
     setAuthMode(true);
-    const contentArea = document.getElementById("auth-root");
-    if (!contentArea) return;
-
-    contentArea.innerHTML = `
-    <div class="auth-view">
-      <div class="auth-wrapper">
-        <div class="auth-container fade-in">
-          <img src="images/music.webp" alt="VibAura" class="auth-logo">
-          <h1 class="auth-title">Forgot Password</h1>
-          <p class="auth-subtitle">Enter your email to receive a reset link</p>
-          <form id="forgot-form">
-            <div class="input-group">
-              <label class="form-label">Email</label>
-              <div class="input-wrapper">
-                <img src="images/icons/mail.png" class="input-icon-left" alt="">
-                <input type="email" id="email" class="form-input" placeholder="hello@example.com" required>
-              </div>
+    const formHTML = `
+    <form id="forgot-form">
+        <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-container">
+                <input type="email" id="email" class="auth-input" placeholder=" " required>
+                <img src="images/icons/mail.png" alt="">
             </div>
-            <button type="submit" class="btn-submit">Send Reset Link</button>
-            <div class="auth-footer">
-              <a href="#/login" class="auth-link">Back to Login</a>
-            </div>
-          </form>
         </div>
-      </div>
-    </div>
+        <button type="submit" class="btn-auth-submit">Send Reset Link</button>
+        <div class="auth-footer">
+            Remember your password? <a href="#/login" class="auth-link">Back to Sign In</a>
+        </div>
+    </form>
     `;
+
+    renderAuthLayout(formHTML, "Forgot Password?", "We'll email you a secure link");
 
     const form = document.getElementById("forgot-form");
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("email").value;
-        const btn = form.querySelector(".btn-submit");
+        const btn = form.querySelector(".btn-auth-submit");
         const originalText = btn.textContent;
 
         btn.disabled = true;
@@ -261,56 +284,40 @@ export function renderForgotPasswordPage() {
  */
 export function renderResetPasswordPage() {
     setAuthMode(true);
-    const contentArea = document.getElementById("auth-root");
-    if (!contentArea) return;
-
     const hash = window.location.hash;
     const parts = hash.split('?');
     const params = new URLSearchParams(parts[1] || "");
     const token = params.get("token");
 
     if (!token) {
-        contentArea.innerHTML = `
-      <div class="auth-view"><div class="auth-wrapper"><div class="auth-container">
-        <h1 class="auth-title">Invalid Link</h1>
-        <p class="auth-subtitle">Missing reset token.</p>
-        <a href="#/login" class="auth-link">Back to Login</a>
-      </div></div></div>`;
+        renderAuthLayout('<div class="auth-footer"><a href="#/login" class="auth-link">Back to Login</a></div>', "Invalid Link", "Missing or expired reset token.");
         return;
     }
 
-    contentArea.innerHTML = `
-    <div class="auth-view">
-      <div class="auth-wrapper">
-        <div class="auth-container fade-in">
-          <img src="images/music.webp" alt="VibAura" class="auth-logo">
-          <h1 class="auth-title">Reset Password</h1>
-          <p class="auth-subtitle">Enter your new password below</p>
-          <form id="reset-form">
-            <div class="input-group">
-              <label class="form-label">New Password</label>
-              <div class="input-wrapper">
-                <img src="images/icons/lock.png" class="input-icon-left" alt="">
-                <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+    const formHTML = `
+    <form id="reset-form">
+        <div class="form-group">
+            <label class="form-label">New Password</label>
+            <div class="input-container">
+                <input type="password" id="password" class="auth-input" placeholder=" " required>
+                <img src="images/icons/lock.png" alt="">
                 <button type="button" class="toggle-password" id="toggle-password">
-                  <img src="images/icons/eye.png" class="eye-icon" alt="Show">
+                    <img src="images/icons/eye.png" alt="Show">
                 </button>
-              </div>
             </div>
-            <button type="submit" class="btn-submit">Update Password</button>
-          </form>
         </div>
-      </div>
-    </div>
+        <button type="submit" class="btn-auth-submit">Update Password</button>
+    </form>
     `;
 
+    renderAuthLayout(formHTML, "Reset Password", "Enter your new password below");
     setupPasswordToggle();
 
     const form = document.getElementById("reset-form");
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const newPassword = document.getElementById("password").value;
-        const btn = form.querySelector(".btn-submit");
+        const btn = form.querySelector(".btn-auth-submit");
 
         btn.disabled = true;
         btn.textContent = "Updating...";
@@ -324,12 +331,7 @@ export function renderResetPasswordPage() {
             const data = await res.json();
 
             if (res.ok) {
-                const container = document.querySelector(".auth-container");
-                container.innerHTML = `
-          <h2>Password Updated!</h2>
-          <p>Your password has been successfully reset.</p>
-          <p style="margin-top: 1rem; color: #aaa;">You can now close this tab and log in with your new password on your original device.</p>
-          `;
+                renderAuthLayout('<p style="text-align: center; color: var(--auth-text-muted);">You can now close this tab and log in with your new password on your original device.</p><div class="auth-footer"><a href="#/login" class="auth-link">Back to Login</a></div>', "Success!", "Your password has been updated.");
             } else {
                 alert(data.message || "Update failed");
             }
@@ -344,7 +346,7 @@ export function renderResetPasswordPage() {
 }
 
 /**
- * Helper to setup password visibility toggle for auth forms.
+ * Helper to setup password visibility toggle.
  */
 function setupPasswordToggle() {
     const toggleBtn = document.getElementById("toggle-password");

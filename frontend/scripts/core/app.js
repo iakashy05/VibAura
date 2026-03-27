@@ -23,47 +23,58 @@
  */
 
 // Import initialization functions from their respective modules
-import { initThemeManager } from "../ui/themeManager.js";
-import { initPlayer } from "../player/playerProxy.js";
-import { initSearch } from "../ui/searchProxy.js";
-import { initAuthUI } from "../auth/authUI.js";
-import { initSplashScreen } from "../ui/splashScreen.js";
-import { initScrollController } from "../ui/scrollController.js";
-import { LibraryManager } from "../ui/libraryManager.js";
-
-// Import modules that self-initialize or are needed for side-effects (like router)
-import "../core/router.js"; // This import runs the router setup
-import "../mobile/mobile.js"; // This import runs mobile-specific setup
-
-import { verifySession } from "../auth/authService.js";
-import { router } from "./router.js";
-
-// Initialize splash screen animation first (creates the splash promise)
-// This is crucial so the router can wait for it.
-// initSplashScreen(); // Moved inside initializeApp for explicit ordering
+import { initSplashScreen } from "/scripts/ui/splashScreen.js";
+import { verifySession, isAuthenticated } from "/scripts/auth/authService.js";
+import { initAuthUI, setAuthMode } from "/scripts/auth/authUI.js";
+import { router } from "/scripts/core/router.js";
+import { initThemeManager } from "/scripts/ui/themeManager.js";
+import { initPlayer } from "/scripts/player/playerProxy.js";
+import { initScrollController } from "/scripts/ui/scrollController.js";
+import { initSearch } from "/scripts/ui/searchProxy.js";
+import { LibraryManager } from "/scripts/ui/libraryManager.js";
 
 // Define initialization sequence
 async function initializeApp() {
   console.log("[App] Starting static initialization...");
   
-  // 1. Splash screen animation first
+  // 1. Splash screen animation first (deterministic sequence)
   initSplashScreen();
 
-  // 2. Check session first to clear stale tokens (Crucial!)
-  // This must be awaited before ANY UI renders
+  // 2. AUTH GATE: Check session before loading ANY app shell
+  // We await this to ensure we have a valid UserStore before proceeding.
+  console.log("[App] Auth Handshake - Verifying session...");
   await verifySession();
 
-  // 3. Initialize core UI components
-  initThemeManager();
-  initPlayer();
-  initScrollController();
-  initSearch();
+  // 3. SHELL SELECTION: Initialize components based on Auth status
+  // initAuthUI will handle the "Login Shell" or "App Shell" toggle
   initAuthUI(); 
-  LibraryManager.init();
+  initThemeManager();
 
-  // 4. Finally, attach router listeners and run initial route
+  const hash = window.location.hash || "#home";
+  const isAuthRoute = hash.startsWith("#/login") || 
+                      hash.startsWith("#/signup") || 
+                      hash.startsWith("#/forgot-password") ||
+                      hash.startsWith("#/reset-password");
+
+  if (isAuthRoute) {
+    console.log("[App] Loading Auth Shell...");
+  } else {
+    console.log("[App] Loading App Shell...");
+    initPlayer();
+    initScrollController();
+    initSearch();
+    LibraryManager.init();
+  }
+
+  // 4. ROUTER: Finally, run the router to handle the current hash
   window.addEventListener("hashchange", router);
   await router();
+
+  // 5. DISMISS SPLASH: Only after everything is mounted and routed
+  if (window.hideSplashScreen) {
+    console.log("[App] Dismissing splash screen.");
+    window.hideSplashScreen();
+  }
   
   console.log("[App] Initialization complete.");
 }

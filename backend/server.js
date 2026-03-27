@@ -21,8 +21,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files with 1-year browser cache for assets
-const staticCacheOptions = { maxAge: "1y", etag: true };
+// Serve static files (Disabled 1y cache for development to prevent stale UI)
+const staticCacheOptions = { maxAge: 0, etag: true };
 app.use(express.static(path.join(__dirname, "../frontend/public"), staticCacheOptions));
 app.use(express.static(path.join(__dirname, "../frontend"), staticCacheOptions));
 app.use(express.json());
