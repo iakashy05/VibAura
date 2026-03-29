@@ -58,7 +58,9 @@ async function startServer() {
     const mongoUri = process.env.DB_URI;
     if (!mongoUri) throw new Error("DB_URI is not set in environment variables");
 
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of default 30s
+    });
     info("Connected to MongoDB");
 
     let currentPort = Number(process.env.PORT || 3000);

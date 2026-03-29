@@ -268,7 +268,12 @@ export function renderForgotPasswordPage() {
                 body: JSON.stringify({ email }),
             });
             const data = await res.json();
-            alert(data.message);
+            
+            if (res.ok) {
+                renderOTPVerificationPage(email);
+            } else {
+                alert(data.message || "Request failed");
+            }
         } catch (error) {
             alert("Something went wrong. Please try again.");
             console.error(error);
@@ -280,29 +285,149 @@ export function renderForgotPasswordPage() {
 }
 
 /**
- * Renders the Reset Password page.
+ * Renders the OTP Verification page.
+ * Includes a premium 6-digit split input and a resend timer.
  */
-export function renderResetPasswordPage() {
+export function renderOTPVerificationPage(email) {
     setAuthMode(true);
-    const hash = window.location.hash;
-    const parts = hash.split('?');
-    const params = new URLSearchParams(parts[1] || "");
-    const token = params.get("token");
-
-    if (!token) {
-        renderAuthLayout('<div class="auth-footer"><a href="#/login" class="auth-link">Back to Login</a></div>', "Invalid Link", "Missing or expired reset token.");
-        return;
-    }
-
     const formHTML = `
-    <form id="reset-form">
+    <form id="otp-form">
+        <p style="text-align: center; color: var(--auth-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Code sent to <b>${email}</b>.
+        </p>
+        <div class="otp-container">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required />
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required />
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required />
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required />
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required />
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" required />
+        </div>
+        
+        <button type="submit" class="btn-auth-submit">Verify Code</button>
+
+        <div class="resend-container">
+            <button type="button" class="resend-btn" id="resend-btn" disabled>
+                Resend Code <span id="resend-timer" class="timer-text">(60s)</span>
+            </button>
+        </div>
+        
+        <div class="auth-footer" style="margin-top: 1rem;">
+            <a href="#/forgot-password" class="auth-link">Back to Email</a>
+        </div>
+    </form>
+    `;
+
+    renderAuthLayout(formHTML, "Enter Verification Code", "Check your email for the 6-digit code");
+
+    const otpBoxes = document.querySelectorAll(".otp-box");
+    const resendBtn = document.getElementById("resend-btn");
+    const otpForm = document.getElementById("otp-form");
+
+    // Start Resend Timer
+    startResendTimer(60);
+
+    // Auto-focus Logic
+    otpBoxes.forEach((box, idx) => {
+        box.addEventListener("input", (e) => {
+            if (e.target.value.length === 1 && idx < otpBoxes.length - 1) {
+                otpBoxes[idx + 1].focus();
+            }
+        });
+
+        box.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !e.target.value && idx > 0) {
+                otpBoxes[idx - 1].focus();
+            }
+        });
+    });
+
+    // Handle OTP Submit
+    otpForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const otpCode = Array.from(otpBoxes).map(box => box.value).join("");
+        const btn = otpForm.querySelector(".btn-auth-submit");
+
+        btn.disabled = true;
+        btn.textContent = "Verifying...";
+
+        try {
+            const res = await fetch("/api/auth/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp: otpCode }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                renderNewPasswordPage(email, data.resetToken);
+            } else {
+                alert(data.message || "Invalid Code");
+                otpBoxes.forEach(box => box.value = "");
+                otpBoxes[0].focus();
+            }
+        } catch (error) {
+            alert("Connection error. Try again.");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Verify Code";
+        }
+    });
+
+    // Handle Resend
+    resendBtn.addEventListener("click", async () => {
+        try {
+            resendBtn.disabled = true;
+            await fetch("/api/auth/forgot-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            startResendTimer(60);
+            alert("New code sent!");
+        } catch (error) {
+            alert("Failed to resend.");
+            resendBtn.disabled = false;
+        }
+    });
+}
+
+/**
+ * Resend Code Timer Helper
+ */
+function startResendTimer(seconds) {
+    const timerSpan = document.getElementById("resend-timer");
+    const resendBtn = document.getElementById("resend-btn");
+    let timeLeft = seconds;
+
+    resendBtn.disabled = true;
+    
+    const interval = setInterval(() => {
+        timeLeft--;
+        if (timerSpan) timerSpan.textContent = `(${timeLeft}s)`;
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            if (timerSpan) timerSpan.textContent = "";
+            resendBtn.disabled = false;
+        }
+    }, 1000);
+}
+
+/**
+ * Renders the Final New Password page.
+ */
+export function renderNewPasswordPage(email, resetToken) {
+    setAuthMode(true);
+    const formHTML = `
+    <form id="new-password-form">
         <div class="form-group">
-            <label class="form-label">New Password</label>
+            <label class="form-label">Create New Password</label>
             <div class="input-container">
-                <input type="password" id="password" class="auth-input" placeholder=" " required>
-                <img src="images/icons/lock.png" alt="">
+                <input type="password" id="password" class="auth-input" placeholder=" " required />
+                <img src="images/icons/lock.png" alt="" />
                 <button type="button" class="toggle-password" id="toggle-password">
-                    <img src="images/icons/eye.png" alt="Show">
+                    <img src="images/icons/eye.png" alt="Show" />
                 </button>
             </div>
         </div>
@@ -310,34 +435,39 @@ export function renderResetPasswordPage() {
     </form>
     `;
 
-    renderAuthLayout(formHTML, "Reset Password", "Enter your new password below");
+    renderAuthLayout(formHTML, "Security Update", "Please set your new secure password");
     setupPasswordToggle();
 
-    const form = document.getElementById("reset-form");
+    const form = document.getElementById("new-password-form");
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const newPassword = document.getElementById("password").value;
         const btn = form.querySelector(".btn-auth-submit");
 
         btn.disabled = true;
-        btn.textContent = "Updating...";
+        btn.textContent = "Saving...";
 
         try {
             const res = await fetch("/api/auth/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, newPassword }),
+                body: JSON.stringify({ token: resetToken, newPassword }),
             });
             const data = await res.json();
 
             if (res.ok) {
-                renderAuthLayout('<p style="text-align: center; color: var(--auth-text-muted);">You can now close this tab and log in with your new password on your original device.</p><div class="auth-footer"><a href="#/login" class="auth-link">Back to Login</a></div>', "Success!", "Your password has been updated.");
+                renderAuthLayout(`
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <img src="images/icons/check.png" alt="Success" style="width: 60px; margin-bottom: 1rem;" />
+                        <p style="color: var(--auth-text-muted);">Your password has been changed successfully.</p>
+                    </div>
+                    <a href="#/login" class="btn-auth-submit" style="display: block; text-decoration: none; text-align: center;">Go to Login</a>
+                `, "All Set!", "Password updated successfully");
             } else {
-                alert(data.message || "Update failed");
+                alert(data.message || "Failed to update password");
             }
         } catch (error) {
             alert("Error updating password.");
-            console.error(error);
         } finally {
             btn.disabled = false;
             btn.textContent = "Update Password";

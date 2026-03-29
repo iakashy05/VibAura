@@ -30,7 +30,8 @@ import {
   renderLoginPage,
   renderSignupPage,
   renderForgotPasswordPage,
-  renderResetPasswordPage,
+  renderOTPVerificationPage,
+  renderNewPasswordPage,
   setAuthMode
 } from "/scripts/auth/authUI.js";
 
@@ -161,8 +162,12 @@ export async function router() {
     renderSignupPage();
   } else if (hash === "#/forgot-password") {
     renderForgotPasswordPage();
+  } else if (hash.startsWith("#/otp-verification")) {
+    const email = new URLSearchParams(hash.split('?')[1]).get('email');
+    renderOTPVerificationPage(email);
   } else if (hash.startsWith("#/reset-password")) {
-    renderResetPasswordPage();
+    // Legacy route or direct access - redirect to forgot password
+    window.location.hash = "#/forgot-password";
   } else {
     setAuthMode(false);
     renderHomePage();
@@ -182,6 +187,7 @@ window.addEventListener("resize", () => {
     const isAuthRoute = hash.startsWith("#/login") || 
                        hash.startsWith("#/signup") || 
                        hash.startsWith("#/forgot-password") || 
+                       hash.startsWith("#/otp-verification") || 
                        hash.startsWith("#/reset-password");
     
     if (!isAuthRoute) {

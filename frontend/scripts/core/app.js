@@ -54,6 +54,7 @@ async function initializeApp() {
   const isAuthRoute = hash.startsWith("#/login") || 
                       hash.startsWith("#/signup") || 
                       hash.startsWith("#/forgot-password") ||
+                      hash.startsWith("#/otp-verification") ||
                       hash.startsWith("#/reset-password");
 
   if (isAuthRoute) {

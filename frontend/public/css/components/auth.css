@@ -311,6 +311,61 @@ body.dark-theme .toggle-password img {
     text-decoration: underline;
 }
 
+/* --- OTP Input Styles --- */
+.otp-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.otp-box {
+    width: 45px;
+    height: 55px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 1px solid var(--auth-border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--auth-text-main);
+    transition: all 0.2s ease;
+}
+
+.otp-box:focus {
+    outline: none;
+    border-color: var(--auth-primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    transform: translateY(-2px);
+}
+
+.resend-container {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.resend-btn {
+    background: none;
+    border: none;
+    color: var(--auth-primary);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+}
+
+.resend-btn:disabled {
+    color: var(--auth-text-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.timer-text {
+    color: var(--auth-text-muted);
+    font-weight: 500;
+}
+
 /* --- Animations --- */
 .shake {
     animation: shake 0.5s ease-in-out;
@@ -335,7 +390,8 @@ body.dark-theme .toggle-password img {
     }
 
     .auth-view {
-        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent);
+        background-color: var(--auth-bg-light);
+        background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent);
         justify-content: center;
         align-items: center; /* Restore vertical centering */
     }
