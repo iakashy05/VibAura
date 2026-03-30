@@ -1,8 +1,10 @@
-# VibAura - Modern Music Streaming Platform
-
 <div align="center">
 
-![VibAura](https://img.shields.io/badge/VibAura-Music%20Player-blueviolet?style=for-the-badge&logo=spotify)
+<img src="frontend/public/images/music.webp" alt="VibAura Logo" width="120">
+
+# VibAura - Modern Music Streaming Platform
+
+![VibAura](https://img.shields.io/badge/VibAura-Music%20Player-blueviolet?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=for-the-badge)
 ![Version](https://img.shields.io/badge/Version-2.0.0--Stable-orange?style=for-the-badge)
 
