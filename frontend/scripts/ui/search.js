@@ -25,7 +25,7 @@
  * ============================================================================
  */
 
-import { playSongFromPlaylist } from "../player/playerController.js";
+import { playSongFromPlaylist } from "../player/playerProxy.js";
 import { router } from "../core/router.js";
 
 // --- Module-level state variables ---
@@ -190,11 +190,10 @@ function setupMobileSearchNavigation() {
 /**
  * ATTACH SEARCH LISTENERS TO PAGE (Mobile)
  * Attaches listeners to the search input on the dedicated #search page.
- * Implements lazy activation: input is readonly until clicked.
  */
 function attachSearchListenersToPage() {
-  const searchInput = document.getElementById("vibAura-search-input");
-  const clearBtn = document.getElementById("search-clear-btn");
+  const searchInput = document.getElementById("mobile-search-input");
+  const clearBtn = document.getElementById("mobile-search-clear-btn");
   const searchBarContainer = document.querySelector(".search-bar-container");
   const searchPageInputWrapper = document.querySelector(
     ".search-page-input-wrapper"
@@ -207,23 +206,6 @@ function attachSearchListenersToPage() {
   }
 
   console.log("[Search] Attaching listeners to search page input...");
-
-  // Make input readonly initially
-  searchInput.setAttribute("readonly", "");
-
-  // Click handler - activate search mode
-  searchInput.addEventListener("click", () => {
-    if (searchInput.hasAttribute("readonly")) {
-      console.log("[Search] Activating search mode...");
-      // Remove readonly to enable typing
-      searchInput.removeAttribute("readonly");
-      // Mark as active
-      searchPageInputWrapper.classList.add("search-active");
-      searchPage.classList.add("search-active");
-      // Focus and open keyboard
-      searchInput.focus();
-    }
-  });
 
   // INPUT EVENT - Debounced search
   searchInput.addEventListener("input", (e) => {
@@ -467,7 +449,14 @@ async function performSearch(query) {
  * @param {string} query - Original search query (for highlighting)
  */
 function renderSearchResults(data, query) {
-  const resultsDiv = document.getElementById("search-results");
+  const isSearchPage = window.location.hash === "#search";
+  const resultsDiv = isSearchPage 
+    ? document.getElementById("mobile-search-results") 
+    : document.getElementById("search-results");
+    
+  console.log(`[Search] Rendering to: ${resultsDiv ? resultsDiv.id : "NULL"}`);
+  if (!resultsDiv) return;
+
   const contentDiv = resultsDiv.querySelector(".search-results-content");
   const loadingDiv = resultsDiv.querySelector(".search-loading");
   const noResultsDiv = resultsDiv.querySelector(".search-no-results");
@@ -581,13 +570,15 @@ function createResultItem(item, type, query) {
   if (type === "song") {
     imageUrl =
       item.artworkUrl ||
-      "https://placehold.co/48x48/E5E7EB/1E1E1E?text=🎵";
-    title = highlightMatch(item.title, query);
+      "https://placehold.co/48x48/1DB954/FFFFFF?text=SONG";
+    title = highlightMatch(item.title || "Unknown Title", query);
 
-    // Handle multiple artists
-    if (item.artists && item.artists.length > 0) {
-      const artistNames = item.artists.map(a => a.name).join(", ");
-      subtitle = artistNames; // Highlight match logic could be added here if needed, but keeping it simple
+    // Handle multiple artists (robustly)
+    if (item.artists && Array.isArray(item.artists) && item.artists.length > 0) {
+      const artistNames = item.artists
+        .map(a => (typeof a === 'object' ? (a.name || "Unknown") : "Unknown"))
+        .join(", ");
+      subtitle = artistNames;
     } else {
       subtitle = "Unknown Artist";
     }
@@ -596,21 +587,25 @@ function createResultItem(item, type, query) {
   else if (type === "artist") {
     imageUrl =
       item.artworkUrl ||
-      "https://placehold.co/48x48/E5E7EB/1E1E1E?text=🧑‍🎤";
-    title = highlightMatch(item.name, query);
+      "https://placehold.co/48x48/FF4B2B/FFFFFF?text=ARTIST";
+    title = highlightMatch(item.name || "Unknown Artist", query);
     subtitle = `${item.followers || 0} followers`;
   }
   // --- Playlist Result ---
   else if (type === "playlist") {
     imageUrl =
-      item.cover || "https://placehold.co/48x48/E5E7EB/1E1E1E?text=🎶";
-    title = highlightMatch(item.name, query);
+      item.cover || "https://placehold.co/48x48/2563EB/FFFFFF?text=PLAYLIST";
+    title = highlightMatch(item.name || "Untitled Playlist", query);
     subtitle = item.category || "Playlist";
   }
 
+  // Helper to strip HTML tags for attributes (like alt)
+  const stripTags = (html) => html.replace(/<\/?[^>]+(>|$)/g, "");
+  const plainTitle = stripTags(item.title || item.name || "Result");
+
   // Set the inner HTML for the item
   itemDiv.innerHTML = `
-    <img src="${imageUrl}" alt="${title}" class="search-result-image" />
+    <img src="${imageUrl}" alt="${plainTitle}" class="search-result-image" onerror="this.src='https://placehold.co/48x48/E5E7EB/1E1E1E?text=🔍'" />
     <div class="search-result-info">
       <div class="search-result-title">${title}</div>
       <div class="search-result-subtitle">${subtitle}</div>
@@ -745,7 +740,9 @@ function focusResultItem(items, index) {
  * Displays the "Searching..." message in the results container.
  */
 function showLoading() {
-  const resultsDiv = document.getElementById("search-results");
+  const resultsDiv = document.getElementById("mobile-search-results") || document.getElementById("search-results");
+  if (!resultsDiv) return;
+
   const loadingDiv = resultsDiv.querySelector(".search-loading");
   const noResultsDiv = resultsDiv.querySelector(".search-no-results");
   const contentDiv = resultsDiv.querySelector(".search-results-content");
@@ -761,7 +758,9 @@ function showLoading() {
  * Displays the "No results found" message.
  */
 function showNoResults() {
-  const resultsDiv = document.getElementById("search-results");
+  const resultsDiv = document.getElementById("mobile-search-results") || document.getElementById("search-results");
+  if (!resultsDiv) return;
+
   const loadingDiv = resultsDiv.querySelector(".search-loading");
   const noResultsDiv = resultsDiv.querySelector(".search-no-results");
   const contentDiv = resultsDiv.querySelector(".search-results-content");

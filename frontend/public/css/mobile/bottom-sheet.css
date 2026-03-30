@@ -114,3 +114,20 @@
     color: var(--color-text-primary);
     font-weight: 500;
 }
+/* Desktop Polish */
+@media screen and (min-width: 769px) {
+    .bottom-sheet-content {
+        left: 50% !important;
+        transform: translate(-50%, 100%) !important;
+        width: 450px !important;
+        border-radius: 20px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+    }
+    .bottom-sheet-overlay.active .bottom-sheet-content {
+        transform: translate(-50%, 0) !important;
+    }
+    .bs-option-item:hover {
+        background-color: var(--color-background-muted);
+    }
+}

@@ -29,6 +29,18 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    resetOTP: {
+        type: String,
+        default: null,
+    },
+    resetOTPExpires: {
+        type: Date,
+        default: null,
+    },
+    resetOTPAttempts: {
+        type: Number,
+        default: 0,
+    },
     libraryPlaylists: [
         {
             type: mongoose.Schema.Types.ObjectId,

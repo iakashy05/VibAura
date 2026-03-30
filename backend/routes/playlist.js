@@ -5,7 +5,37 @@ const User = require("../../models/user");
 const Song = require("../../models/song");
 const { authenticateToken } = require("../middleware/authMiddleware");
 
-// All routes require auth
+const { error } = require("../utils/logger");
+
+// GET /api/playlists - Fetch all playlists (Public)
+router.get("/", async (req, res) => {
+  try {
+    const playlists = await Playlist.find().lean();
+    res.json(playlists);
+  } catch (err) {
+    error("Error fetching playlists:", err);
+    res.status(500).json({ message: "Error fetching playlists" });
+  }
+});
+
+// GET /api/playlists/:id - Fetch playlist by ID (Public)
+router.get("/:id", async (req, res) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id).populate({
+      path: "songs",
+      populate: [
+        { path: "artists", model: "Artist" }
+      ],
+    });
+    if (!playlist) return res.status(404).json({ message: "Playlist not found" });
+    res.json(playlist);
+  } catch (err) {
+    error("Error fetching playlist:", err);
+    res.status(500).json({ message: "Error fetching playlist" });
+  }
+});
+
+// Routes below this require auth
 router.use(authenticateToken);
 
 // POST /api/playlists - Create new playlist

@@ -68,8 +68,8 @@
   /* Hover states */
 
   /* View backgrounds (Solid) */
-  --color-view-playlist-bg: #fff5f2;
-  --color-view-artist-bg: #f8f9fa;
+  --color-view-playlist-bg: #FFF1F3;
+  --color-view-artist-bg: #FFF1F3;
 
   /* Border colors */
   --color-border: #fed7d7;
@@ -124,8 +124,8 @@ body.dark-theme {
   --color-background-muted: #2d3748;
 
   /* View backgrounds (Solid) */
-  --color-view-playlist-bg: #1e2533;
-  --color-view-artist-bg: #1a1e2e;
+  --color-view-playlist-bg: #2d3748; /* Synced with original Artist theme (#2d3748) */
+  --color-view-artist-bg: #2d3748;
 
   /* Border colors */
   --color-border: #23262c;

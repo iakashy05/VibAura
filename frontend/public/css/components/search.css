@@ -147,7 +147,7 @@ body.dark-theme .search-icon {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   max-height: 480px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 2000; /* Higher than sticky headers */
   display: none;
   /* Hidden by default, shown by JS */
   backdrop-filter: blur(10px);

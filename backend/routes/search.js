@@ -162,13 +162,20 @@ async function searchSongs(query) {
     // FALLBACK: REGEX SEARCH
     // ========================================
     // Create case-insensitive regex for title matching
-    const titleRegex = new RegExp(query, 'i');
+    const regex = new RegExp(query, 'i');
 
-    debug(`[Search] Using regex fallback with pattern: ${titleRegex}`);
+    debug(`[Search] Using regex fallback with pattern: ${regex}`);
 
-    // Search by title
+    // 1. Find artists matching the name (to find songs by artist)
+    const matchingArtists = await Artist.find({ name: regex }).select('_id');
+    const artistIds = matchingArtists.map(a => a._id);
+
+    // 2. Search by title OR by artist ID
     const songs = await Song.find({
-      title: titleRegex,
+      $or: [
+        { title: regex },
+        { artists: { $in: artistIds } }
+      ]
     })
       .populate('artists')
       .sort({

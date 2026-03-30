@@ -5,28 +5,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VibAura</title>
-  <link rel="icon" href="images/music.png" type="image/png">
+  <link rel="icon" href="images/music.webp" type="image/webp">
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="css/base/variables.css" />
-  <link rel="stylesheet" href="css/base/skeleton.css" />
-  <link rel="stylesheet" href="css/components/search.css" />
-  <link rel="stylesheet" href="css/components/auth.css" />
-  <link rel="stylesheet" href="css/components/icons.css" />
+  <link rel="stylesheet" href="css/base/variables.css?v=3" />
+  <link rel="stylesheet" href="css/base/skeleton.css?v=3" />
+  <link rel="stylesheet" href="css/components/search.css?v=3" />
+  <link rel="stylesheet" href="css/components/auth.css?v=3" />
+  <link rel="stylesheet" href="css/components/icons.css?v=3" />
 
   <!-- Desktop Styles -->
-  <link rel="stylesheet" href="css/desktop/index.css" media="(min-width: 769px)" />
-  <link rel="stylesheet" href="css/desktop/modals.css" media="(min-width: 769px)" />
+  <link rel="stylesheet" href="css/desktop/index.css?v=3" media="(min-width: 769px)" />
+  <link rel="stylesheet" href="css/desktop/modals.css?v=3" media="(min-width: 769px)" />
+  <link rel="stylesheet" href="css/components/context-menu.css?v=3" media="(min-width: 769px)" />
 
   <!-- Mobile Styles -->
   <link rel="stylesheet" href="css/mobile/index.css" media="(max-width: 768px)" />
-  <link rel="stylesheet" href="css/mobile/bottom-sheet.css" media="(max-width: 768px)" />
+  <link rel="stylesheet" href="css/mobile/bottom-sheet.css" />
   <link rel="stylesheet" href="css/mobile/modals.css" media="(max-width: 768px)" />
-  <link rel="stylesheet" href="css/mobile/artist.css" media="(max-width: 768px)" />
-  <link rel="stylesheet" href="css/mobile/artist-reset.css" media="(max-width: 768px)" />
+  <!-- Unified Responsive Page Styles -->
+  <link rel="stylesheet" href="css/pages/artist.css?v=4" />
+  <link rel="stylesheet" href="css/pages/playlist.css?v=4" />
 
   <style>
     /* Dynamic Playlist View State */
@@ -111,18 +113,19 @@
 
   <div class="splash-screen" id="splash-screen">
     <div class="splash-logo">
-      <img src="images/music.png" alt="VibAura Logo" />
+      <img src="images/music.webp" alt="VibAura Logo" />
     </div>
   </div>
 
   <!-- Auth Root: Specialized container for Login/Signup views -->
   <div id="auth-root" style="display: none;"></div>
 
-  <div class="container" id="app-root">
+  <!-- App Root: Hidden by default until Auth Gate verifies session -->
+  <div class="container" id="app-root" style="display: none;">
     <header class="mobile-header">
       <div class="nav-left">
         <div class="logo">
-          <img src="images/music.png" alt="VibAura Logo" />
+          <img src="images/music.webp" alt="VibAura Logo" />
         </div>
       </div>
 
@@ -133,7 +136,7 @@
           <img src="images/icons/auto.png" class="auto-icon" style="display: none" alt="Auto Icon" />
         </div>
         <div class="user-profile">
-          <img src="https://placehold.co/32x32/DBEAFE/2563EB?text=A" alt="User Avatar" />
+          <img src="https://placehold.co/32x32/E2E8F0/475569?text=U" alt="User" />
         </div>
       </div>
     </header>
@@ -141,7 +144,7 @@
     <header class="nav">
       <div class="nav-left">
         <div class="logo">
-          <img src="images/logo-text.png" alt="VibAura Logo" />
+          <img src="images/logo-text.webp" alt="VibAura Logo" />
         </div>
       </div>
 
@@ -159,7 +162,7 @@
 
       <div class="search-bar">
         <img src="images/icons/search.png" alt="Search" />
-        <input type="text" placeholder="What do you want to play?" id="search-input" />
+        <input type="text" placeholder="What do you want to play?" id="vibAura-search-input" />
       </div>
 
       <div class="nav-right">
@@ -169,7 +172,7 @@
           <img src="images/icons/auto.png" class="auto-icon" style="display: none" alt="Auto Icon" />
         </div>
         <div class="user-profile">
-          <img src="https://placehold.co/32x32/DBEAFE/2563EB?text=A" alt="User Avatar" />
+          <img src="https://placehold.co/32x32/E2E8F0/475569?text=U" alt="User" />
         </div>
       </div>
     </header>
@@ -397,7 +400,7 @@
     })();
   </script>
 
-  <script type="module" src="../scripts/core/app.js"></script>
+  <script type="module" src="../scripts/core/app.js?v=3"></script>
 </body>
 
 </html>

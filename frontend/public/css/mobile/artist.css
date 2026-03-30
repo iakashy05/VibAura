@@ -1,151 +1,191 @@
-/* ==========================================================================
-   VibAura Mobile Artist Page
-   Hero image design with artist name overlay
-   ========================================================================== */
+/**
+ * ============================================================================
+ * VibAura Mobile Artist Page - Premium Sync
+ * ============================================================================
+ *
+ * This design focuses on parity with the desktop restoration, using the 
+ * "Blush Pink" (#FFF1F3) theme and circular artist framing.
+ * ============================================================================
+ */
 
-/* Artist Page Container - Override page-view gap */
 .mobile-artist-page {
     position: relative;
     min-height: 100vh;
-    background: var(--color-background-surface);
-    padding-bottom: 80px;
-    /* Space for mini-player */
-    gap: 0 !important;
-    /* Override page-view gap for seamless hero */
+    background-color: var(--color-view-artist-bg) !important;
+    padding-bottom: 120px;
 }
 
-/* ==========================================================================
-   Hero Section with Artist Image
-   ========================================================================== */
-.mobile-artist-hero {
+/* --- HEADER --- */
+.mobile-artist-header-clean {
     position: relative;
-    width: 100%;
-    height: 50vh;
-    min-height: 320px;
-    overflow: hidden;
-    background: var(--color-background-surface);
-    margin-top: 0 !important;
-    /* Ensure no top margin */
+    padding: 0 0 24px;
+    background-color: var(--color-view-artist-bg);
 }
 
-.mobile-artist-hero-image {
+.mobile-header-top-row {
+    display: flex;
+    flex-direction: row; /* Unified Row Style */
+    align-items: center;
+    padding: 70px 20px 20px;
+    gap: 20px;
+}
+
+/* Circular Profile Frame */
+.mobile-artist-img-wrapper {
+    width: 140px;
+    height: 140px;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border: 3px solid white;
+    background-color: white;
+}
+
+.mobile-artist-circular-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    display: block;
+    border-radius: 50% !important;
 }
 
-/* Gradient Overlay for Better Text Readability */
-.mobile-artist-hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom,
-            rgba(0, 0, 0, 0.4) 0%,
-            rgba(0, 0, 0, 0.1) 40%,
-            transparent 70%,
-            rgba(0, 0, 0, 0.8) 100%);
-    z-index: 1;
+/* Artist Info (Name, Stats) */
+.mobile-artist-info-clean {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
 }
 
-/* Back Button */
-.mobile-artist-back-btn {
+.artist-type-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.mobile-artist-name-clean {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin: 0;
+    line-height: 1.1;
+    color: var(--color-text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.artist-stats-clean {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+/* --- ACTION BAR (Pill Buttons) --- */
+.mobile-playlist-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px 24px;
+}
+
+.play-shuffle-row {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+}
+
+.play-btn-pill, 
+.shuffle-btn-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.play-btn-pill {
+    background-color: var(--color-accent);
+    color: white;
+    flex: 1.2;
+}
+
+.shuffle-btn-pill {
+    background-color: var(--color-accent-light);
+    color: var(--color-accent);
+    flex: 1;
+}
+
+.play-btn-pill:active, 
+.shuffle-btn-pill:active {
+    transform: scale(0.96);
+}
+
+.play-btn-pill .btn-icon, 
+.shuffle-btn-pill .btn-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.play-btn-pill .btn-icon {
+    filter: brightness(0) invert(1);
+}
+
+/* --- NAVIGATION & STICKY --- */
+.mobile-hero-back-btn {
     position: absolute;
-    top: 16px;
-    left: 16px;
-    z-index: 10;
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.3);
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border: none;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.mobile-artist-back-btn:active {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.mobile-artist-back-btn img {
-    width: 20px;
-    height: 20px;
-    filter: brightness(0) invert(1);
-}
-
-/* Artist Info Overlay on Hero */
-.mobile-artist-hero-info {
-    position: absolute;
-    bottom: 24px;
-    left: 24px;
-    right: 24px;
-    z-index: 2;
-}
-
-.artist-type-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 8px;
-    display: block;
-}
-
-.mobile-artist-name {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
-    line-height: 1.1;
-    margin-bottom: 8px;
-}
-
-.artist-stats {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-}
-
-/* ==========================================================================
-   Simple Sticky Header (Just back button when scrolled)
-   ========================================================================== */
 .mobile-artist-sticky-header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
-    background-color: var(--color-background-surface) !important;
+    height: 65px;
+    background-color: var(--color-view-artist-bg);
     display: flex;
     align-items: center;
     padding: 0 16px;
-    z-index: 1000;
+    gap: 16px;
+    z-index: 5000;
+    opacity: 0;
     transform: translateY(-100%);
     transition: transform 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .mobile-artist-sticky-header.visible {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
 }
 
 .sticky-back-btn {
     background: none;
     border: none;
     padding: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .sticky-back-btn img {
@@ -153,173 +193,67 @@
     height: 24px;
 }
 
-/* ==========================================================================
-   Songs Section
-   ========================================================================== */
-.mobile-artist-content {
-    padding: 24px 0;
-    background: var(--color-background-surface);
+.sticky-artist-name-mobile {
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
-.mobile-artist-section-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: 16px;
+/* --- CONTENT --- */
+.mobile-artist-content {
+    background-color: var(--color-view-artist-bg);
     padding: 0 16px;
 }
 
-body.dark-theme .mobile-artist-section-title {
-    color: #ffffff;
+.mobile-artist-section-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 0 16px 4px;
 }
 
-/* Song List */
 .mobile-artist-song-list {
     display: flex;
     flex-direction: column;
 }
 
-/* Individual Song Item */
 .mobile-artist-song-item {
-    display: grid;
-    grid-template-columns: 56px 1fr auto;
+    display: flex;
     align-items: center;
-    padding: 10px 16px;
-    gap: 12px;
-    transition: background-color 0.2s;
-    cursor: pointer;
-    user-select: none;
+    gap: 14px;
+    padding: 8px 4px;
+    border-radius: 8px;
 }
 
-.mobile-artist-song-item:active {
-    background-color: var(--color-background-muted);
-}
-
-body.dark-theme .mobile-artist-song-item:active {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Album Artwork Thumbnail */
 .mobile-artist-song-artwork {
-    width: 56px;
-    height: 56px;
-    border-radius: 4px;
+    width: 52px;
+    height: 52px;
+    border-radius: 6px;
     object-fit: cover;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-body.dark-theme .mobile-artist-song-artwork {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Song Info */
 .mobile-artist-song-info {
     flex: 1;
     min-width: 0;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
 }
 
 .mobile-artist-song-title {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--color-text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-body.dark-theme .mobile-artist-song-title {
-    color: #ffffff;
+    margin-bottom: 2px;
 }
 
 .mobile-artist-song-artists {
     font-size: 0.85rem;
-    color: var(--color-text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block !important;
-    opacity: 1 !important;
+    opacity: 0.6;
 }
 
-/* Force visibility in dark theme */
-body.dark-theme .mobile-artist-song-artists {
-    color: rgba(255, 255, 255, 0.65);
-}
-
-/* Force visibility in light theme */
-body:not(.dark-theme) .mobile-artist-song-artists {
-    color: rgba(0, 0, 0, 0.6);
-}
-
-/* More Options Button */
 .mobile-artist-song-more {
+    padding: 10px;
     background: none;
     border: none;
-    padding: 8px;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-}
-
-.mobile-artist-song-more:active {
-    opacity: 1;
 }
 
 .mobile-artist-song-more img {
     width: 20px;
     height: 20px;
-    transform: rotate(90deg);
-    filter: var(--icon-filter);
-}
-
-/* Empty State */
-.mobile-artist-empty {
-    padding: 40px 24px;
-    text-align: center;
-}
-
-.mobile-artist-empty p {
-    color: var(--color-text-secondary);
-    font-size: 1rem;
-}
-
-/* ==========================================================================
-   Dark Theme Adjustments
-   ========================================================================== */
-body.dark-theme .mobile-artist-page,
-body.dark-theme .mobile-artist-content {
-    background: var(--color-background-surface);
-}
-
-body.dark-theme .mobile-artist-sticky-header {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* ==========================================================================
-   Loading State
-   ========================================================================== */
-.mobile-artist-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: var(--color-text-secondary);
-}
-
-/* ==========================================================================
-   Responsive Adjustments
-   ========================================================================== */
-@media (max-width: 360px) {
-    .mobile-artist-name {
-        font-size: 2rem;
-    }
-
-    .mobile-artist-song-artwork {
-        width: 48px;
-        height: 48px;
-    }
+    opacity: 0.4;
 }

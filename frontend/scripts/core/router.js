@@ -14,22 +14,28 @@
  * - #/artist/:id  : Artist detail page
  * - #/playlist/:id: Playlist detail page
  * ============================================================================
-*/
+ */
+
+import { renderHomePage } from "/scripts/ui/renderers/home.js";
+import { renderArtistPage } from "/scripts/ui/renderers/artist.js";
+import { 
+  renderPlaylistPage, 
+  renderLikedSongsPage, 
+  renderRecentlyPlayedPage 
+} from "/scripts/ui/renderers/playlist.js";
+import { renderLibraryPage } from "/scripts/ui/renderers/library.js";
+import { renderSearchPage } from "/scripts/ui/renderers/search.js";
 
 import {
-  renderHomePage,
-  renderArtistPage,
-  renderPlaylistPage,
-  renderLibraryPage,
-  renderSearchPage,
   renderLoginPage,
   renderSignupPage,
   renderForgotPasswordPage,
-  renderResetPasswordPage,
-  renderLikedSongsPage,
-  renderRecentlyPlayedPage,
+  renderOTPVerificationPage,
+  renderNewPasswordPage,
   setAuthMode
-} from "../ui/pageRenderer.js";
+} from "/scripts/auth/authUI.js";
+
+import { isAuthenticated } from "/scripts/auth/authService.js";
 
 // DOM elements for routing and navigation state
 const mobileHeader = document.querySelector(".mobile-header");
@@ -45,155 +51,149 @@ const mobileNavLinks = document.querySelectorAll(".mobile-nav .nav-link");
 
 /**
  * Main router function - Processes URL hash changes and renders the appropriate page.
- *
- * Features:
- * - Updates active navigation states on desktop and mobile
- * - Shows/hides mobile header based on the current route
- * - Waits for splash screen animation to finish on initial homepage load
- * - Routes to the correct page rendering function based on URL hash
- *
- * @async
- * @exports router
- * @returns {void}
+ * Includes a Route Guard to enforce authentication.
  */
 export async function router() {
-  const hash = window.location.hash;
+  const hash = window.location.hash || "#home";
+  const isAuthRoute = hash.startsWith("#/login") || 
+                     hash.startsWith("#/signup") || 
+                     hash.startsWith("#/forgot-password") || 
+                     hash.startsWith("#/reset-password");
 
-  console.log(`[Router] Processing route: ${hash || "(home)"}`);
+  console.log(`[Router] Guarding route: ${hash}. Authenticated: ${isAuthenticated()}`);
 
-  // Update active state on desktop navigation links
-  desktopNavLinks.forEach((link) => {
-    if (!link) return; // Skip if link (e.g., #nav-library) isn't found
+  // --- ROUTE GUARD LOGIC ---
+  if (!isAuthenticated() && !isAuthRoute) {
+    console.warn(`[Router] Unauthorized access to ${hash} - redirecting to login`);
+    window.location.hash = "#/login";
+    return;
+  }
 
-    const linkHash = link.hash;
-    // Check if link's hash matches, or if it's the home link and hash is empty
-    if (linkHash === hash || (linkHash === "#" && hash === "")) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
+  if (isAuthenticated() && isAuthRoute) {
+    console.log(`[Router] Authenticated user on auth route - redirecting home`);
+    window.location.hash = "#home";
+    return;
+  }
+
+  // Close any open modals on route change
+  const openModals = document.querySelectorAll('.modal, #create-playlist-modal');
+  openModals.forEach(modal => {
+    if (modal.style.display === 'flex' || modal.style.display === 'block') {
+      modal.style.display = 'none';
+      const form = modal.querySelector('form');
+      if (form) form.reset();
     }
   });
 
-  // Update active state on mobile navigation links
-  mobileNavLinks.forEach((link) => {
-    if (!link) return;
-
-    const linkHash = link.hash;
-    // Check if link's hash matches, or if it's the home link (#) and hash is empty
-    if (linkHash === hash || (linkHash === "#" && (hash === "" || hash === "#home"))) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
-    }
-  });
-
-  // Show/hide header based on route for mobile responsiveness
-  // Library page hides header; all other pages show it
-  if (mobileHeader && contentArea) {
-    console.log(`[Router] Mobile check - innerWidth: ${window.innerWidth}, hash: ${hash}`);
-    if (window.innerWidth <= 768) {
-      // Mobile view: Hide header for Library, Search, AND Artist pages
-      const shouldHideHeader = hash === "#library" || hash === "#search" || hash.startsWith("#/artist/");
-
-      if (shouldHideHeader) {
-        console.log(`[Router] Hiding mobile header for ${hash}`);
-        mobileHeader.style.display = "none";
-        mobileHeader.style.visibility = "hidden";
-        contentArea.style.paddingTop = hash.startsWith("#/artist/") ? "0" : "20px";
-
-        // Toggle body classes for CSS targeting
-        if (hash === "#library") document.body.classList.add("library-page-active");
-        if (hash === "#search") document.body.classList.add("search-page-active");
-        if (hash.startsWith("#/artist/")) document.body.classList.add("artist-page-active");
+  // Update active state on navigation links
+  const updateActiveStates = () => {
+    desktopNavLinks.forEach((link) => {
+      if (!link) return;
+      const linkHash = link.hash;
+      if (linkHash === hash || (linkHash === "#" && (hash === "" || hash === "#home"))) {
+        link.classList.add("active");
       } else {
-        console.log("[Router] Showing mobile header");
-        mobileHeader.style.display = "flex";
-        mobileHeader.style.visibility = "visible";
-        contentArea.style.paddingTop = "75px";
-
-        // Clean up classes
-        document.body.classList.remove("library-page-active");
-        document.body.classList.remove("search-page-active");
-        document.body.classList.remove("artist-page-active");
+        link.classList.remove("active");
       }
+    });
+
+    mobileNavLinks.forEach((link) => {
+      if (!link) return;
+      const linkHash = link.hash;
+      if (linkHash === hash || (linkHash === "#" && (hash === "" || hash === "#home"))) {
+        link.classList.add("active");
+      } else {
+        link.classList.remove("active");
+      }
+    });
+  };
+  updateActiveStates();
+
+  // --- RESPONSIVE LAYOUT MANAGEMENT ---
+  if (window.innerWidth <= 768) {
+    const shouldHideHeader = hash === "#library" || hash === "#search" || hash.startsWith("#/artist/");
+    if (shouldHideHeader) {
+      if (hash === "#library") document.body.classList.add("library-page-active");
+      if (hash === "#search") document.body.classList.add("search-page-active");
+      if (hash.startsWith("#/artist/")) document.body.classList.add("artist-page-active");
     } else {
-      // Reset to default styles for desktop view
-      mobileHeader.style.display = ""; // Resets to CSS default
-      mobileHeader.style.visibility = "";
-      contentArea.style.paddingTop = ""; // Resets to CSS default
       document.body.classList.remove("library-page-active");
+      document.body.classList.remove("search-page-active");
+      document.body.classList.remove("artist-page-active");
+    }
+  } else {
+    document.body.classList.remove("library-page-active");
+    document.body.classList.remove("search-page-active");
+    document.body.classList.remove("artist-page-active");
+    if (mobileHeader) {
+      mobileHeader.style.display = "";
+      mobileHeader.style.visibility = "";
+    }
+    if (contentArea) contentArea.style.paddingTop = "";
+
+    if (hash === "#library" || hash === "#search") {
+      window.location.hash = "#home";
+      return;
     }
   }
 
-  // * Wait for splash screen animation to complete on *initial* homepage load.
-  // * The 'window.splashAnimationDone' promise is created in splashScreen.js
-  // * and resolves after the splash animation finishes or is skipped.
-  const isHomePage = hash === "" || hash === "#" || hash === "#home";
-  if (isHomePage) {
-    // This await ensures the homepage content only renders *after* the splash is gone.
-    // await window.splashAnimationDone;
-  }
-
-  // Route to appropriate page based on URL hash
-  console.log(`[Router] Hash value: "${hash}"`);
-
+  // --- RENDERING DISPATCH ---
   if (hash === "#library") {
-    // --- Library Page (Mobile) ---
     setAuthMode(false);
-    console.log("[Router] Rendering library page");
     renderLibraryPage();
   } else if (hash === "#liked-songs") {
-    // --- Liked Songs Page ---
     setAuthMode(false);
-    console.log("[Router] Rendering liked songs page");
     renderLikedSongsPage();
   } else if (hash === "#/recently-played") {
-    // --- Recently Played Page ---
     setAuthMode(false);
-    console.log("[Router] Rendering recently played page");
     renderRecentlyPlayedPage();
   } else if (hash === "#search") {
-    // --- Search Page (Mobile) ---
     setAuthMode(false);
-    console.log("[Router] Rendering search page");
     renderSearchPage();
   } else if (hash.startsWith("#/artist/")) {
-    // --- Artist Detail Page ---
     setAuthMode(false);
-    const artistId = hash.substring(9); // Get the ID after "#/artist/"
-    console.log(`[Router] Rendering artist page for ID: ${artistId}`);
-    renderArtistPage(artistId);
+    renderArtistPage(hash.substring(9));
   } else if (hash.startsWith("#/playlist/")) {
-    // --- Playlist Detail Page ---
     setAuthMode(false);
-    const playlistId = hash.substring(11); // Get the ID after "#/playlist/"
-    console.log(`[Router] Rendering playlist page for ID: ${playlistId}`);
-    renderPlaylistPage(playlistId);
+    renderPlaylistPage(hash.substring(11));
   } else if (hash === "#/login") {
-    // --- Login Page ---
-    console.log("[Router] Rendering login page");
     renderLoginPage();
   } else if (hash === "#/signup") {
-    // --- Signup Page ---
-    console.log("[Router] Rendering signup page");
     renderSignupPage();
   } else if (hash === "#/forgot-password") {
-    // --- Forgot Password Page ---
-    console.log("[Router] Rendering forgot password page");
     renderForgotPasswordPage();
+  } else if (hash.startsWith("#/otp-verification")) {
+    const email = new URLSearchParams(hash.split('?')[1]).get('email');
+    renderOTPVerificationPage(email);
   } else if (hash.startsWith("#/reset-password")) {
-    // --- Reset Password Page ---
-    console.log("[Router] Rendering reset password page");
-    renderResetPasswordPage();
+    // Legacy route or direct access - redirect to forgot password
+    window.location.hash = "#/forgot-password";
   } else {
-    // --- Home Page (Default) ---
-    // Default to home page for root hash (#), empty hash, or unrecognized routes
     setAuthMode(false);
-    console.log("[Router] Rendering home page (default)");
     renderHomePage();
   }
 }
 
-// Initialize router on page load (DOMContentLoaded) and listen for hash changes
-window.addEventListener("DOMContentLoaded", router);
-window.addEventListener("hashchange", router);
+/**
+ * DEBOUNCED RESIZE LISTENER
+ */
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    // DO NOT trigger router re-render on resize if we are on an AUTH route 
+    // to prevent keyboard-triggered focus loss on mobile.
+    const hash = window.location.hash || "#home";
+    const isAuthRoute = hash.startsWith("#/login") || 
+                       hash.startsWith("#/signup") || 
+                       hash.startsWith("#/forgot-password") || 
+                       hash.startsWith("#/otp-verification") || 
+                       hash.startsWith("#/reset-password");
+    
+    if (!isAuthRoute) {
+      router();
+    }
+  }, 250);
+});
+
+// Router logic only. Initialization is now handled by app.js to ensure proper sequencing.
