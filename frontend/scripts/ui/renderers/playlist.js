@@ -4,10 +4,10 @@ import { PlaylistService } from "../../services/playlistService.js";
 import { HistoryService } from "../../services/historyService.js";
 import { getCurrentUser } from "../../auth/authService.js";
 import { LibraryManager } from "../libraryManager.js";
-import { 
-  getContentArea, 
-  sortSongs, 
-  getDominantColor 
+import {
+  getContentArea,
+  sortSongs,
+  getDominantColor
 } from "./utils.js";
 
 /**
@@ -22,7 +22,7 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
     scrollContainer.classList.add("no-padding");
   }
 
-  if (!contentArea.querySelector('.playlist-page')) {
+  if (!contentArea.querySelector('.playlist-view-container')) {
     contentArea.innerHTML = `<div class="page-view"><p>Loading playlist...</p></div>`;
   }
 
@@ -68,29 +68,6 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
     const rgb = await getDominantColor(coverImage);
     const bgColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 
-    const sortBtnHTML = `
-      <button class="action-icon-btn sort-trigger-btn" title="Sort Songs">
-          <img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort">
-      </button>
-    `;
-
-    let ownerActionsHTML = sortBtnHTML;
-    if (isOwner) {
-      ownerActionsHTML += `
-            <button class="action-icon-btn" id="rename-playlist-btn" title="Rename">
-                <img src="images/icons/edit.png" alt="Edit" class="icon-adaptive icon-edit">
-            </button>
-        `;
-    } else {
-      ownerActionsHTML += isSaved ? `
-            <button class="action-icon-btn" id="save-library-btn" title="Already in Linked" style="cursor: default;">
-                <img src="images/icons/check.png" alt="Saved" class="icon-adaptive icon-check">
-            </button>` : `
-            <button class="action-icon-btn" id="save-library-btn" title="Save to Library">
-                <img src="images/icons/plus.png" alt="Save" class="icon-adaptive icon-save">
-            </button>`;
-    }
-
     document.body.classList.remove("library-page-active");
     document.body.classList.remove("search-page-active");
     document.body.classList.add('playlist-view-active');
@@ -99,104 +76,105 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
 
     if (isMobile) {
       // --- MOBILE RENDER ---
-      const mobileSongListHTML = songs.map((song, index) => {
-        const artistNames = (song.artists && song.artists.length > 0)
-          ? song.artists.map(a => a.name).join(", ")
-          : "Unknown Artist";
+      const mobileSongRowsHTML = songs.map((song, index) => {
+        let artistNames = "Unknown Artist";
+        if (song.artists && Array.isArray(song.artists) && song.artists.length > 0) {
+          artistNames = song.artists.map(a => a.name || a).join(", ");
+        } else if (song.artistName) {
+          artistNames = song.artistName;
+        }
+        
         const artwork = song.artworkUrl || song.imageUrl || "images/default-album.webp";
+        
         return `
-            <div class="playlist-song-row" data-index="${index}" data-song-id="${song._id}">
-               <div class="song-index">
-                 <img src="${artwork}" class="song-list-art" loading="lazy">
-                 <img src="images/equaliser.gif" class="playing-gif" style="display: none;" />
-               </div>
-               <div class="song-main-info">
-                 <div class="song-title-row">${song.title}</div>
-                 <div class="song-artist-row">${artistNames}</div>
-               </div>
-               <div class="song-options">
-                 <button class="card-options-btn" data-song-id="${song._id}">
-                   <img src="images/icons/more.png" alt="Options" />
-                 </button>
-               </div>
-            </div>`;
+          <div class="playlist-song-row" data-index="${index}" data-song-id="${song._id}">
+             <div class="song-index">
+               <img src="${artwork}" class="song-list-art" loading="lazy">
+               <img src="images/equaliser.gif" class="playing-gif" style="display: none;" />
+             </div>
+             <div class="song-main-info">
+               <div class="song-title-row">${song.title}</div>
+               <div class="song-artist-row">${artistNames}</div>
+             </div>
+             <div class="song-options">
+               <button class="song-more-btn" data-song-id="${song._id}">
+                 <img src="images/icons/more.png" alt="Options" />
+               </button>
+             </div>
+          </div>`;
       }).join("");
 
       contentArea.innerHTML = `
-          <div class="page-view playlist-mode" style="background: var(--color-background-surface);">
-            <div class="mobile-sticky-header" id="mobile-sticky-header">
-               <button class="sticky-back-btn" onclick="window.history.back()">
-                  <img src="images/icons/back.png" alt="Back" class="icon-adaptive">
-               </button>
-               <span class="sticky-title">${playlist.name}</span>
-               <div style="width: 24px;"></div>
-            </div>
-            <div class="playlist-header">
-               <div class="header-top-row">
-                   <div class="playlist-cover-wrapper"><img src="${coverImage}" alt="${playlist.name}" class="playlist-cover"></div>
-                   <div class="playlist-info">
-                     <span class="playlist-type" style="opacity: 0.8; color: var(--color-text-secondary);">Playlist</span>
-                     <h1 class="playlist-title" style="color: var(--color-text-primary);">${playlist.name}</h1>
-                     <div class="playlist-meta" style="color: var(--color-text-secondary); opacity: 0.8;">
-                        <span class="playlist-owner">${playlist.owner ? (playlist.owner.name || 'User') : 'You'}</span><span class="bullet">•</span><span>${songCount} songs</span>
-                     </div>
+        <div class="page-view playlist-view-container" style="background: var(--color-view-playlist-bg);">
+          <button class="mobile-hero-back-btn" onclick="window.history.back()" title="Go back">
+             <img src="images/icons/back.png" alt="Back" class="icon-adaptive">
+          </button>
+          <div class="mobile-playlist-header-clean">
+             
+             <div class="header-main-content">
+                <div class="header-cover-box">
+                   <img src="${coverImage}" alt="${playlist.name}" class="header-cover-img">
+                </div>
+                <div class="header-text-box">
+                   <span class="header-subtitle">Playlist</span>
+                   <h1 class="header-title">${playlist.name}</h1>
+                   <div class="header-meta">
+                      <span class="meta-label">VibAura Collection</span>
+                      <span class="meta-separator">•</span>
+                      <span class="meta-count">${songCount} songs</span>
                    </div>
-               </div>
-               <div class="play-shuffle-row">
-                   <button class="play-btn-pill" id="mobile-play-btn"><img src="images/media controls/play.png" class="btn-icon"> Play</button>
-                   <button class="shuffle-btn-pill" id="mobile-shuffle-btn"><img src="images/media controls/shuffle.png" class="btn-icon"> Shuffle</button>
-                   <button class="action-icon-btn sort-trigger-btn" id="mobile-sort-btn" title="Sort"><img src="images/icons/sort.png" class="icon-adaptive" style="width:24px; height:24px;"></button>
-               </div>
-            </div>
-            <div class="playlist-songs-list">${mobileSongListHTML}</div>
-            ${songs.length === 0 ? '<div style="text-align:center; padding:20px; opacity:0.6;">No songs yet</div>' : ''}
-          </div>`;
+                </div>
+             </div>
 
-      const handleSort = (criteria) => renderPlaylistPage(playlistId, criteria);
-      const sortOptionsArr = [{ label: 'Recents', value: 'recents' }, { label: 'Title (A-Z)', value: 'title' }, { label: 'Artist', value: 'artist' }, { label: 'Album', value: 'album' }];
+             <div class="header-actions-row">
+                <div class="play-shuffle-row-mobile">
+                   <button class="play-btn-pill" id="mobile-play-btn">
+                      <img src="images/media controls/play.png" class="btn-icon"> Play
+                   </button>
+                   <button class="shuffle-btn-pill" id="mobile-shuffle-btn">
+                      <img src="images/media controls/shuffle.png" class="btn-icon"> Shuffle
+                   </button>
+                </div>
+                <button class="action-icon-btn sort-trigger-btn" id="mobile-sort-btn" title="Sort">
+                   <img src="images/icons/sort.png" class="icon-adaptive">
+                </button>
+             </div>
+          </div>
+
+          <div class="playlist-songs-list">${mobileSongRowsHTML}</div>
+          ${songs.length === 0 ? '<div class="empty-list">No songs yet</div>' : ''}
+        </div>`;
+
+      if (scrollContainer) {
+        scrollContainer.classList.add("no-padding");
+        scrollContainer.style.background = "var(--color-view-playlist-bg)";
+        
+        const stickyHeader = contentArea.querySelector('.mobile-playlist-header-clean');
+        if (stickyHeader) {
+          scrollContainer.onscroll = () => {
+            if (scrollContainer.scrollTop > 50) {
+              stickyHeader.classList.add("stuck");
+            } else {
+              stickyHeader.classList.remove("stuck");
+            }
+          };
+        }
+      }
 
       const songListContainer = contentArea.querySelector('.playlist-songs-list');
       if (songListContainer) {
-        let longPressTimer;
-        const holdDuration = 500;
-
         songListContainer.addEventListener('click', (e) => {
           const row = e.target.closest('.playlist-song-row');
           if (!row) return;
-
           const songIndex = parseInt(row.dataset.index);
           const song = songs[songIndex];
-
-          if (e.target.closest('.card-options-btn')) {
+          if (e.target.closest('.song-more-btn')) {
             e.stopPropagation();
             if (window.BottomSheetManager && song) window.BottomSheetManager.open('song', song);
             return;
           }
-
-          if (row.dataset.longPressTriggered === 'true') {
-            row.dataset.longPressTriggered = 'false';
-            return;
-          }
-
           playSongFromPlaylist(songs, songIndex);
         });
-
-        songListContainer.addEventListener('touchstart', (e) => {
-          const row = e.target.closest('.playlist-song-row');
-          if (!row || e.target.closest('.card-options-btn')) return;
-
-          row.dataset.longPressTriggered = 'false';
-          longPressTimer = setTimeout(() => {
-            row.dataset.longPressTriggered = 'true';
-            if (navigator.vibrate) navigator.vibrate(50);
-            const song = songs[parseInt(row.dataset.index)];
-            if (window.BottomSheetManager && song) window.BottomSheetManager.open('song', song);
-          }, holdDuration);
-        }, { passive: true });
-
-        const cancelPress = () => clearTimeout(longPressTimer);
-        songListContainer.addEventListener('touchend', cancelPress);
-        songListContainer.addEventListener('touchmove', cancelPress);
       }
 
       const playBtn = contentArea.querySelector("#mobile-play-btn");
@@ -212,51 +190,91 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
 
       const mbSortBtn = contentArea.querySelector("#mobile-sort-btn");
       if (mbSortBtn && window.BottomSheetManager) {
-        mbSortBtn.addEventListener("click", () => window.BottomSheetManager.open('sort-options', { options: sortOptionsArr, onSelect: handleSort }));
-      }
-
-      const stickyHeader = contentArea.querySelector("#mobile-sticky-header");
-      if (stickyHeader && scrollContainer) {
-        scrollContainer.onscroll = () => {
-          if (scrollContainer.scrollTop > 150) stickyHeader.classList.add("visible");
-          else stickyHeader.classList.remove("visible");
-        };
+        mbSortBtn.addEventListener("click", () => window.BottomSheetManager.open('sort-options', { options: [{ label: 'Recents', value: 'recents' }, { label: 'Title (A-Z)', value: 'title' }, { label: 'Artist', value: 'artist' }], onSelect: (c) => renderPlaylistPage(playlistId, c) }));
       }
       return;
     }
 
     // --- DESKTOP RENDER ---
-    const songListHeaderHTML = `
-        <div class="song-list-header">
-          <div class="col-header col-index">#</div><div class="col-header col-title">Title</div><div class="col-header col-album">Album</div>
-          <div class="col-header col-right col-duration"><img src="images/icons/clock.png" class="icon-adaptive small icon-clock"></div>
-          ${isOwner ? '<div class="col-header col-right"></div>' : ''}
+    let songsListRowsHTML = `<div class="playlist-song-list">` + songs.map((song, index) => {
+      const artistNames = (song.artists && song.artists.length > 0) ? song.artists.map(a => a.name).join(", ") : "Unknown Artist";
+      return `
+        <div class="playlist-row song-item" data-index="${index}" data-id="${song._id}">
+          <div class="col-index"><span class="index-num">${index + 1}</span><span class="play-icon-row">▶</span></div>
+          <div class="col-title"><img src="${song.artworkUrl}" alt="${song.title}"><div class="song-meta-text"><span class="song-title-text">${song.title}</span><span class="song-artist-text">${artistNames}</span></div></div>
+          <div class="col-album">${song.album || "Single"}</div><div class="col-duration">${formatTime(song.duration)}</div>
+          <div class="col-options">
+             <button class="song-more-btn" data-index="${index}">
+                <img src="images/icons/more.png" alt="More" class="icon-adaptive">
+             </button>
+          </div>
         </div>`;
-
-    let songsListRowsHTML = "";
-    if (songs.length > 0) {
-      songsListRowsHTML = `<div class="playlist-song-list">`;
-      songs.forEach((song, index) => {
-        const artistName = (song.artists && song.artists.length > 0) ? song.artists.map(a => a.name).join(", ") : "Unknown Artist";
-        songsListRowsHTML += `
-          <div class="playlist-row song-item" data-index="${index}" data-id="${song._id}">
-            <div class="col-index"><span class="index-num">${index + 1}</span><span class="play-icon-row">▶</span></div>
-            <div class="col-title"><img src="${song.artworkUrl}" alt="${song.title}"><div class="song-meta-text"><span class="song-title-text">${song.title}</span><span class="song-artist-text">${artistName}</span></div></div>
-            <div class="col-album">${song.album || "Single"}</div><div class="col-duration">${formatTime(song.duration)}</div>
-            ${isOwner ? `<div class="col-actions"><button class="icon-btn small remove-song-btn" data-song-id="${song._id}" title="Remove"><img src="images/icons/trash.png" class="icon-adaptive small icon-trash"></button></div>` : ''}
-          </div>`;
-      });
-      songsListRowsHTML += `</div>`;
-    } else { songsListRowsHTML = `<div class="empty-state"><p>No songs in this playlist yet.</p></div>`; }
+    }).join("") + `</div>`;
 
     contentArea.innerHTML = `
-      <div class="page-view playlist-page" style="--dynamic-bg: ${bgColor}; --dynamic-text: var(--color-text-primary);">
+      <div class="page-view playlist-view-container" style="--dynamic-bg: ${bgColor}; --dynamic-text: var(--color-text-primary);">
         <div class="playlist-header-dynamic" id="main-header">
-           <div class="header-content-wrapper"><img src="${coverImage}" alt="${playlist.name}" class="playlist-cover-large"><div class="playlist-details-large"><span class="playlist-label">Playlist</span><h1 class="playlist-title-large">${playlist.name}</h1><p class="playlist-description"><span class="owner-name">${playlist.owner?.name || 'VibAura'}</span> • <span class="song-count">${songCount} songs</span>, <span class="total-duration">${durationText}</span></p></div></div>
+           <div class="header-content-wrapper">
+             <img src="${coverImage}" alt="${playlist.name}" class="playlist-cover-large">
+             <div class="playlist-details-large">
+               <span class="playlist-label">Playlist</span>
+               <h1 class="playlist-title-large">${playlist.name}</h1>
+               <p class="playlist-description">
+                 <span class="owner-name">${playlist.owner?.name || 'VibAura'}</span> • 
+                 <span class="song-count">${songCount} songs</span>, 
+                 <span class="total-duration">${durationText}</span>
+               </p>
+             </div>
+           </div>
         </div>
-        <div class="playlist-sticky-group" id="sticky-group"><div class="playlist-actions-bar" id="actions-bar"><div class="actions-left"><button class="action-play-btn" id="playlist-play-btn"><img src="images/media controls/play.png" alt="Play"></button>${ownerActionsHTML}</div><span class="sticky-group-title">${playlist.name}</span></div>${songListHeaderHTML}</div>
-        <div class="song-list-container">${songsListRowsHTML}</div>
+        
+        <div class="playlist-sticky-group" id="sticky-group">
+            <div class="playlist-actions-bar" id="actions-bar">
+               <div class="desktop-action-pills">
+                  <button class="action-play-pill" id="playlist-play-btn">
+                    <img src="images/media controls/play.png" alt="Play">
+                    <span>Play Now</span>
+                  </button>
+                  <button class="action-shuffle-pill" id="playlist-shuffle-btn">
+                    <img src="images/media controls/shuffle.png" alt="Shuffle">
+                    <span>Shuffle</span>
+                  </button>
+               </div>
+
+               <div class="playlist-right-actions">
+                  <button class="action-icon-btn sort-trigger-btn" id="dk-playlist-sort-btn" title="Sort Songs">
+                      <img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort">
+                  </button>
+                  ${isOwner ? `
+                        <button class="action-icon-btn" id="rename-playlist-btn" title="Rename">
+                            <img src="images/icons/edit.png" alt="Edit" class="icon-adaptive icon-edit">
+                        </button>
+                    ` : isSaved ? `
+                        <button class="action-icon-btn" id="save-library-btn" title="Already in Linked" style="cursor: default;">
+                            <img src="images/icons/check.png" alt="Saved" class="icon-adaptive icon-check">
+                        </button>` : `
+                        <button class="action-icon-btn" id="save-library-btn" title="Save to Library">
+                            <img src="images/icons/plus.png" alt="Save" class="icon-adaptive icon-save">
+                        </button>`
+                  }
+                  <span class="sticky-group-title">${playlist.name}</span>
+               </div>
+            </div>
+            </div>
+
+        <div class="song-list-container">
+           <h2 class="section-title">Songs</h2>
+           ${songsListRowsHTML}
+        </div>
       </div>`;
+
+    const playlistShuffleBtn = contentArea.querySelector("#playlist-shuffle-btn");
+    if (playlistShuffleBtn && songs.length > 0) {
+      playlistShuffleBtn.addEventListener("click", () => {
+        const shuffled = [...songs].sort(() => Math.random() - 0.5);
+        playSongFromPlaylist(shuffled, 0);
+      });
+    }
 
     const stickyGroup = contentArea.querySelector("#sticky-group");
     const mainHeader = contentArea.querySelector("#main-header");
@@ -274,19 +292,25 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
     if (desktopSongContainer) {
       desktopSongContainer.addEventListener("click", (e) => {
         const item = e.target.closest('.song-item');
-        if (!item || e.target.closest('.remove-song-btn')) return;
-        playSongFromPlaylist(songs, parseInt(item.dataset.index));
+        if (!item) return;
+        
+        const songIndex = parseInt(item.dataset.index);
+        const song = songs[songIndex];
+
+        // Handle More Options Button (Desktop)
+        if (e.target.closest('.song-more-btn')) {
+           e.stopPropagation();
+           if (window.ContextMenuManager) {
+              window.ContextMenuManager.open(e, 'song', song); // CORRECTED: .open() instead of .show()
+           }
+           return;
+        }
+
+        playSongFromPlaylist(songs, songIndex);
       });
     }
 
     if (isOwner) {
-      contentArea.querySelectorAll(".remove-song-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          if (!confirm("Remove song from playlist?")) return;
-          try { await PlaylistService.removeSongFromPlaylist(playlistId, btn.dataset.songId); renderPlaylistPage(playlistId); } catch (err) { alert("Failed to remove song"); }
-        });
-      });
       const renameBtn = document.getElementById('rename-playlist-btn');
       if (renameBtn) {
         renameBtn.addEventListener('click', async () => {
@@ -306,7 +330,7 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
       }
     }
 
-    const dkSortBtn = contentArea.querySelector(".actions-left .sort-trigger-btn");
+    const dkSortBtn = contentArea.querySelector("#dk-playlist-sort-btn");
     if (dkSortBtn) {
       dkSortBtn.addEventListener("click", () => {
         const criteria = prompt(`Sort By:\nrecents, title, artist, album`, sortCriteria);
@@ -324,10 +348,6 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
  * Renders the Liked Songs page.
  */
 export async function renderLikedSongsPage(sortCriteria = 'recents') {
-  document.body.classList.remove("library-page-active");
-  document.body.classList.remove("search-page-active");
-  document.body.classList.add("playlist-view-active");
-
   const contentArea = getContentArea();
   if (!contentArea) return;
 
@@ -341,98 +361,150 @@ export async function renderLikedSongsPage(sortCriteria = 'recents') {
     let likedSongs = data.likedSongs || [];
     likedSongs = sortSongs(likedSongs, sortCriteria);
 
-    const mockPlaylist = { _id: "liked-songs", name: "Liked Songs", description: "Your favorite tracks, all in one place.", songs: likedSongs, coverImageUrl: "images/media controls/favourite.png", owner: { name: "You" } };
+    const mockPlaylist = { _id: "liked-songs", name: "Liked Songs", description: "Your tracks", coverImageUrl: "images/media controls/favourite.png", owner: { name: "You" } };
     const songCount = likedSongs.length;
-    const bgColor = "rgb(79, 70, 229)"; const textColor = "white";
+    const rgb = await getDominantColor(mockPlaylist.coverImageUrl);
+    const bgColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
     const isMobile = window.innerWidth <= 768;
 
+    document.body.classList.add("playlist-view-active");
+
     if (isMobile) {
+      if (scrollContainer && scrollContainer.classList.contains("content")) {
+        scrollContainer.style.background = "var(--color-view-playlist-bg)";
+      }
+      // --- MOBILE LIKED SONGS ---
       const songListHTML = likedSongs.map((song, index) => {
         const artistNames = song.artists ? song.artists.map(a => a.name).join(", ") : "Unknown Artist";
-        const durationMin = Math.floor((song.duration || 0) / 60); const durationSec = (song.duration || 0) % 60;
         const artwork = song.artworkUrl || song.imageUrl || "images/default-album.webp";
         return `
             <div class="playlist-song-row" data-index="${index}" data-song-id="${song._id}">
-               <div class="song-index"><img src="${artwork}" class="song-list-art" loading="lazy"></div>
-               <div class="song-main-info"><div class="song-title-row">${song.title}</div><div class="song-artist-row">${artistNames}</div></div>
-               <div class="song-album-info">${song.album || ''}</div><div class="song-duration">${durationMin}:${durationSec.toString().padStart(2, "0")}</div>
-               <div class="song-options"><button class="card-options-btn" data-song-id="${song._id}" onclick="event.stopPropagation();"><img src="images/icons/more.png" alt="Options" /></button></div>
+               <div class="song-index"><img src="${artwork}" class="song-list-art"></div>
+               <div class="song-main-info">
+                  <div class="song-title-row">${song.title}</div>
+                  <div class="song-artist-row">${artistNames}</div>
+               </div>
+               <div class="song-options">
+                  <button class="song-more-btn" data-song-id="${song._id}">
+                    <img src="images/icons/more.png" alt="Options" />
+                  </button>
+               </div>
             </div>`;
       }).join("");
 
       contentArea.innerHTML = `
-          <div class="page-view playlist-mode" style="background: var(--color-background-surface);">
-            <div class="mobile-sticky-header" id="liked-sticky-header">
-               <button class="sticky-back-btn" onclick="window.history.back()"><img src="images/icons/back.png" alt="Back" class="icon-adaptive"></button>
-               <span class="sticky-title">Liked Songs</span><div style="width: 24px;"></div>
-            </div>
-            <div class="playlist-header">
-               <div class="header-top-row"><div class="playlist-cover-wrapper"><img src="${mockPlaylist.coverImageUrl}" alt="Liked Songs" class="playlist-cover" style="background: linear-gradient(135deg, #450af5, #c4efd9); object-fit: contain;"></div>
-                   <div class="playlist-info"><span class="playlist-type" style="color: ${textColor}; opacity: 0.8;">Playlist</span><h1 class="playlist-title" style="color: ${textColor}">Liked Songs</h1><div class="playlist-meta" style="color: ${textColor}; opacity: 0.7;"><span class="playlist-owner">You</span><span class="bullet">•</span><span>${songCount} songs</span></div></div>
+          <div class="page-view playlist-view-container" style="background: var(--color-view-playlist-bg);">
+            <button class="mobile-hero-back-btn" onclick="window.history.back()" title="Go back">
+               <img src="images/icons/back.png" alt="Back" class="icon-adaptive">
+            </button>
+            <div class="mobile-playlist-header-clean">
+               <div class="header-main-content">
+                  <div class="header-cover-box" style="background: linear-gradient(135deg, #450af5, #c4efd9); display: flex; align-items: center; justify-content: center;">
+                     <img src="${mockPlaylist.coverImageUrl}" alt="Liked" class="header-cover-img" style="width: 60%; height: 60%; object-fit: contain;">
+                  </div>
+                  <div class="header-text-box">
+                     <span class="header-subtitle">Playlist</span>
+                     <h1 class="header-title">Liked Songs</h1>
+                     <div class="header-meta"><span>By You</span><span>•</span><span>${songCount} songs</span></div>
+                  </div>
                </div>
-               <div class="play-shuffle-row"><button class="play-btn-pill" id="liked-play-btn"><img src="images/media controls/play.png" class="btn-icon"> Play</button><button class="shuffle-btn-pill" id="liked-shuffle-btn"><img src="images/media controls/shuffle.png" class="btn-icon"> Shuffle</button><button class="action-icon-btn sort-trigger-btn" id="liked-mobile-sort-btn" title="Sort"><img src="images/icons/sort.png" class="icon-adaptive" style="width:24px; height:24px;"></button></div>
+               <div class="header-actions-row">
+                  <div class="play-shuffle-row-mobile">
+                     <button class="play-btn-pill" id="liked-play-btn">
+                        <img src="images/media controls/play.png" class="btn-icon"> Play
+                     </button>
+                     <button class="shuffle-btn-pill" id="liked-shuffle-btn">
+                        <img src="images/media controls/shuffle.png" class="btn-icon"> Shuffle
+                     </button>
+                  </div>
+                  <button class="action-icon-btn sort-trigger-btn" id="liked-sort-btn" title="Sort Songs">
+                      <img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort">
+                  </button>
+               </div>
             </div>
             <div class="playlist-songs-list">${songListHTML}</div>
           </div>`;
 
-      // MOBILE LIKED DELEGATION
-      const container = contentArea.querySelector('.playlist-songs-list');
-      if (container) {
-        container.addEventListener('click', (e) => {
+      contentArea.querySelector('.playlist-songs-list').addEventListener('click', (e) => {
           const row = e.target.closest('.playlist-song-row');
-          if (!row || e.target.closest('.card-options-btn')) return;
-          playSongFromPlaylist(likedSongs, parseInt(row.dataset.index));
-        });
-      }
-
-      const stickyHeader = contentArea.querySelector("#liked-sticky-header");
-      if (stickyHeader && scrollContainer) { scrollContainer.onscroll = () => { if (scrollContainer.scrollTop > 150) stickyHeader.classList.add("visible"); else stickyHeader.classList.remove("visible"); }; }
-      const mbSortBtn = contentArea.querySelector("#liked-mobile-sort-btn");
-      if (mbSortBtn && window.BottomSheetManager) mbSortBtn.addEventListener("click", () => window.BottomSheetManager.open('sort-options', { options: [{ label: 'Recents', value: 'recents' }, { label: 'Title (A-Z)', value: 'title' }, { label: 'Artist', value: 'artist' }], onSelect: (c) => renderLikedSongsPage(c) }));
-
+          if (!row) return;
+          const song = likedSongs[parseInt(row.dataset.index)];
+          if (e.target.closest('.song-more-btn')) {
+            e.stopPropagation();
+            if (window.BottomSheetManager) window.BottomSheetManager.open('song', song);
+          } else {
+            playSongFromPlaylist(likedSongs, parseInt(row.dataset.index));
+          }
+      });
     } else {
-      // DESKTOP LIKED SONGS
-      const songListHeaderHTML = `<div class="song-list-header"><div class="col-header col-index">#</div><div class="col-header col-title">Title</div><div class="col-header col-album">Album</div><div class="col-header col-right col-duration"><img src="images/icons/clock.png" class="icon-adaptive small icon-clock"></div></div>`;
+      // --- DESKTOP LIKED SONGS ---
       let songsListRowsHTML = `<div class="playlist-song-list">` + likedSongs.map((song, index) => {
-        const artistName = (song.artists && song.artists.length > 0) ? song.artists.map(a => a.name).join(", ") : "Unknown Artist";
+        const artistNames = (song.artists && song.artists.length > 0) ? song.artists.map(a => a.name).join(", ") : "Unknown Artist";
         return `
-          <div class="playlist-row song-item" data-index="${index}" data-id="${song._id}">
+          <div class="playlist-row song-item" data-index="${index}">
             <div class="col-index"><span class="index-num">${index + 1}</span><span class="play-icon-row">▶</span></div>
-            <div class="col-title"><img src="${song.artworkUrl || 'images/default-album.webp'}" alt="${song.title}"><div class="song-meta-text"><span class="song-title-text">${song.title}</span><span class="song-artist-text">${artistName}</span></div></div>
+            <div class="col-title"><img src="${song.artworkUrl || 'images/default-album.webp'}"><div class="song-meta-text"><span class="song-title-text">${song.title}</span><span class="song-artist-text">${artistNames}</span></div></div>
             <div class="col-album">${song.album || "Single"}</div><div class="col-duration">${formatTime(song.duration)}</div>
-            <div class="col-actions"><button class="icon-btn small remove-song-btn" data-song-id="${song._id}" title="Remove from Liked Songs"><img src="images/media controls/favourite-filled.png" class="icon-adaptive small icon-trash" style="filter: brightness(0) saturate(100%) invert(28%) sepia(93%) saturate(1989%) hue-rotate(307deg) brightness(91%) contrast(92%);"></button></div>
+            <div class="col-options">
+               <button class="song-more-btn" data-index="${index}">
+                  <img src="images/icons/more.png" alt="More" class="icon-adaptive">
+               </button>
+            </div>
           </div>`;
       }).join("") + `</div>`;
 
       contentArea.innerHTML = `
-          <div class="page-view playlist-page" style="--dynamic-bg: ${bgColor}; --dynamic-text: var(--color-text-primary);">
-            <div class="playlist-header-dynamic" id="main-header"><div class="header-content-wrapper"><img src="${mockPlaylist.coverImageUrl}" alt="Liked Songs" class="playlist-cover-large" style="background: linear-gradient(135deg, #450af5, #c4efd9); object-fit: contain;"><div class="playlist-details-large"><span class="playlist-label">Playlist</span><h1 class="playlist-title-large">Liked Songs</h1><p class="playlist-description"><span class="owner-name">You</span> • <span class="song-count">${songCount} songs</span></p></div></div></div>
-            <div class="playlist-sticky-group" id="sticky-group"><div class="playlist-actions-bar" id="actions-bar"><div class="actions-left"><button class="action-play-btn" id="liked-play-btn"><img src="images/media controls/play.png" alt="Play"></button><button class="action-icon-btn sort-trigger-btn" id="liked-dk-sort-btn" title="Sort"><img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort"></button></div><span class="sticky-group-title">Liked Songs</span></div>${songListHeaderHTML}</div>
-            <div class="song-list-container">${songsListRowsHTML}</div>
+          <div class="page-view playlist-view-container" style="--dynamic-bg: ${bgColor}; --dynamic-text: var(--color-text-primary);">
+            <div class="playlist-header-dynamic" id="main-header">
+              <div class="header-content-wrapper">
+                <img src="${mockPlaylist.coverImageUrl}" alt="Liked Songs" class="playlist-cover-large" style="background: linear-gradient(135deg, #450af5, #c4efd9); object-fit: contain;">
+                <div class="playlist-details-large">
+                  <span class="playlist-label">Playlist</span>
+                  <h1 class="playlist-title-large">Liked Songs</h1>
+                  <p class="playlist-description"><span>VibAura Playlist</span> • <span>${songCount} songs</span></p>
+                </div>
+              </div>
+            </div>
+            <div class="playlist-sticky-group" id="sticky-group">
+                <div class="playlist-actions-bar" id="actions-bar">
+                   <div class="desktop-action-pills">
+                      <button class="action-play-pill" id="liked-play-btn"><img src="images/media controls/play.png"> <span>Play Now</span></button>
+                      <button class="action-shuffle-pill" id="liked-shuffle-btn"><img src="images/media controls/shuffle.png"> <span>Shuffle</span></button>
+                   </div>
+                   <div class="playlist-right-actions">
+                      <button class="action-icon-btn sort-trigger-btn" id="liked-sort-btn" title="Sort Songs">
+                          <img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort">
+                      </button>
+                      <span class="sticky-group-title">Liked Songs</span>
+                   </div>
+                </div>
+            </div>
+            <div class="song-list-container"><h2 class="section-title">Songs</h2>${songsListRowsHTML}</div>
           </div>`;
 
       if (scrollContainer) { scrollContainer.onscroll = () => { const y = scrollContainer.scrollTop; if (y > 300) stickyGroup.classList.add("stuck"); else stickyGroup.classList.remove("stuck"); if (mainHeader) mainHeader.style.opacity = Math.max(0, 1 - (y/280)); }; }
-      
-      // DESKTOP LIKED DELEGATION
-      const desktopContainer = contentArea.querySelector(".playlist-song-list");
-      if (desktopContainer) {
-        desktopContainer.addEventListener("click", (e) => {
-          const item = e.target.closest('.song-item');
-          if (!item || e.target.closest('.remove-song-btn')) return;
-          playSongFromPlaylist(likedSongs, parseInt(item.dataset.index));
-        });
-      }
+      const stickyGroup = contentArea.querySelector("#sticky-group");
+      const mainHeader = contentArea.querySelector("#main-header");
 
-      contentArea.querySelectorAll(".remove-song-btn").forEach(btn => { btn.addEventListener("click", async (e) => { e.stopPropagation(); try { await PlaylistService.removeFromLikedSongs(btn.dataset.songId); renderLikedSongsPage(); } catch (err) { alert("Failed to unlike song"); } }); });
-      const dkSortBtn = contentArea.querySelector("#liked-dk-sort-btn");
-      if (dkSortBtn) dkSortBtn.addEventListener("click", () => { const choice = prompt(`Sort By:\nrecents, title, artist`, sortCriteria); if (choice && ['recents', 'title', 'artist'].includes(choice)) renderLikedSongsPage(choice); });
+      contentArea.querySelector(".playlist-song-list").addEventListener("click", (e) => {
+        const item = e.target.closest('.song-item');
+        if (!item) return;
+        const song = likedSongs[parseInt(item.dataset.index)];
+        if (e.target.closest('.song-more-btn')) {
+           e.stopPropagation();
+           if (window.ContextMenuManager) window.ContextMenuManager.open(e, 'song', song); // CORRECTED: .open()
+           return;
+        }
+        playSongFromPlaylist(likedSongs, parseInt(item.dataset.index));
+      });
     }
 
     const playBtn = contentArea.querySelector("#liked-play-btn");
     if (playBtn && likedSongs.length > 0) playBtn.addEventListener("click", () => playSongFromPlaylist(likedSongs, 0));
-    if (window.registerPlaylist) window.registerPlaylist(mockPlaylist);
+    const shuffleBtn = contentArea.querySelector("#liked-shuffle-btn");
+    if (shuffleBtn && likedSongs.length > 0) shuffleBtn.addEventListener("click", () => playSongFromPlaylist([...likedSongs].sort(() => Math.random() - 0.5), 0));
 
-  } catch (err) { console.error("Error rendering Liked Songs:", err); contentArea.innerHTML = `<div class="page-view error"><p>Error loading Liked Songs</p></div>`; }
+  } catch (err) { console.error("Error Liked Songs:", err); contentArea.innerHTML = `<div class="page-view error"><p>Error loading Liked Songs</p></div>`; }
 }
 
 /**
@@ -448,78 +520,133 @@ export async function renderRecentlyPlayedPage(sortCriteria = 'recents') {
   try {
     const historyData = await HistoryService.getHistory();
     const songs = historyData.map(item => ({ ...item.song, playedAt: item.playedAt }));
-    const coverImage = "images/icons/history.png"; const songCount = songs.length;
-    const totalMinutes = Math.floor(songs.reduce((acc, s) => acc + (s.duration || 0), 0) / 60);
     const sortedSongs = sortSongs(songs, sortCriteria);
-    const bgColor = "rgb(29, 185, 84)";
-    document.body.classList.add('playlist-view-active');
+    const coverImage = "images/icons/history.png";
+    const songCount = songs.length;
     const isMobile = window.innerWidth <= 768;
+
+    document.body.classList.add('playlist-view-active');
 
     if (isMobile) {
       const mobileList = sortedSongs.map((song, index) => {
         const artist = song.artists ? song.artists.map(a => a.name).join(", ") : "Unknown Artist";
-        return `<div class="playlist-song-row" data-index="${index}" data-song-id="${song._id}"><div class="song-index"><img src="${song.artworkUrl || 'images/default-album.webp'}" class="song-list-art"></div><div class="song-main-info"><div class="song-title-row">${song.title}</div><div class="song-artist-row">${artist}</div></div><div class="song-options"><button class="card-options-btn" data-song-id="${song._id}"><img src="images/icons/more.png" alt="Options" /></button></div></div>`;
+        return `
+          <div class="playlist-song-row" data-index="${index}">
+             <div class="song-index"><img src="${song.artworkUrl || 'images/default-album.webp'}" class="song-list-art"></div>
+             <div class="song-main-info"><div class="song-title-row">${song.title}</div><div class="song-artist-row">${artist}</div></div>
+             <div class="song-options"><button class="song-more-btn"><img src="images/icons/more.png" /></button></div>
+          </div>`;
       }).join("");
 
       contentArea.innerHTML = `
-          <div class="page-view playlist-mode" style="background: var(--color-background-surface);">
-            <div class="mobile-sticky-header" id="mobile-history-sticky"><button class="sticky-back-btn" onclick="window.history.back()"><img src="images/icons/back.png" alt="Back" class="icon-adaptive"></button><span class="sticky-title">Recently Played</span><div style="width: 24px;"></div></div>
-            <div class="playlist-header">
-               <div class="header-top-row"><div class="playlist-cover-wrapper"><img src="${coverImage}" alt="Recently Played" class="playlist-cover" onerror="this.src='images/music.webp'" style="padding: 20px; background: linear-gradient(135deg, #1db954, #191414);"></div>
-                   <div class="playlist-info"><span class="playlist-type">History</span><h1 class="playlist-title">Recently Played</h1><div class="playlist-meta"><span>Stored locally</span><span class="bullet">•</span><span>${songCount} songs</span></div></div>
+          <div class="page-view playlist-view-container" style="background: var(--color-view-playlist-bg);">
+            <button class="mobile-hero-back-btn" onclick="window.history.back()" title="Go back">
+               <img src="images/icons/back.png" alt="Back" class="icon-adaptive">
+            </button>
+            <div class="mobile-playlist-header-clean">
+               <div class="header-main-content">
+                  <div class="header-cover-box" style="background: linear-gradient(135deg, #1db954, #191414); display: flex; align-items: center; justify-content: center;">
+                    <img src="${coverImage}" class="header-cover-img" style="width: 60%; height: 60%; object-fit: contain;">
+                  </div>
+                  <div class="header-text-box">
+                    <span class="header-subtitle">Collection</span>
+                    <h1 class="header-title">Recently Played</h1>
+                    <div class="header-meta"><span>By You</span><span>•</span><span>${songCount} songs</span></div>
+                  </div>
                </div>
-               <div class="play-shuffle-row" style="padding: 1rem; padding-top: 0;"><button class="action-icon-btn sort-trigger-btn" id="history-mobile-sort-btn" title="Sort" style="margin-left: auto;"><img src="images/icons/sort.png" class="icon-adaptive" style="width:24px; height:24px;"></button></div>
+               <div class="header-actions-row">
+                  <div class="play-shuffle-row-mobile">
+                     <button class="play-btn-pill" id="history-play-btn">
+                        <img src="images/media controls/play.png" class="btn-icon"> Play
+                     </button>
+                     <button class="shuffle-btn-pill" id="history-shuffle-btn">
+                        <img src="images/media controls/shuffle.png" class="btn-icon"> Shuffle
+                     </button>
+                  </div>
+                  <button class="action-icon-btn sort-trigger-btn" id="history-sort-btn" title="Sort Songs">
+                      <img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort">
+                  </button>
+               </div>
             </div>
             <div class="playlist-songs-list">${mobileList}</div>
           </div>`;
 
-      if (scrollContainer) { scrollContainer.onscroll = () => { if (scrollContainer.scrollTop > 150) stickyHeader.classList.add("visible"); else stickyHeader.classList.remove("visible"); }; }
-      const stickyHeader = contentArea.querySelector("#mobile-history-sticky");
-      
-      // MOBILE HISTORY DELEGATION
-      const container = contentArea.querySelector('.playlist-songs-list');
-      if (container) {
-        container.addEventListener('click', (e) => {
+      contentArea.querySelector('.playlist-songs-list').addEventListener('click', (e) => {
           const row = e.target.closest('.playlist-song-row');
           if (!row) return;
-          const index = parseInt(row.dataset.index);
-          const song = sortedSongs[index];
-          if (e.target.closest('.card-options-btn')) {
+          const song = sortedSongs[parseInt(row.dataset.index)];
+          if (e.target.closest('.song-more-btn')) {
+            e.stopPropagation();
             if (window.BottomSheetManager) window.BottomSheetManager.open('song', song);
           } else {
-            playSongFromPlaylist(sortedSongs, index);
+            playSongFromPlaylist(sortedSongs, parseInt(row.dataset.index));
           }
-        });
-      }
-
-      const mbSortBtn = contentArea.querySelector("#history-mobile-sort-btn");
-      if (mbSortBtn && window.BottomSheetManager) mbSortBtn.addEventListener("click", () => window.BottomSheetManager.open('sort-options', { options: [{ label: 'Recently Played', value: 'recents' }, { label: 'Title (A-Z)', value: 'title' }, { label: 'Artist', value: 'artist' }], onSelect: (c) => renderRecentlyPlayedPage(c) }));
+      });
     } else {
-      // DESKTOP HISTORY
+      const rgb = await getDominantColor(coverImage);
+      const bgColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      let songsListRowsHTML = `<div class="playlist-song-list">` + sortedSongs.map((song, index) => {
+        const artist = song.artists ? song.artists.map(a => a.name).join(", ") : "Unknown";
+        return `
+          <div class="playlist-row song-item" data-index="${index}">
+            <div class="col-index"><span class="index-num">${index+1}</span><span class="play-icon-row">▶</span></div>
+            <div class="col-title"><img src="${song.artworkUrl || 'images/music.webp'}"><div class="song-meta-text"><span class="song-title-text">${song.title}</span><span class="song-artist-text">${artist}</span></div></div>
+            <div class="col-album">${song.album || "Single"}</div><div class="col-duration">${formatTime(song.duration)}</div>
+            <div class="col-options"><button class="song-more-btn"><img src="images/icons/more.png" class="icon-adaptive"></button></div>
+          </div>`;
+      }).join("") + `</div>`;
+
       contentArea.innerHTML = `
-        <div class="page-view playlist-page" style="--dynamic-bg: ${bgColor}; --dynamic-text: white;">
-          <div class="playlist-header-dynamic" id="history-main-header"><div class="header-content-wrapper"><img src="${coverImage}" class="playlist-cover-large" onerror="this.src='images/music.webp'" style="padding: 40px; background: linear-gradient(135deg, #1db954, #191414);"><div class="playlist-details-large"><span class="playlist-label">Virtual Playlist</span><h1 class="playlist-title-large">Recently Played</h1><p class="playlist-description"><span>Your History</span> • <span>${songCount} songs</span>, <span>about ${totalMinutes} min</span></p></div></div></div>
-          <div class="playlist-sticky-group" id="history-sticky-group"><div class="playlist-actions-bar"><div class="actions-left"><button class="action-play-btn" id="history-play-btn"><img src="images/media controls/play.png" alt="Play"></button><button class="action-icon-btn sort-trigger-btn" id="history-dk-sort-btn" title="Sort"><img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort"></button></div><span class="sticky-group-title">Recently Played</span></div>
-            <div class="song-list-header"><div class="col-header col-index">#</div><div class="col-header col-title">Title</div><div class="col-header col-album">Album</div><div class="col-header col-right col-duration"><img src="images/icons/clock.png" class="icon-adaptive small icon-clock"></div></div>
+        <div class="page-view playlist-view-container" style="--dynamic-bg: ${bgColor}; --dynamic-text: var(--color-text-primary);">
+          <div class="playlist-header-dynamic" id="main-header">
+            <div class="header-content-wrapper">
+              <img src="${coverImage}" class="playlist-cover-large" style="padding: 40px; background: linear-gradient(135deg, #1db954, #191414); object-fit: contain;">
+              <div class="playlist-details-large">
+                <span class="playlist-label">Virtual Playlist</span>
+                <h1 class="playlist-title-large">Recently Played</h1>
+                <p class="playlist-description"><span>VibAura History</span> • <span>${songCount} songs</span></p>
+              </div>
+            </div>
           </div>
-          <div class="song-list-container"><div class="playlist-song-list">` + sortedSongs.map((song, index) => `<div class="playlist-row song-item" data-index="${index}"><div class="col-index"><span class="index-num">${index+1}</span><span class="play-icon-row">▶</span></div><div class="col-title"><img src="${song.artworkUrl || 'images/music.webp'}"><div class="song-meta-text"><span class="song-title-text">${song.title}</span><span class="song-artist-text">${song.artists ? song.artists.map(a=>a.name).join(", ") : "Unknown"}</span></div></div><div class="col-album">${song.album || "Single"}</div><div class="col-duration">${formatTime(song.duration)}</div></div>`).join("") + `</div></div>
+          <div class="playlist-sticky-group" id="sticky-group">
+              <div class="playlist-actions-bar" id="actions-bar">
+                 <div class="desktop-action-pills"><button class="action-play-pill" id="history-play-btn"><img src="images/media controls/play.png"> <span>Play Now</span></button></div>
+                 <div class="playlist-right-actions">
+                    <button class="action-icon-btn sort-trigger-btn" id="history-sort-btn" title="Sort Songs">
+                        <img src="images/icons/sort.png" alt="Sort" class="icon-adaptive icon-sort">
+                    </button>
+                    <span class="sticky-group-title">Recently Played</span>
+                 </div>
+              </div>
+          </div>
+          <div class="song-list-container"><h2 class="section-title">Songs</h2>${songsListRowsHTML}</div>
         </div>`;
+
       if (scrollContainer) { scrollContainer.onscroll = () => { const y = scrollContainer.scrollTop; if (y > 300) stickyGroup.classList.add("stuck"); else stickyGroup.classList.remove("stuck"); if (mainHeader) mainHeader.style.opacity = Math.max(0, 1 - (y/280)); }; }
-      const stickyGroup = contentArea.querySelector("#history-sticky-group");
-      const mainHeader = contentArea.querySelector("#history-main-header");
+      const stickyGroup = contentArea.querySelector("#sticky-group");
+      const mainHeader = contentArea.querySelector("#main-header");
+      
+      contentArea.querySelector(".playlist-song-list").addEventListener("click", (e) => {
+        const item = e.target.closest('.song-item');
+        if (!item) return;
+        const song = sortedSongs[parseInt(item.dataset.index)];
+        if (e.target.closest('.song-more-btn')) {
+           e.stopPropagation();
+           if (window.ContextMenuManager) window.ContextMenuManager.open(e, 'song', song); // CORRECTED: .open()
+           return;
+        }
+        playSongFromPlaylist(sortedSongs, parseInt(item.dataset.index));
+      });
+
       const playBtn = contentArea.querySelector("#history-play-btn");
       if (playBtn && sortedSongs.length > 0) playBtn.onclick = () => playSongFromPlaylist(sortedSongs, 0);
-      const dkSortBtn = contentArea.querySelector("#history-dk-sort-btn");
-      if (dkSortBtn) dkSortBtn.onclick = () => { const c = prompt("Sort By: recents, title, artist", sortCriteria); if (c && ['recents', 'title', 'artist'].includes(c)) renderRecentlyPlayedPage(c); };
-      
-      // DESKTOP HISTORY DELEGATION
-      const desktopHistoryContainer = contentArea.querySelector(".playlist-song-list");
-      if (desktopHistoryContainer) {
-        desktopHistoryContainer.addEventListener("click", (e) => {
-          const item = e.target.closest('.song-item');
-          if (!item) return;
-          playSongFromPlaylist(sortedSongs, parseInt(item.dataset.index));
-        });
+
+      const shuffleBtn = contentArea.querySelector("#history-shuffle-btn");
+      if (shuffleBtn && sortedSongs.length > 0) {
+        shuffleBtn.onclick = () => {
+          const shuffled = [...sortedSongs].sort(() => Math.random() - 0.5);
+          playSongFromPlaylist(shuffled, 0);
+        };
       }
     }
   } catch (err) { console.error("Error history:", err); contentArea.innerHTML = `<div class="page-view"><p>Error history</p></div>`; }
@@ -534,4 +661,3 @@ export function renderDetailPage(type, name) {
   contentArea.innerHTML = `<div class="page-view"><button class="back-btn">&#10094; Go Back</button><h1>${type}: ${name}</h1><p>Built in future phase.</p></div>`;
   contentArea.querySelector(".back-btn").addEventListener("click", () => window.history.back());
 }
-

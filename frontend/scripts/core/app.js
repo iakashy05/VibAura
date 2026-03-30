@@ -32,6 +32,8 @@ import { initPlayer } from "/scripts/player/playerProxy.js";
 import { initScrollController } from "/scripts/ui/scrollController.js";
 import { initSearch } from "/scripts/ui/searchProxy.js";
 import { LibraryManager } from "/scripts/ui/libraryManager.js";
+import { BottomSheetManager } from "/scripts/ui/bottomSheetManager.js";
+import { ContextMenuManager } from "/scripts/ui/contextMenuManager.js";
 
 // Define initialization sequence
 async function initializeApp() {
@@ -65,6 +67,13 @@ async function initializeApp() {
     initScrollController();
     initSearch();
     LibraryManager.init();
+    
+    // Initialize interaction managers based on screen size
+    if (window.innerWidth <= 768) {
+      BottomSheetManager.init();
+    } else {
+      ContextMenuManager.init();
+    }
   }
 
   // 4. ROUTER: Finally, run the router to handle the current hash

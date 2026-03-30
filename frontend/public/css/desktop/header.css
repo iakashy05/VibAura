@@ -27,6 +27,8 @@
   background-color: var(--color-background-surface);
   flex-shrink: 0;
   transition: box-shadow 0.3s ease;
+  z-index: 5000; /* Ensure header is above page content */
+  position: relative; /* Required for z-index to work */
 }
 
 /**
