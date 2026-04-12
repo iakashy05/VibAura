@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Jost', sans-serif;
+}
+
+@layer base {
+  /* --- VibAura "Aura" Scrollbar --- */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FF008022;
+    border-radius: 20px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #FF008033;
+  }
+  
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #FF008033 transparent;
+  }
+
+  /* --- Custom Volume Slider --- */
+  .volume-slider {
+    @apply appearance-none bg-vibaura-bg-pink h-1 rounded-full outline-none transition-all duration-200 cursor-pointer w-full;
+  }
+  .volume-slider::-webkit-slider-thumb {
+    @apply appearance-none w-3.5 h-3.5 bg-vibaura-pink rounded-full shadow-lg border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity duration-200;
+  }
+  .volume-slider::-moz-range-thumb {
+    @apply w-3.5 h-3.5 bg-vibaura-pink rounded-full shadow-lg border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity duration-200;
+  }
+}
