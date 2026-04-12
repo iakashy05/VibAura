@@ -11,8 +11,6 @@ export async function renderLibraryPage() {
     return;
   }
 
-  document.body.classList.remove("search-page-active");
-  document.body.classList.remove("playlist-view-active");
   document.body.classList.add("library-page-active");
 
   const token = localStorage.getItem('vibAuraToken');

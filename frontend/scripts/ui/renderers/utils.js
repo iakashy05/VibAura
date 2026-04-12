@@ -5,6 +5,37 @@
 export const getContentArea = () => document.getElementById("album-sections");
 
 /**
+ * Clears view-specific styles, classes, and listeners before rendering a new page.
+ * Ensures a clean slate for layout and padding.
+ */
+export function clearViewStyles() {
+  const contentArea = getContentArea();
+  if (contentArea) {
+    const scrollContainer = contentArea.parentElement;
+    if (scrollContainer) {
+      if (scrollContainer.classList.contains("no-padding")) {
+        scrollContainer.classList.remove("no-padding");
+      }
+      if (scrollContainer.style.background) scrollContainer.style.background = "";
+      if (scrollContainer.style.backgroundColor) scrollContainer.style.backgroundColor = "";
+      scrollContainer.onscroll = null;
+    }
+    if (contentArea.style.backgroundColor) contentArea.style.backgroundColor = "";
+  }
+
+  const classesToRemove = [
+    "playlist-view-active",
+    "artist-page-active",
+    "search-page-active",
+    "library-page-active"
+  ].filter(cls => document.body.classList.contains(cls));
+
+  if (classesToRemove.length > 0) {
+    document.body.classList.remove(...classesToRemove);
+  }
+}
+
+/**
  * Sorts songs based on criteria.
  */
 export function sortSongs(songs, criteria) {

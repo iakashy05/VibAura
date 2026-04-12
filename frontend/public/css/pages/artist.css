@@ -137,7 +137,7 @@ body.dark-theme .verified-icon {
     .artist-sticky-group {
         position: sticky;
         top: 0;
-        z-index: 100; /* Stays above content, below nav */
+        z-index: 100;
         background: var(--color-background-muted);
         transition: all 0.2s ease;
         margin: 0;
@@ -147,7 +147,7 @@ body.dark-theme .verified-icon {
         background-color: var(--color-background-muted) !important;
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         border-bottom: 1px solid var(--color-border);
     }
 

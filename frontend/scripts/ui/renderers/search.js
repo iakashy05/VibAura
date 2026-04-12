@@ -7,8 +7,6 @@ export function renderSearchPage() {
   const contentArea = getContentArea();
   if (!contentArea) return;
 
-  document.body.classList.remove("library-page-active");
-  document.body.classList.remove("playlist-view-active");
   document.body.classList.add("search-page-active");
 
   const userAvatar = "https://placehold.co/40x40/DBEAFE/2563EB?text=A";

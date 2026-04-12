@@ -17,32 +17,27 @@ export async function renderHomePage() {
     return;
   }
 
-  document.body.classList.remove("playlist-view-active");
-
   if (cachedHomepageData) {
     contentArea.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     cachedHomepageData.forEach((section) => {
       const items = section.songs || section.items;
       if (items && items.length > 0) {
         if (!section.songs) section.songs = items;
-        contentArea.appendChild(createSectionElement(section));
+        fragment.appendChild(createSectionElement(section));
       }
     });
+    contentArea.appendChild(fragment);
     attachScrollButtonListeners();
     return;
   }
 
   contentArea.innerHTML = "";
-
-  const placeholders = [
-    createSkeletonSection(),
-    createSkeletonSection(),
-    createSkeletonSection(),
-    createSkeletonSection(),
-    createSkeletonSection(),
-    createSkeletonSection(),
-  ];
-  placeholders.forEach((s) => contentArea.appendChild(s));
+  const skeletonFragment = document.createDocumentFragment();
+  for (let i = 0; i < 6; i++) {
+    skeletonFragment.appendChild(createSkeletonSection());
+  }
+  contentArea.appendChild(skeletonFragment);
 
   try {
     const response = await fetch("/api/homepage");
@@ -52,14 +47,15 @@ export async function renderHomePage() {
     cachedHomepageData = homepageSections;
 
     contentArea.innerHTML = "";
-
+    const fragment = document.createDocumentFragment();
     homepageSections.forEach((section) => {
       const items = section.songs || section.items;
       if (items && items.length > 0) {
         if (!section.songs) section.songs = items;
-        contentArea.appendChild(createSectionElement(section));
+        fragment.appendChild(createSectionElement(section));
       }
     });
+    contentArea.appendChild(fragment);
 
     attachScrollButtonListeners();
   } catch (error) {

@@ -18,9 +18,7 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
   if (!contentArea) return;
 
   const scrollContainer = contentArea.parentElement;
-  if (scrollContainer && scrollContainer.classList.contains("content")) {
-    scrollContainer.classList.add("no-padding");
-  }
+  if (scrollContainer) scrollContainer.classList.add("no-padding");
 
   if (!contentArea.querySelector('.playlist-view-container')) {
     contentArea.innerHTML = `<div class="page-view"><p>Loading playlist...</p></div>`;
@@ -68,8 +66,6 @@ export async function renderPlaylistPage(playlistId, sortCriteria = 'recents') {
     const rgb = await getDominantColor(coverImage);
     const bgColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 
-    document.body.classList.remove("library-page-active");
-    document.body.classList.remove("search-page-active");
     document.body.classList.add('playlist-view-active');
 
     const isMobile = window.innerWidth <= 768;
@@ -352,7 +348,8 @@ export async function renderLikedSongsPage(sortCriteria = 'recents') {
   if (!contentArea) return;
 
   const scrollContainer = contentArea.parentElement;
-  if (scrollContainer && scrollContainer.classList.contains("content")) scrollContainer.classList.add("no-padding");
+  if (scrollContainer) scrollContainer.classList.add("no-padding");
+  document.body.classList.add("playlist-view-active");
 
   contentArea.innerHTML = `<div class="page-view"><p>Loading Liked Songs...</p></div>`;
 
@@ -513,8 +510,10 @@ export async function renderLikedSongsPage(sortCriteria = 'recents') {
 export async function renderRecentlyPlayedPage(sortCriteria = 'recents') {
   const contentArea = getContentArea();
   if (!contentArea) return;
+
   const scrollContainer = contentArea.parentElement;
-  if (scrollContainer && scrollContainer.classList.contains("content")) scrollContainer.classList.add("no-padding");
+  if (scrollContainer) scrollContainer.classList.add("no-padding");
+  document.body.classList.add('playlist-view-active');
   contentArea.innerHTML = `<div class="page-view"><p>Loading history...</p></div>`;
 
   try {

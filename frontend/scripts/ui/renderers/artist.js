@@ -4,7 +4,7 @@ import {
   getContentArea, 
   sortSongs, 
   getDominantColor, 
-  getContrastColor 
+  getContrastColor
 } from "./utils.js";
 
 /**
@@ -17,17 +17,17 @@ export async function renderArtistPage(artistId, sortCriteria = 'recents') {
     return;
   }
 
-  document.body.classList.remove("playlist-view-active", "search-page-active");
   document.body.classList.add("artist-page-active");
 
   const scrollContainer = contentArea.parentElement;
   const isMobile = window.innerWidth <= 768;
 
+  if (scrollContainer && scrollContainer.classList.contains("content")) {
+    scrollContainer.classList.add("no-padding");
+  }
+
   if (isMobile) {
-    if (scrollContainer && scrollContainer.classList.contains("content")) {
-      scrollContainer.classList.add("no-padding");
-      scrollContainer.style.backgroundColor = "var(--color-view-artist-bg)";
-    }
+    if (scrollContainer) scrollContainer.style.backgroundColor = "var(--color-view-artist-bg)";
     contentArea.style.backgroundColor = "var(--color-view-artist-bg)";
   } else {
     contentArea.style.backgroundColor = "";

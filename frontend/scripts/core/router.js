@@ -25,6 +25,7 @@ import {
 } from "/scripts/ui/renderers/playlist.js";
 import { renderLibraryPage } from "/scripts/ui/renderers/library.js";
 import { renderSearchPage } from "/scripts/ui/renderers/search.js";
+import { clearViewStyles } from "/scripts/ui/renderers/utils.js";
 
 import {
   renderLoginPage,
@@ -59,6 +60,9 @@ export async function router() {
                      hash.startsWith("#/signup") || 
                      hash.startsWith("#/forgot-password") || 
                      hash.startsWith("#/reset-password");
+
+  // Global UI Reset (Consolidated Cleanup)
+  clearViewStyles();
 
   console.log(`[Router] Guarding route: ${hash}. Authenticated: ${isAuthenticated()}`);
 
@@ -112,19 +116,11 @@ export async function router() {
   // --- RESPONSIVE LAYOUT MANAGEMENT ---
   if (window.innerWidth <= 768) {
     const shouldHideHeader = hash === "#library" || hash === "#search" || hash.startsWith("#/artist/");
+    // Header management for specific mobile views
     if (shouldHideHeader) {
-      if (hash === "#library") document.body.classList.add("library-page-active");
-      if (hash === "#search") document.body.classList.add("search-page-active");
-      if (hash.startsWith("#/artist/")) document.body.classList.add("artist-page-active");
-    } else {
-      document.body.classList.remove("library-page-active");
-      document.body.classList.remove("search-page-active");
-      document.body.classList.remove("artist-page-active");
+      // Classes are now handled by clearViewStyles + specific renderer additions
     }
   } else {
-    document.body.classList.remove("library-page-active");
-    document.body.classList.remove("search-page-active");
-    document.body.classList.remove("artist-page-active");
     if (mobileHeader) {
       mobileHeader.style.display = "";
       mobileHeader.style.visibility = "";
