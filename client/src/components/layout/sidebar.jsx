@@ -25,7 +25,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
             <FontAwesomeIcon icon={faBookOpen} />
             <h3 className="font-semibold text-sm uppercase tracking-wider">Your Library</h3>
           </div>
-          <Button variant="ghost" size="icon" className="w-8 h-8 hover:bg-vibaura-pink-light hover:text-vibaura-pink">
+          <Button variant="ghost" size="icon" className="w-8 h-8 hover:bg-vibaura-primary-light hover:text-vibaura-primary">
             <FontAwesomeIcon icon={faPlus} size="sm" />
           </Button>
         </div>
@@ -36,9 +36,9 @@ const Sidebar = ({ onNavigate, currentPage }) => {
             <div 
               key={playlist.id}
               onClick={() => onNavigate('playlist')}
-              className="group flex flex-col px-3 py-2 rounded-xl border border-transparent hover:border-vibaura-border hover:bg-vibaura-bg-pink/50 transition-all cursor-pointer"
+              className="group flex flex-col px-3 py-2 rounded-xl border border-transparent hover:border-vibaura-border hover:bg-vibaura-tint/50 transition-all cursor-pointer"
             >
-              <span className="font-medium text-text-primary group-hover:text-vibaura-pink transition-colors">
+              <span className="font-medium text-text-primary group-hover:text-vibaura-primary transition-colors">
                 {playlist.name}
               </span>
               <span className="text-xs text-text-muted">

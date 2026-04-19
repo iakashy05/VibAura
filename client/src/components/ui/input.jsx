@@ -16,7 +16,7 @@ const Input = ({
       
       <div className="relative flex items-center group">
         {icon && (
-          <div className="absolute left-4 text-text-muted group-focus-within:text-vibaura-pink transition-colors">
+          <div className="absolute left-4 text-text-muted group-focus-within:text-vibaura-primary transition-colors">
             {icon}
           </div>
         )}
@@ -27,7 +27,7 @@ const Input = ({
             ${icon ? 'pl-11 pr-4' : 'px-4'} 
             text-text-primary placeholder:text-text-muted
             transition-all duration-200
-            focus:outline-none focus:border-vibaura-pink focus:ring-4 focus:ring-vibaura-pink/10
+            focus:outline-none focus:border-vibaura-primary focus:ring-4 focus:ring-vibaura-primary/10
             dark:bg-vibaura-dark-muted dark:border-vibaura-dark-border dark:text-vibaura-primary-dark
           `}
           {...props}

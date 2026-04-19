@@ -13,9 +13,9 @@ const Button = ({
   
   // Design variants mapped to your VibAura theme
   const variants = {
-    primary: 'bg-vibaura-pink text-white hover:bg-opacity-90 shadow-md hover:shadow-lg',
-    secondary: 'bg-vibaura-pink-light text-vibaura-pink hover:bg-vibaura-pink-hover',
-    outline: 'border-2 border-vibaura-pink text-vibaura-pink hover:bg-vibaura-pink hover:text-white',
+    primary: 'bg-vibaura-primary text-white hover:bg-opacity-90 shadow-md hover:shadow-lg',
+    secondary: 'bg-vibaura-primary-light text-vibaura-primary hover:bg-vibaura-primary-hover',
+    outline: 'border-2 border-vibaura-primary text-vibaura-primary hover:bg-vibaura-primary hover:text-white',
     ghost: 'bg-transparent text-text-primary hover:bg-vibaura-bg-muted',
   };
 

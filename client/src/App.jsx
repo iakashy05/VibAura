@@ -1,53 +1,61 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import Sidebar from './components/layout/sidebar';
 import Header from './components/layout/header';
 import PlayerBar from './components/layout/playerBar';
-import Home from './pages/Home';
-import Artist from './pages/Artist';
-import Playlist from './pages/Playlist';
+import ViewRenderer from './components/layout/ViewRenderer';
+import { useVibauraNavigation } from './hooks/useVibauraNavigation';
+import { checkServerHealth } from './services/api';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [selectedData, setSelectedData] = useState(null);
-
-  // Simple navigation handler
-  const navigateTo = (page, data = null) => {
-    setCurrentPage(page);
-    setSelectedData(data);
-    
-    // Reset scroll position when page changes
-    setTimeout(() => {
-      const scrollArea = document.querySelector('.page-scroll-area');
-      if (scrollArea) scrollArea.scrollTo({ top: 0, behavior: 'instant' });
-    }, 10);
-  };
+  useEffect(() => {
+    const runHealthCheck = async () => {
+      const data = await checkServerHealth();
+      console.log('🌐 Server Status:', data);
+    };
+    runHealthCheck();
+  }, []);
+  const {
+    currentPage,
+    selectedData,
+    canGoBack,
+    canGoForward,
+    navigateTo,
+    goBack,
+    goForward
+  } = useVibauraNavigation();
 
   return (
     <div className="flex flex-col h-screen w-full bg-vibaura-surface font-jost overflow-hidden">
       
-      {/* 1. Header is now part of the top frame */}
-      <Header onNavigate={navigateTo} />
+      {/* 1. Header with navigation controls */}
+      <Header 
+        onNavigate={navigateTo} 
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        goBack={goBack}
+        goForward={goForward}
+      />
 
-      {/* 2. Middle Row: Sidebar + Rounded Content Pod */}
+      {/* 2. Middle Row: Sidebar + Main Content Pod */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar onNavigate={navigateTo} currentPage={currentPage} />
 
-        {/* The Rounded "Pod" (Home Page area) */}
-        <main className="flex-1 bg-vibaura-bg-pink rounded-tl-[40px] rounded-bl-[40px] overflow-hidden flex flex-col">
+        {/* The Rounded "Pod" (Main Content area) */}
+        <main className="flex-1 bg-vibaura-view-bg rounded-tl-[40px] rounded-bl-[40px] overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto custom-scrollbar page-scroll-area relative">
             
-            {/* Conditional Page Rendering */}
-            {currentPage === 'home' && <Home onNavigate={navigateTo} />}
-            
-            {currentPage === 'artist' && <Artist artist={selectedData} />}
-
-            {currentPage === 'playlist' && <Playlist playlist={selectedData} />}
+            {/* Modular View Management */}
+            <ViewRenderer 
+              currentPage={currentPage}
+              selectedData={selectedData}
+              navigateTo={navigateTo}
+            />
 
           </div>
         </main>
       </div>
 
-      {/* 3. PlayerBar is part of the bottom frame */}
+      {/* 3. Global PlayerBar */}
       <PlayerBar />
     </div>
   );

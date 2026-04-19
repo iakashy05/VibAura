@@ -12,7 +12,7 @@ import {
 import Input from '../ui/input';
 import Button from '../ui/button';
 
-const Header = ({ onNavigate }) => {
+const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward }) => {
   return (
     <header className="h-16 flex items-center px-8 bg-vibaura-surface transition-all duration-300">
       
@@ -23,20 +23,28 @@ const Header = ({ onNavigate }) => {
           className="flex items-center gap-3 px-2 cursor-pointer group"
           onClick={() => onNavigate('home')}
         >
-          <div className="w-9 h-9 bg-vibaura-pink rounded-xl flex items-center justify-center text-white shadow-lg shadow-vibaura-pink/20 transition-transform group-hover:scale-110">
+          <div className="w-9 h-9 bg-vibaura-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-vibaura-primary/20 transition-transform group-hover:scale-110">
             <FontAwesomeIcon icon={faMusic} size="sm" />
           </div>
           <span className="text-xl font-bold text-text-primary tracking-tight hidden md:block">VibAura</span>
         </div>
-
+ 
         <div className="h-6 w-[1px] bg-vibaura-border ml-2" />
-
+ 
         <div className="flex gap-2 pl-4">
-          <IconButton icon={faChevronLeft} />
-          <IconButton icon={faChevronRight} />
+          <IconButton 
+            icon={faChevronLeft} 
+            onClick={goBack} 
+            className={!canGoBack ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''} 
+          />
+          <IconButton 
+            icon={faChevronRight} 
+            onClick={goForward} 
+            className={!canGoForward ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''} 
+          />
           <IconButton 
             icon={faHome} 
-            className="ml-2 !bg-vibaura-pink !text-white shadow-lg" 
+            className="ml-2 !bg-vibaura-primary !text-white shadow-lg" 
             onClick={() => onNavigate('home')}
           />
         </div>
@@ -62,7 +70,7 @@ const Header = ({ onNavigate }) => {
         <div className="h-6 w-[1px] bg-vibaura-border mx-2" />
         
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-vibaura-pink-light flex items-center justify-center text-vibaura-pink border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:rotate-12 hover:scale-110 transition-all duration-300">
+          <div className="w-9 h-9 rounded-full bg-vibaura-primary-light flex items-center justify-center text-vibaura-primary border-2 border-white shadow-sm overflow-hidden cursor-pointer hover:rotate-12 hover:scale-110 transition-all duration-300">
              <FontAwesomeIcon icon={faUser} />
           </div>
           <span className="font-semibold text-sm text-text-primary hidden lg:block">Aura User</span>
@@ -76,7 +84,7 @@ const Header = ({ onNavigate }) => {
 const IconButton = ({ icon, className = '', onClick }) => (
   <button 
     onClick={onClick}
-    className={`w-8 h-8 flex items-center justify-center rounded-full bg-vibaura-bg-muted text-text-secondary hover:text-vibaura-pink hover:bg-vibaura-pink-light transition-all duration-200 shadow-sm ${className}`}
+    className={`w-8 h-8 flex items-center justify-center rounded-full bg-vibaura-bg-muted text-text-secondary hover:text-vibaura-primary hover:bg-vibaura-primary-light transition-all duration-200 shadow-sm ${className}`}
   >
     <FontAwesomeIcon icon={icon} size="sm" />
   </button>

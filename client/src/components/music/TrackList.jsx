@@ -1,15 +1,17 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faClock, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faPause, faClock, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { usePlayerStore } from '../../store/playerStore';
+import { formatTime } from '../../utils/time';
 
 const TrackList = ({ tracks }) => {
   return (
     <div className="w-full">
       {/* Table Header */}
-      <div className="grid grid-cols-[16px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-2 border-b border-white/5 text-text-muted text-xs uppercase tracking-widest font-semibold mb-2">
+      <div className="grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-2 border-b border-white/5 text-text-muted text-xs uppercase tracking-widest font-semibold mb-2">
         <div className="flex justify-center">#</div>
         <div>Title</div>
-        <div className="hidden md:block">Album</div>
+        <div className="hidden md:block">Artists</div>
         <div className="flex justify-end pr-4">
           <FontAwesomeIcon icon={faClock} size="sm" />
         </div>
@@ -19,23 +21,56 @@ const TrackList = ({ tracks }) => {
       {/* Track Rows */}
       <div className="space-y-0.5">
         {tracks.map((track, index) => (
-          <TrackRow key={track.id} track={track} index={index + 1} />
+          <TrackRow key={track.id} track={track} index={index + 1} allTracks={tracks} />
         ))}
       </div>
     </div>
   );
 };
 
-const TrackRow = ({ track, index }) => {
+const TrackRow = ({ track, index, allTracks }) => {
+  const { currentTrack, isPlaying, setTrack, togglePlay } = usePlayerStore();
+  const isSelected = currentTrack?.id === track.id;
+
+  const handlePlayClick = (e) => {
+    e.stopPropagation();
+    if (isSelected) {
+      togglePlay();
+    } else {
+      setTrack(track, allTracks);
+    }
+  };
+
   return (
-    <div className="group grid grid-cols-[16px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors items-center cursor-pointer">
-      {/* Index / Play Icon */}
+    <div 
+      onClick={() => setTrack(track, allTracks)}
+      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-lg transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10' : 'hover:bg-white/10'}`}
+    >
+      {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">
-        <span className="group-hover:opacity-0 transition-opacity underline-offset-4">{index}</span>
-        <FontAwesomeIcon 
-          icon={faPlay} 
-          className="absolute opacity-0 group-hover:opacity-100 text-vibaura-pink text-xs transition-opacity" 
-        />
+        {!isSelected && <span className="group-hover:opacity-0 transition-opacity underline-offset-4">{index}</span>}
+        
+        {isSelected && isPlaying && (
+          <div className="flex gap-0.5 items-end h-3 mb-0.5">
+            <div className="w-0.5 bg-vibaura-primary animate-[music-bar_0.8s_ease-in-out_infinite] h-full" />
+            <div className="w-0.5 bg-vibaura-primary animate-[music-bar_1.2s_ease-in-out_infinite] h-2" />
+            <div className="w-0.5 bg-vibaura-primary animate-[music-bar_0.5s_ease-in-out_infinite] h-3" />
+          </div>
+        )}
+        
+        {isSelected && !isPlaying && (
+           <FontAwesomeIcon icon={faPlay} className="text-vibaura-primary text-xs" />
+        )}
+
+        <button 
+          onClick={handlePlayClick}
+          className={`absolute opacity-0 group-hover:opacity-100 transition-opacity p-2 ${isSelected ? 'block' : ''}`}
+        >
+          <FontAwesomeIcon 
+            icon={isSelected && isPlaying ? faPause : faPlay} 
+            className={`${isSelected ? 'text-vibaura-primary' : 'text-text-primary'} text-xs`} 
+          />
+        </button>
       </div>
 
       {/* Info (Title & Image) */}
@@ -44,23 +79,22 @@ const TrackRow = ({ track, index }) => {
           <img src={track.image} alt={track.title} className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col truncate">
-          <span className="text-text-primary font-medium truncate group-hover:text-vibaura-pink transition-colors">
+          <span className={`font-semibold truncate transition-colors ${isSelected ? 'text-vibaura-primary' : 'text-text-primary group-hover:text-vibaura-primary'}`}>
             {track.title}
-          </span>
-          <span className="text-text-muted text-xs truncate">
-            {track.artist}
           </span>
         </div>
       </div>
 
-      {/* Album Name */}
+      {/* Artists Column */}
       <div className="hidden md:block text-text-muted text-sm truncate">
-        {track.album}
+        {Array.isArray(track.artists) 
+          ? track.artists.map(a => a.name).join(', ') 
+          : (track.artist || 'VibAura Artist')}
       </div>
 
       {/* Duration */}
       <div className="flex justify-end items-center text-text-muted text-sm pr-4 tabular-nums">
-        {track.duration}
+        {formatTime(track.duration)}
       </div>
 
       {/* Context Menu Icon */}
