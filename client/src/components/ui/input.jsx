@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 
-const Input = ({ 
+const Input = forwardRef(({ 
   label, 
   icon, 
   className = '', 
   ...props 
-}) => {
+}, ref) => {
   return (
     <div className={`flex flex-col gap-1.5 w-full ${className}`}>
       {label && (
@@ -22,6 +22,7 @@ const Input = ({
         )}
         
         <input
+          ref={ref}
           className={`
             w-full bg-white border border-vibaura-border rounded-xl py-2.5 
             ${icon ? 'pl-11 pr-4' : 'px-4'} 
@@ -35,6 +36,6 @@ const Input = ({
       </div>
     </div>
   );
-};
+});
 
 export default Input;

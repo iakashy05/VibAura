@@ -2,13 +2,19 @@ import React from 'react';
 import Home from '../../pages/Home';
 import Artist from '../../pages/Artist';
 import Playlist from '../../pages/Playlist';
+import Search from '../../pages/Search';
+import Library from '../../pages/Library';
+import AuthPage from '../../pages/AuthPage';
 
 /**
  * ViewRenderer is the "Traffic Controller" for the main content area.
  * It reads the current page state and renders the appropriate component.
  */
-const ViewRenderer = ({ currentPage, selectedData, navigateTo }) => {
+const ViewRenderer = ({ currentPage, selectedData, navigateTo, searchQuery }) => {
   switch (currentPage) {
+    case 'login':
+      return <AuthPage />;
+
     case 'home':
       return <Home onNavigate={navigateTo} />;
     
@@ -17,6 +23,12 @@ const ViewRenderer = ({ currentPage, selectedData, navigateTo }) => {
     
     case 'playlist':
       return <Playlist playlist={selectedData} />;
+
+    case 'search':
+      return <Search query={searchQuery} onNavigate={navigateTo} />;
+
+    case 'library':
+      return <Library onNavigate={navigateTo} />;
     
     default:
       return (

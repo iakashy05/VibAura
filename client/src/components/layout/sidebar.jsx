@@ -21,7 +21,10 @@ const Sidebar = ({ onNavigate, currentPage }) => {
       {/* Library Section */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex items-center justify-between mb-4 px-2">
-          <div className="flex items-center gap-2 text-text-secondary">
+          <div 
+            className={`flex items-center gap-3 cursor-pointer transition-colors ${currentPage === 'library' ? 'text-vibaura-primary' : 'text-text-secondary hover:text-vibaura-primary'}`}
+            onClick={() => onNavigate('library')}
+          >
             <FontAwesomeIcon icon={faBookOpen} />
             <h3 className="font-semibold text-sm uppercase tracking-wider">Your Library</h3>
           </div>

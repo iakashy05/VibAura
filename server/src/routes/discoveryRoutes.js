@@ -6,6 +6,6 @@ const router = express.Router();
 /**
  * Route definitions for Homepage/Discovery.
  */
-router.get('/', discoveryController.getHome);
+router.get('/', discoveryController.getHomepage);
 
 export default router;

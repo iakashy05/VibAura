@@ -13,7 +13,7 @@ const connectDB = async () => {
     const mongoUri = process.env.DB_URI;
     
     if (!mongoUri) {
-      throw new Error('DATABASE_URL is not defined in environment variables');
+      throw new Error('DB_URI is not defined in environment variables');
     }
 
     const conn = await mongoose.connect(mongoUri, {

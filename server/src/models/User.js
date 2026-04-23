@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    trim: true,
+    default: '',
+  },
   email: {
     type: String,
     required: true,
@@ -34,12 +39,11 @@ const userSchema = new mongoose.Schema({
 // --- Optimizations ---
 
 // 1. Automatic Password Hashing
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
   
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // 2. Built-in Password Comparison

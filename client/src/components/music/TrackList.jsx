@@ -1,20 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faPause, faClock, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faPause, faClock, faEllipsisV, faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { usePlayerStore } from '../../store/playerStore';
+import { useAuthStore } from '../../store/authStore';
+import { toggleLikeSong } from '../../services/libraryService';
 import { formatTime } from '../../utils/time';
 
 const TrackList = ({ tracks }) => {
   return (
     <div className="w-full">
       {/* Table Header */}
-      <div className="grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-2 border-b border-white/5 text-text-muted text-xs uppercase tracking-widest font-semibold mb-2">
+      <div className="grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_80px_32px] gap-4 px-4 py-2 border-b border-white/5 text-text-muted text-xs uppercase tracking-widest font-semibold mb-2">
         <div className="flex justify-center">#</div>
         <div>Title</div>
         <div className="hidden md:block">Artists</div>
         <div className="flex justify-end pr-4">
           <FontAwesomeIcon icon={faClock} size="sm" />
         </div>
+        <div className="w-20" /> {/* Spacer for Like button */}
         <div className="w-8" /> {/* Spacer for context menu */}
       </div>
 
@@ -30,7 +34,11 @@ const TrackList = ({ tracks }) => {
 
 const TrackRow = ({ track, index, allTracks }) => {
   const { currentTrack, isPlaying, setTrack, togglePlay } = usePlayerStore();
+  const { user, updateUser, isAuthenticated } = useAuthStore();
   const isSelected = currentTrack?.id === track.id;
+  
+  const isLiked = user?.likedSongs?.includes(track.id);
+  const [localLiked, setLocalLiked] = useState(isLiked);
 
   const handlePlayClick = (e) => {
     e.stopPropagation();
@@ -41,10 +49,29 @@ const TrackRow = ({ track, index, allTracks }) => {
     }
   };
 
+  const handleLikeClick = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) return;
+    
+    try {
+      setLocalLiked(!localLiked);
+      const res = await toggleLikeSong(track.id);
+      
+      // Update global user state
+      const newLikedSongs = res.liked 
+        ? [...(user.likedSongs || []), track.id]
+        : (user.likedSongs || []).filter(id => id !== track.id);
+      
+      updateUser({ ...user, likedSongs: newLikedSongs });
+    } catch (err) {
+      setLocalLiked(localLiked); // Revert on error
+    }
+  };
+
   return (
     <div 
       onClick={() => setTrack(track, allTracks)}
-      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-lg transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10' : 'hover:bg-white/10'}`}
+      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_80px_32px] gap-4 px-4 py-3 rounded-lg transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10' : 'hover:bg-white/10'}`}
     >
       {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">
@@ -95,6 +122,16 @@ const TrackRow = ({ track, index, allTracks }) => {
       {/* Duration */}
       <div className="flex justify-end items-center text-text-muted text-sm pr-4 tabular-nums">
         {formatTime(track.duration)}
+      </div>
+
+      {/* Like Button */}
+      <div className="flex justify-center">
+        <button 
+          onClick={handleLikeClick}
+          className={`p-2 transition-all hover:scale-110 active:scale-90 ${localLiked ? 'text-vibaura-primary' : 'text-text-muted/40 hover:text-vibaura-primary opacity-0 group-hover:opacity-100'}`}
+        >
+          <FontAwesomeIcon icon={localLiked ? faHeartSolid : faHeartRegular} size="sm" />
+        </button>
       </div>
 
       {/* Context Menu Icon */}

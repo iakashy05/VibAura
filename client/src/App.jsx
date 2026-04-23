@@ -1,16 +1,30 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from './components/layout/sidebar';
 import Header from './components/layout/header';
 import PlayerBar from './components/layout/playerBar';
 import ViewRenderer from './components/layout/ViewRenderer';
+import AuthPage from './pages/AuthPage';
 import { useVibauraNavigation } from './hooks/useVibauraNavigation';
+import { useAuthStore } from './store/authStore';
 import { checkServerHealth } from './services/api';
 
 function App() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const { isAuthenticated, logout } = useAuthStore();
+
+  // Listen for 401 unauthorized events from api.js
+  useEffect(() => {
+    const handleUnauthorized = () => logout();
+    window.addEventListener('vibaura-unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('vibaura-unauthorized', handleUnauthorized);
+  }, [logout]);
+
   useEffect(() => {
     const runHealthCheck = async () => {
       const data = await checkServerHealth();
-      console.log('🌐 Server Status:', data);
+      if (data?.status !== 'ok') {
+        console.warn('⚠️ Server may be offline:', data);
+      }
     };
     runHealthCheck();
   }, []);
@@ -24,6 +38,20 @@ function App() {
     goForward
   } = useVibauraNavigation();
 
+  // Strict Authentication Gate: Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated && currentPage !== 'login') {
+      navigateTo('login');
+    } else if (isAuthenticated && currentPage === 'login') {
+      navigateTo('home');
+    }
+  }, [isAuthenticated, currentPage, navigateTo]);
+
+  // If we are on the login page, render it full screen without layout
+  if (currentPage === 'login') {
+    return <AuthPage />;
+  }
+
   return (
     <div className="flex flex-col h-screen w-full bg-vibaura-surface font-jost overflow-hidden">
       
@@ -34,6 +62,8 @@ function App() {
         canGoForward={canGoForward}
         goBack={goBack}
         goForward={goForward}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
 
       {/* 2. Middle Row: Sidebar + Main Content Pod */}
@@ -49,6 +79,7 @@ function App() {
               currentPage={currentPage}
               selectedData={selectedData}
               navigateTo={navigateTo}
+              searchQuery={searchQuery}
             />
 
           </div>
