@@ -28,9 +28,21 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Playlist',
   }],
+  libraryArtists: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Artist',
+  }],
+  pinnedPlaylists: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Playlist',
+  }],
   likedSongs: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Song',
+  }],
+  recentlyPlayed: [{
+    song: { type: mongoose.Schema.Types.ObjectId, ref: 'Song' },
+    playedAt: { type: Date, default: Date.now }
   }]
 }, {
   timestamps: true

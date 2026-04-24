@@ -4,6 +4,8 @@ import Header from './components/layout/header';
 import PlayerBar from './components/layout/playerBar';
 import ViewRenderer from './components/layout/ViewRenderer';
 import AuthPage from './pages/AuthPage';
+import Toast from './components/ui/Toast';
+import ConfirmModal from './components/ui/ConfirmModal';
 import { useVibauraNavigation } from './hooks/useVibauraNavigation';
 import { useAuthStore } from './store/authStore';
 import { checkServerHealth } from './services/api';
@@ -88,6 +90,10 @@ function App() {
 
       {/* 3. Global PlayerBar */}
       <PlayerBar />
+
+      {/* Global Notifications */}
+      <Toast />
+      <ConfirmModal />
     </div>
   );
 }

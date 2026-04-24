@@ -3,7 +3,6 @@ import Home from '../../pages/Home';
 import Artist from '../../pages/Artist';
 import Playlist from '../../pages/Playlist';
 import Search from '../../pages/Search';
-import Library from '../../pages/Library';
 import AuthPage from '../../pages/AuthPage';
 
 /**
@@ -22,14 +21,12 @@ const ViewRenderer = ({ currentPage, selectedData, navigateTo, searchQuery }) =>
       return <Artist artist={selectedData} />;
     
     case 'playlist':
-      return <Playlist playlist={selectedData} />;
+      return <Playlist playlist={selectedData} onNavigate={navigateTo} />;
 
     case 'search':
       return <Search query={searchQuery} onNavigate={navigateTo} />;
 
-    case 'library':
-      return <Library onNavigate={navigateTo} />;
-    
+
     default:
       return (
         <div className="flex items-center justify-center h-full text-text-muted">

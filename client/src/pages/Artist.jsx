@@ -7,7 +7,7 @@ import { usePlayerStore } from '../store/playerStore';
 import { getArtistDetails } from '../services/discoveryService';
 
 const Artist = ({ artist }) => {
-  const { setTrack } = usePlayerStore();
+  const { setTrack, shufflePlay } = usePlayerStore();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,6 +48,12 @@ const Artist = ({ artist }) => {
     }
   };
 
+  const handleShuffle = () => {
+    if (data.songs?.length > 0) {
+      shufflePlay(data.songs);
+    }
+  };
+
   return (
     <div className="flex flex-col relative w-full">
       <CollectionHeader 
@@ -63,7 +69,9 @@ const Artist = ({ artist }) => {
 
       <ActionBar 
         onPlay={handlePlayAll}
-        onShuffle={handlePlayAll}
+        onShuffle={handleShuffle}
+        itemId={data.id}
+        itemType="artist"
       />
 
       <div className="px-8 py-8 pb-12">

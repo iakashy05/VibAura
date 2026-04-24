@@ -187,38 +187,38 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
 
           {/* Context Menu Dropdown */}
           {menuOpen && (
-            <div className="absolute right-0 top-[calc(100%+10px)] w-60 bg-white rounded-2xl shadow-2xl shadow-black/10 border border-vibaura-border/30 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 top-[calc(100%+12px)] w-64 bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[#F0F0F0] overflow-hidden z-50 animate-scale-in">
               
               {/* User Info Header */}
-              <div className="px-4 py-3.5 bg-vibaura-bg-muted/60 border-b border-vibaura-border/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-vibaura-primary flex items-center justify-center text-white font-black text-sm shrink-0">
+              <div className="px-6 py-5 bg-[#F8F9FA] border-b border-[#F0F0F0]">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0 shadow-lg shadow-vibaura-primary/20">
                     {avatarLetter}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-black text-text-primary truncate">{displayName}</p>
-                    <p className="text-[10px] text-text-muted capitalize font-semibold mt-0.5">{user?.role || 'Member'}</p>
+                    <p className="text-sm font-black text-[#1A1A1A] truncate uppercase tracking-tighter leading-none">{displayName}</p>
+                    <p className="text-[10px] text-[#999] uppercase font-black tracking-tighter mt-1">{user?.role || 'Member'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Menu Items */}
-              <div className="p-1.5 space-y-0.5">
+              <div className="p-3 space-y-1">
                 <MenuItem icon={faUserCircle} label="My Profile" sublabel="View and edit your profile" onClick={() => { setMenuOpen(false); }} />
                 <MenuItem icon={faBell} label="Notifications" sublabel="Coming soon" onClick={() => { setMenuOpen(false); }} muted />
                 <MenuItem icon={faCog} label="Settings" sublabel="App preferences" onClick={() => { setMenuOpen(false); }} muted />
               </div>
 
               {/* Divider + Logout */}
-              <div className="p-1.5 border-t border-vibaura-border/20">
+              <div className="p-3 border-t border-[#F0F0F0]">
                 <button
                   onClick={() => { logout(); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors duration-150 group"
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all group"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
+                  <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transition-colors">
                     <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
                   </div>
-                  <span className="text-sm font-bold">Log Out</span>
+                  <span className="text-xs font-black uppercase tracking-tighter">Log Out</span>
                 </button>
               </div>
             </div>
@@ -234,23 +234,23 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
   <button
     onClick={onClick}
     disabled={muted}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-150 group text-left
+    className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all group text-left
       ${muted
         ? 'opacity-40 cursor-not-allowed'
-        : 'hover:bg-vibaura-bg-muted'
+        : 'hover:bg-gray-50'
       }`}
   >
-    <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0
-      ${muted ? 'bg-gray-100 text-gray-400' : 'bg-vibaura-bg-muted group-hover:bg-vibaura-primary-light text-text-muted group-hover:text-vibaura-primary'}`}
+    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0
+      ${muted ? 'bg-gray-100 text-[#CCC]' : 'bg-[#F5F5F7] text-[#999] group-hover:text-vibaura-primary'}`}
     >
       <FontAwesomeIcon icon={icon} className="text-xs" />
     </div>
     <div className="min-w-0">
-      <p className="text-sm font-bold text-text-primary leading-none">{label}</p>
-      <p className="text-[10px] text-text-muted font-medium mt-0.5 truncate">{sublabel}</p>
+      <p className="text-xs font-black text-[#1A1A1A] leading-none uppercase tracking-tighter">{label}</p>
+      <p className="text-[9px] text-[#999] font-black uppercase tracking-tighter mt-1 truncate">{sublabel}</p>
     </div>
     {muted && (
-      <span className="ml-auto text-[9px] font-black uppercase tracking-wider text-text-muted bg-gray-100 px-1.5 py-0.5 rounded-full shrink-0">
+      <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-[#CCC] bg-gray-50 px-2 py-1 rounded-full shrink-0">
         Soon
       </span>
     )}

@@ -6,7 +6,7 @@ import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons
 /**
  * A reusable, carousel-enabled section for displaying music items (Songs, Artists, Playlists).
  */
-const MusicSection = ({ title, items, type, onCardClick }) => {
+const MusicSection = ({ title, items, type, onCardClick, onItemContextClick }) => {
   const scrollRef = useRef(null);
   const SCROLL_AMOUNT = 500; // Consistent with VibAura standard
 
@@ -60,6 +60,7 @@ const MusicSection = ({ title, items, type, onCardClick }) => {
                 {...item} 
                 rounded={type === 'artist' ? "full" : "lg"} 
                 onClick={() => onCardClick(item)}
+                onOptionsClick={onItemContextClick ? (e) => onItemContextClick(e, item) : undefined}
               />
             </div>
           ))}

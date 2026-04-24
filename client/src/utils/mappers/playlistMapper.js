@@ -9,8 +9,12 @@ export const mapPlaylistToUI = (playlist) => {
   return {
     id: playlist._id,
     title: playlist.title || playlist.name, // Support both new 'title' and old 'name'
-    subtitle: '', // Clean look
+    subtitle: playlist.creator?.name ? `Created by ${playlist.creator.name}` : '', 
     image: playlist.cover || playlist.coverImageUrl || 'https://placehold.co/400x400/6367FF/FFFFFF?text=Playlist',
+    creator: playlist.creator?._id || playlist.creator,
+    isPublic: playlist.isPublic || false,
+    createdAt: playlist.createdAt,
+    description: playlist.description || '',
     songs: playlist.songs?.map(mapSongToUI) || []
   };
 };

@@ -6,19 +6,20 @@ import { usePlayerStore } from '../../store/playerStore';
 import { useAuthStore } from '../../store/authStore';
 import { toggleLikeSong } from '../../services/libraryService';
 import { formatTime } from '../../utils/time';
+import LikeButton from '../ui/LikeButton';
+import TrackContextMenu from '../ui/TrackContextMenu';
 
 const TrackList = ({ tracks }) => {
   return (
     <div className="w-full">
       {/* Table Header */}
-      <div className="grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_80px_32px] gap-4 px-4 py-2 border-b border-white/5 text-text-muted text-xs uppercase tracking-widest font-semibold mb-2">
+      <div className="grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-2 border-b border-[#F0F0F0] text-[#999] text-[10px] uppercase tracking-widest font-black mb-2">
         <div className="flex justify-center">#</div>
         <div>Title</div>
         <div className="hidden md:block">Artists</div>
         <div className="flex justify-end pr-4">
           <FontAwesomeIcon icon={faClock} size="sm" />
         </div>
-        <div className="w-20" /> {/* Spacer for Like button */}
         <div className="w-8" /> {/* Spacer for context menu */}
       </div>
 
@@ -39,6 +40,7 @@ const TrackRow = ({ track, index, allTracks }) => {
   
   const isLiked = user?.likedSongs?.includes(track.id);
   const [localLiked, setLocalLiked] = useState(isLiked);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handlePlayClick = (e) => {
     e.stopPropagation();
@@ -50,7 +52,7 @@ const TrackRow = ({ track, index, allTracks }) => {
   };
 
   const handleLikeClick = async (e) => {
-    e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     if (!isAuthenticated) return;
     
     try {
@@ -63,6 +65,7 @@ const TrackRow = ({ track, index, allTracks }) => {
         : (user.likedSongs || []).filter(id => id !== track.id);
       
       updateUser({ ...user, likedSongs: newLikedSongs });
+      window.dispatchEvent(new Event('vibaura-library-updated'));
     } catch (err) {
       setLocalLiked(localLiked); // Revert on error
     }
@@ -71,7 +74,7 @@ const TrackRow = ({ track, index, allTracks }) => {
   return (
     <div 
       onClick={() => setTrack(track, allTracks)}
-      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_80px_32px] gap-4 px-4 py-3 rounded-lg transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10' : 'hover:bg-white/10'}`}
+      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/5 ring-1 ring-vibaura-primary/10' : 'hover:bg-gray-50'}`}
     >
       {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">
@@ -106,7 +109,7 @@ const TrackRow = ({ track, index, allTracks }) => {
           <img src={track.image} alt={track.title} className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col truncate">
-          <span className={`font-semibold truncate transition-colors ${isSelected ? 'text-vibaura-primary' : 'text-text-primary group-hover:text-vibaura-primary'}`}>
+          <span className={`font-bold truncate transition-colors text-sm ${isSelected ? 'text-vibaura-primary' : 'text-[#1A1A1A] group-hover:text-vibaura-primary'}`}>
             {track.title}
           </span>
         </div>
@@ -120,23 +123,29 @@ const TrackRow = ({ track, index, allTracks }) => {
       </div>
 
       {/* Duration */}
-      <div className="flex justify-end items-center text-text-muted text-sm pr-4 tabular-nums">
+      <div className="flex justify-end items-center text-[#999] text-xs pr-4 tabular-nums font-medium">
         {formatTime(track.duration)}
       </div>
 
-      {/* Like Button */}
-      <div className="flex justify-center">
-        <button 
-          onClick={handleLikeClick}
-          className={`p-2 transition-all hover:scale-110 active:scale-90 ${localLiked ? 'text-vibaura-primary' : 'text-text-muted/40 hover:text-vibaura-primary opacity-0 group-hover:opacity-100'}`}
-        >
-          <FontAwesomeIcon icon={localLiked ? faHeartSolid : faHeartRegular} size="sm" />
-        </button>
-      </div>
-
       {/* Context Menu Icon */}
-      <div className="flex justify-center text-text-muted hover:text-text-primary transition-colors py-2">
-        <FontAwesomeIcon icon={faEllipsisV} size="sm" />
+      <div className="flex justify-center relative">
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(!isMenuOpen);
+          }}
+          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${isMenuOpen ? 'bg-vibaura-primary text-white' : 'text-text-muted hover:text-text-primary hover:bg-gray-100'}`}
+        >
+          <FontAwesomeIcon icon={faEllipsisV} size="sm" />
+        </button>
+
+        <TrackContextMenu 
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          track={track}
+          isLiked={localLiked}
+          onLikeToggle={handleLikeClick}
+        />
       </div>
     </div>
   );

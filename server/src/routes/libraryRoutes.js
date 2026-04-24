@@ -10,5 +10,8 @@ router.use(authenticateToken);
 router.get('/', libraryController.getLibrary);
 router.post('/songs/:songId/toggle', libraryController.toggleLikeSong);
 router.post('/playlists/:playlistId/toggle', libraryController.toggleLibraryPlaylist);
+router.post('/artists/:artistId/toggle', libraryController.toggleLibraryArtist);
+router.post('/playlists/:playlistId/pin', libraryController.togglePinPlaylist);
+router.post('/history', libraryController.logPlayHistory);
 
 export default router;

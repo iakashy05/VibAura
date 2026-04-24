@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { logPlayHistory } from '../services/libraryService';
 
 export const usePlayerStore = create((set, get) => ({
   // --- State ---
@@ -10,18 +11,76 @@ export const usePlayerStore = create((set, get) => ({
   progress: 0, // 0 to 100
   currentTime: 0, // in seconds
   duration: 0,  // in seconds
+  isShuffle: false,
+  originalQueue: [], // Store the original order
 
   // --- Actions ---
   
   // Set a single track and start playing
   setTrack: (track, newQueue = []) => {
+    // Fire and forget history log
+    if (track?.id) {
+      logPlayHistory(track.id).catch(() => {});
+    }
+
     set({ 
       currentTrack: track, 
       isPlaying: true, 
       progress: 0,
       currentTime: 0,
       queue: newQueue.length > 0 ? newQueue : [track],
-      currentIndex: newQueue.findIndex(t => t.id === track.id) || 0
+      originalQueue: newQueue.length > 0 ? newQueue : [track],
+      currentIndex: newQueue.length > 0 
+        ? newQueue.findIndex(t => t.id === track.id) 
+        : 0
+    });
+  },
+
+  // Toggle Shuffle
+  toggleShuffle: () => {
+    const { isShuffle, queue, originalQueue, currentTrack } = get();
+    const newState = !isShuffle;
+
+    if (newState) {
+      // Turning ON shuffle: shuffle the current queue
+      const shuffled = [...queue].sort(() => Math.random() - 0.5);
+      const newIndex = shuffled.findIndex(t => t.id === currentTrack?.id);
+      set({ 
+        isShuffle: true, 
+        queue: shuffled, 
+        currentIndex: newIndex !== -1 ? newIndex : 0 
+      });
+    } else {
+      // Turning OFF shuffle: restore the original queue order
+      const newIndex = originalQueue.findIndex(t => t.id === currentTrack?.id);
+      set({ 
+        isShuffle: false, 
+        queue: [...originalQueue], 
+        currentIndex: newIndex !== -1 ? newIndex : 0 
+      });
+    }
+  },
+
+  // Shuffle and Play from a list
+  shufflePlay: (newQueue) => {
+    if (!newQueue || newQueue.length === 0) return;
+    
+    const shuffled = [...newQueue].sort(() => Math.random() - 0.5);
+    const firstTrack = shuffled[0];
+
+    if (firstTrack?.id) {
+      logPlayHistory(firstTrack.id).catch(() => {});
+    }
+
+    set({
+      currentTrack: firstTrack,
+      queue: shuffled,
+      originalQueue: [...newQueue], // Save the actual order
+      currentIndex: 0,
+      isPlaying: true,
+      isShuffle: true,
+      progress: 0,
+      currentTime: 0
     });
   },
 
@@ -37,8 +96,14 @@ export const usePlayerStore = create((set, get) => ({
     if (queue.length === 0 || currentIndex === -1) return;
     
     const nextIndex = (currentIndex + 1) % queue.length;
+    const nextItem = queue[nextIndex];
+
+    if (nextItem?.id) {
+      logPlayHistory(nextItem.id).catch(() => {});
+    }
+
     set({ 
-      currentTrack: queue[nextIndex], 
+      currentTrack: nextItem, 
       currentIndex: nextIndex,
       isPlaying: true 
     });
@@ -50,8 +115,14 @@ export const usePlayerStore = create((set, get) => ({
     if (queue.length === 0 || currentIndex === -1) return;
     
     const prevIndex = (currentIndex - 1 + queue.length) % queue.length;
+    const prevItem = queue[prevIndex];
+
+    if (prevItem?.id) {
+      logPlayHistory(prevItem.id).catch(() => {});
+    }
+
     set({ 
-      currentTrack: queue[prevIndex], 
+      currentTrack: prevItem, 
       currentIndex: prevIndex,
       isPlaying: true 
     });

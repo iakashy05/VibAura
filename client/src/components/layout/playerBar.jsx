@@ -11,10 +11,14 @@ import {
   faVolumeDown,
   faVolumeMute,
   faExpand,
-  faHeart
+  faHeart as faHeartSolid
 } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import Button from '../ui/button';
 import { usePlayerStore } from '../../store/playerStore';
+import { useAuthStore } from '../../store/authStore';
+import { toggleLikeSong } from '../../services/libraryService';
+import LikeButton from '../ui/LikeButton';
 
 const PlayerBar = () => {
   const audioRef = useRef(null);
@@ -33,7 +37,9 @@ const PlayerBar = () => {
     toggleMute,
     setProgress,
     setCurrentTime,
-    setDuration
+    setDuration,
+    isShuffle,
+    toggleShuffle
   } = usePlayerStore();
 
   // --- 1. Audio Playback Core ---
@@ -103,6 +109,27 @@ const PlayerBar = () => {
     return faVolumeUp;
   };
 
+  const { user, updateUser, isAuthenticated } = useAuthStore();
+  const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
+
+  const handleLikeClick = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated || !currentTrack) return;
+    
+    try {
+      const res = await toggleLikeSong(currentTrack.id);
+      
+      const newLikedSongs = res.liked 
+        ? [...(user.likedSongs || []), currentTrack.id]
+        : (user.likedSongs || []).filter(id => id !== currentTrack.id);
+      
+      updateUser({ ...user, likedSongs: newLikedSongs });
+      window.dispatchEvent(new Event('vibaura-library-updated'));
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+    }
+  };
+
   return (
     <footer className="h-24 bg-vibaura-surface flex items-center justify-between px-6 z-20 border-t border-black/5">
       <audio 
@@ -133,15 +160,24 @@ const PlayerBar = () => {
               : (currentTrack?.artist || 'VibAura Artist')}
           </span>
         </div>
-        <Button variant="ghost" size="icon" className="text-text-muted hover:text-vibaura-primary transition-colors">
-          <FontAwesomeIcon icon={faHeart} size="sm" />
-        </Button>
+        {currentTrack && (
+          <LikeButton 
+            isLiked={isLiked}
+            onClick={handleLikeClick}
+            className="ml-2"
+          />
+        )}
       </div>
 
       {/* 2. Main Playback Controls Center */}
       <div className="flex flex-col items-center gap-2 max-w-xl w-full">
         <div className="flex items-center gap-6">
-          <button className="text-text-muted hover:text-vibaura-primary transition-all active:scale-90"><FontAwesomeIcon icon={faShuffle} /></button>
+          <button 
+            onClick={toggleShuffle}
+            className={`transition-all active:scale-90 ${isShuffle ? 'text-vibaura-primary drop-shadow-[0_0_8px_rgba(99,103,255,0.4)]' : 'text-text-muted hover:text-vibaura-primary'}`}
+          >
+            <FontAwesomeIcon icon={faShuffle} />
+          </button>
           <button 
             onClick={prevTrack}
             className="text-text-primary hover:text-vibaura-primary transition-all text-xl active:scale-90"
