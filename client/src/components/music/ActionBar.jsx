@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faPlay, 
-  faShuffle, 
-  faEllipsisH 
+import {
+  faPlay,
+  faShuffle,
+  faEllipsisH
 } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '../../store/playerStore';
 import ContextMenu from '../ui/ContextMenu';
@@ -18,7 +18,7 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const sentinelRef = useRef(null);
   const menuBtnRef = useRef(null);
-  
+
   const { isShuffle } = usePlayerStore();
 
   useEffect(() => {
@@ -43,16 +43,16 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
   return (
     <>
       <div ref={sentinelRef} className="h-px w-full pointer-events-none" />
-      
+
       <div className={`
-        sticky top-0 z-20 px-8 py-4 transition-all duration-300
-        ${isSticky 
-          ? 'bg-vibaura-tint/90 backdrop-blur-md border-b border-black/5 shadow-sm py-4' 
-          : 'bg-transparent border-b border-transparent py-6'}
+        sticky top-0 z-40 px-8 transition-all duration-500
+        ${isSticky
+          ? 'bg-[#FDFDFD] border-b border-black/5 shadow-lg py-4'
+          : 'bg-transparent border-b border-transparent py-8'}
         flex items-center gap-6
       `}>
         {/* 1. Play Now Button */}
-        <button 
+        <button
           onClick={onPlay}
           className="bg-vibaura-primary text-white rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold hover:bg-vibaura-primary-hover hover:scale-105 active:scale-95 transition-all shadow-lg shadow-vibaura-primary/20"
         >
@@ -61,22 +61,22 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
         </button>
 
         {/* 2. Shuffle Button */}
-        <button 
+        <button
           onClick={onShuffle}
           className={`
             rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold transition-all active:scale-95 border-2
-            ${isShuffle 
-              ? 'bg-vibaura-primary text-white border-vibaura-primary shadow-lg shadow-vibaura-primary/20' 
+            ${isShuffle
+              ? 'bg-vibaura-primary text-white border-vibaura-primary shadow-lg shadow-vibaura-primary/20'
               : 'border-vibaura-primary/20 text-text-primary hover:bg-white/40 hover:border-vibaura-primary/40'}
           `}
         >
           <FontAwesomeIcon icon={faShuffle} className={isShuffle ? 'text-white' : 'text-vibaura-primary'} />
           Shuffle
         </button>
-        
+
         {/* 3. Three Dot Icon */}
         <div className="relative">
-          <button 
+          <button
             ref={menuBtnRef}
             onClick={handleMenuToggle}
             className={`
@@ -86,10 +86,10 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
           >
             <FontAwesomeIcon icon={faEllipsisH} size="lg" />
           </button>
-          
-          <ContextMenu 
-            isOpen={isMenuOpen} 
-            onClose={() => setIsMenuOpen(false)} 
+
+          <ContextMenu
+            isOpen={isMenuOpen}
+            onClose={() => setIsMenuOpen(false)}
             item={{ id: itemId }}
             type={itemType}
           />

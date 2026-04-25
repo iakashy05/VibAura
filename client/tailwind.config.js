@@ -9,14 +9,15 @@ export default {
     extend: {
       colors: {
         vibaura: {
-          primary: '#6367FF',
-          'primary-light': '#C9BEFF',
-          'primary-hover': '#8494FF',
-          surface: '#E8E8EC',
+          primary: 'var(--vibaura-primary)',
+          'primary-light': 'var(--vibaura-primary-light)',
+          'primary-hover': 'var(--vibaura-primary-hover)',
+          surface: 'var(--vibaura-surface)',
           tint: 'rgba(99, 103, 255, 0.05)',
           'bg-muted': '#E4E4E9',
-          'view-bg': '#E4E4E9',
+          'view-bg': 'var(--vibaura-view-bg)',
           border: '#C9BEFF',
+          'action-bar': 'var(--vibaura-action-bar)',
         },
         text: {
           primary: '#2d3748',
@@ -28,8 +29,8 @@ export default {
         jost: ['Jost', 'sans-serif'],
       },
       screens: {
-        'mobile': {'max': '768px'},
-        'desktop': {'min': '769px'},
+        'mobile': { 'max': '768px' },
+        'desktop': { 'min': '769px' },
       }
     },
   },

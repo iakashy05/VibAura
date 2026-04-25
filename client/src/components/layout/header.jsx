@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faChevronLeft, 
-  faChevronRight, 
+import {
+  faChevronLeft,
+  faChevronRight,
   faHome,
-  faSearch, 
+  faSearch,
   faSun,
   faMusic,
   faTimes,
@@ -66,7 +66,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
   const handleSearchChange = (e) => {
     const val = e.target.value;
     setLocalQuery(val);
-    
+
     // Auto-navigate to search page when typing starts
     if (val.trim().length > 0) {
       onNavigate('search');
@@ -93,11 +93,11 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
 
   return (
     <header className="h-20 flex items-center px-8 bg-vibaura-surface transition-all duration-300">
-      
+
       {/* 1. Left Section: Branding & Navigation Controls */}
       <div className="flex-1 flex items-center gap-6">
         {/* Brand Logo */}
-        <div 
+        <div
           className="flex items-center gap-3 px-2 cursor-pointer group"
           onClick={() => onNavigate('home')}
         >
@@ -106,23 +106,23 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           </div>
           <span className="text-2xl font-bold text-text-primary tracking-tight hidden md:block">VibAura</span>
         </div>
- 
+
         <div className="h-6 w-[1px] bg-vibaura-border ml-2" />
- 
+
         <div className="flex gap-2.5 pl-4">
-          <IconButton 
-            icon={faChevronLeft} 
-            onClick={goBack} 
-            className={!canGoBack ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''} 
+          <IconButton
+            icon={faChevronLeft}
+            onClick={goBack}
+            className={!canGoBack ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}
           />
-          <IconButton 
-            icon={faChevronRight} 
-            onClick={goForward} 
-            className={!canGoForward ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''} 
+          <IconButton
+            icon={faChevronRight}
+            onClick={goForward}
+            className={!canGoForward ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}
           />
-          <IconButton 
-            icon={faHome} 
-            className="ml-2 !bg-vibaura-primary !text-white shadow-lg !border-none" 
+          <IconButton
+            icon={faHome}
+            className="ml-2 !bg-vibaura-primary !text-white shadow-lg !border-none"
             onClick={() => onNavigate('home')}
           />
         </div>
@@ -131,27 +131,27 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
       {/* 2. Center Section: Search Bar */}
       <div className="flex-[2] flex justify-center">
         <div className="w-full max-w-lg px-4 relative group/search">
-          <Input 
+          <Input
             ref={inputRef}
-            placeholder="Search for magic..." 
+            placeholder="Search for magic..."
             icon={<FontAwesomeIcon icon={faSearch} size="sm" className="text-[#999] group-focus-within/search:text-vibaura-primary transition-colors" />}
-            inputClassName="!py-3.5 !rounded-[24px] !bg-white !border-black/5 !text-sm !pl-14 !shadow-none focus:!bg-white focus:!border-vibaura-primary/30 focus:!shadow-none transition-all" 
+            inputClassName="!py-3.5 !rounded-[24px] !bg-white !border-black/5 !text-sm !pl-14 !shadow-none focus:!bg-white focus:!border-vibaura-primary/30 focus:!shadow-none transition-all"
             value={localQuery}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
           />
-          
+
           {/* Keyboard Hint */}
           {!localQuery && (
-             <div className="absolute right-8 top-1/2 -translate-y-1/2 flex gap-1 items-center pointer-events-none opacity-20 hidden md:flex">
-                <span className="px-1.5 py-0.5 rounded bg-vibaura-bg-muted text-[10px] font-bold border border-vibaura-border">Ctrl</span>
-                <span className="px-1.5 py-0.5 rounded bg-vibaura-bg-muted text-[10px] font-bold border border-vibaura-border">K</span>
-             </div>
+            <div className="absolute right-8 top-1/2 -translate-y-1/2 flex gap-1 items-center pointer-events-none opacity-20 hidden md:flex">
+              <span className="px-1.5 py-0.5 rounded bg-vibaura-bg-muted text-[10px] font-bold border border-vibaura-border">Ctrl</span>
+              <span className="px-1.5 py-0.5 rounded bg-vibaura-bg-muted text-[10px] font-bold border border-vibaura-border">K</span>
+            </div>
           )}
 
           {/* Clear Button */}
           {localQuery && (
-            <button 
+            <button
               onClick={clearSearch}
               className="absolute right-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-vibaura-primary-light hover:text-vibaura-primary transition-all text-text-muted"
             >
@@ -166,7 +166,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
         <Button variant="ghost" size="icon" className="w-10 h-10 text-text-secondary">
           <FontAwesomeIcon icon={faSun} />
         </Button>
-        
+
         <div className="h-6 w-[1px] bg-vibaura-border mx-2" />
 
         {/* Avatar + Dropdown */}
@@ -179,8 +179,8 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
             {avatarLetter}
           </button>
 
-          <Dropdown 
-            isOpen={menuOpen} 
+          <Dropdown
+            isOpen={menuOpen}
             onClose={() => setMenuOpen(false)}
             positionClass="right-0 top-[calc(100%+12px)]"
             className="w-64"
@@ -253,7 +253,7 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
 );
 
 const IconButton = ({ icon, className = '', onClick }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`w-11 h-11 flex items-center justify-center rounded-[14px] bg-[#F5F5F7] border border-black/5 text-[#999] hover:text-vibaura-primary hover:bg-white hover:border-vibaura-primary/30 transition-all duration-300 group shadow-sm ${className}`}
   >

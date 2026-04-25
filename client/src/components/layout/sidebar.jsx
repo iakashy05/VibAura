@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faPlus, 
+import {
+  faPlus,
   faBookOpen,
   faEllipsisV,
   faTrash,
@@ -14,10 +14,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Button from '../ui/button';
 import CreatePlaylistModal from '../library/CreatePlaylistModal';
-import { 
-  getLibrary, 
-  createPlaylist, 
-  deletePlaylist, 
+import {
+  getLibrary,
+  createPlaylist,
+  deletePlaylist,
   toggleLibraryPlaylist,
   togglePinPlaylist,
   updatePlaylist
@@ -42,13 +42,13 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('recent'); // 'recent', 'alphabetical', 'most-played'
-  const [activeMenu, setActiveMenu] = useState(null); 
+  const [activeMenu, setActiveMenu] = useState(null);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const { user } = useAuthStore();
   const { showToast, showConfirm } = useUIStore();
   const menuRef = React.useRef(null);
   const sortMenuRef = React.useRef(null);
-  
+
   // Player state for info island
   const { currentTrack, isPlaying, toggleFullscreen } = usePlayerStore();
   const { updateUser, isAuthenticated } = useAuthStore();
@@ -71,7 +71,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     fetchLibrary();
     const handleUpdate = () => fetchLibrary();
     window.addEventListener('vibaura-library-updated', handleUpdate);
-    
+
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setActiveMenu(null);
@@ -81,7 +81,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     return () => {
       window.removeEventListener('vibaura-library-updated', handleUpdate);
       document.removeEventListener('mousedown', handleClickOutside);
@@ -168,14 +168,14 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const handleLikeClick = async (e) => {
     if (e) e.stopPropagation();
     if (!isAuthenticated || !currentTrack) return;
-    
+
     try {
       const res = await toggleLikeSong(currentTrack.id);
-      
-      const newLikedSongs = res.liked 
+
+      const newLikedSongs = res.liked
         ? [...(user.likedSongs || []), currentTrack.id]
         : (user.likedSongs || []).filter(id => id !== currentTrack.id);
-      
+
       updateUser({ ...user, likedSongs: newLikedSongs });
       window.dispatchEvent(new Event('vibaura-library-updated'));
     } catch (err) {
@@ -205,10 +205,10 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     ...artists.filter(a => a.title?.toLowerCase().includes(searchQuery.toLowerCase())).map(a => ({ ...a, type: 'artist' }))
   ].sort((a, b) => {
     // Priority: Pinned items first
-    const aPinned = (a.type === 'playlist' && pinnedPlaylists.some(p => p.id === a.id)) || 
-                    (a.type === 'artist' && pinnedArtists.some(pa => pa.id === a.id));
-    const bPinned = (b.type === 'playlist' && pinnedPlaylists.some(p => p.id === b.id)) || 
-                    (b.type === 'artist' && pinnedArtists.some(pa => pa.id === b.id));
+    const aPinned = (a.type === 'playlist' && pinnedPlaylists.some(p => p.id === a.id)) ||
+      (a.type === 'artist' && pinnedArtists.some(pa => pa.id === a.id));
+    const bPinned = (b.type === 'playlist' && pinnedPlaylists.some(p => p.id === b.id)) ||
+      (b.type === 'artist' && pinnedArtists.some(pa => pa.id === b.id));
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
 
@@ -216,135 +216,135 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     if (sortOrder === 'alphabetical') {
       return (a.title || '').localeCompare(b.title || '');
     }
-    return 0; 
+    return 0;
   });
 
   return (
     <aside className="w-80 flex flex-col h-full bg-vibaura-surface p-6">
-      
 
 
-        <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-4 flex-1 flex flex-col min-h-0 border border-black/5">
-          <div className="flex items-center justify-between mb-6 px-2">
-            <div className="flex items-center gap-3 text-[#999]">
-              <FontAwesomeIcon icon={faBookOpen} size="sm" />
-              <h3 className="font-black text-[11px] uppercase tracking-[0.2em]">Your Library</h3>
-            </div>
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="text-[#999] hover:text-[#1A1A1A] transition-colors"
+
+      <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-4 flex-1 flex flex-col min-h-0 border border-black/5">
+        <div className="flex items-center justify-between mb-6 px-2">
+          <div className="flex items-center gap-3 text-[#999]">
+            <FontAwesomeIcon icon={faBookOpen} size="sm" />
+            <h3 className="font-black text-[11px] uppercase tracking-[0.2em]">Your Library</h3>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="text-[#999] hover:text-[#1A1A1A] transition-colors"
+          >
+            <FontAwesomeIcon icon={faPlus} size="sm" />
+          </button>
+        </div>
+
+        {/* Sort & Filter Controls */}
+        <div className="flex items-center gap-2 mb-6 px-2">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search library..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-4 py-2 text-[10px] text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
+            />
+          </div>
+
+          <div className="relative" ref={sortMenuRef}>
+            <button
+              onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
+              className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
+              title="Sort Library"
             >
-              <FontAwesomeIcon icon={faPlus} size="sm" />
+              <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
             </button>
-          </div>
 
-          {/* Sort & Filter Controls */}
-          <div className="flex items-center gap-2 mb-6 px-2">
-            <div className="flex-1 relative">
-              <input 
-                type="text" 
-                placeholder="Search library..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-4 py-2 text-[10px] text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
+            <Dropdown
+              isOpen={isSortMenuOpen}
+              onClose={() => setIsSortMenuOpen(false)}
+              positionClass="right-0 top-10"
+              minWidth="160px"
+            >
+              <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
+              <SortOption
+                active={sortOrder === 'recent'}
+                onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }}
+                label="Recently Added"
               />
-            </div>
-            
-            <div className="relative" ref={sortMenuRef}>
-              <button 
-                onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-                className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
-                title="Sort Library"
-              >
-                <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
-              </button>
+              <SortOption
+                active={sortOrder === 'alphabetical'}
+                onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }}
+                label="A-Z"
+              />
+              <SortOption
+                active={sortOrder === 'most-played'}
+                onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }}
+                label="Most Played"
+              />
+            </Dropdown>
+          </div>
+        </div>
 
-              <Dropdown 
-                isOpen={isSortMenuOpen} 
-                onClose={() => setIsSortMenuOpen(false)}
-                positionClass="right-0 top-10"
-                minWidth="160px"
-              >
-                <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
-                <SortOption 
-                  active={sortOrder === 'recent'} 
-                  onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }} 
-                  label="Recently Added" 
-                />
-                <SortOption 
-                  active={sortOrder === 'alphabetical'} 
-                  onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }} 
-                  label="A-Z" 
-                />
-                <SortOption 
-                  active={sortOrder === 'most-played'} 
-                  onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }} 
-                  label="Most Played" 
-                />
-              </Dropdown>
+        {/* Playlist List (Scrollable) */}
+        <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+          {/* Liked Songs synthetic playlist */}
+          <div
+            onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
+            className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
+          >
+            <div className="flex flex-col">
+              <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
+                Liked Songs
+              </span>
+              <span className="text-[10px] text-[#777] font-bold">
+                Playlist • {likedSongs.length} songs
+              </span>
             </div>
           </div>
 
-          {/* Playlist List (Scrollable) */}
-          <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-            {/* Liked Songs synthetic playlist */}
-            <div 
-              onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
+          {/* Recently Played synthetic playlist */}
+          {recentlyPlayed.length > 0 && (
+            <div
+              onClick={() => onNavigate('playlist', { id: 'recently-played', title: 'Recently Played', songs: recentlyPlayed })}
               className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
             >
               <div className="flex flex-col">
                 <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
-                  Liked Songs
+                  Recently Played
                 </span>
                 <span className="text-[10px] text-[#777] font-bold">
-                  Playlist • {likedSongs.length} songs
+                  History • {recentlyPlayed.length} songs
                 </span>
               </div>
             </div>
+          )}
 
-            {/* Recently Played synthetic playlist */}
-            {recentlyPlayed.length > 0 && (
-              <div 
-                onClick={() => onNavigate('playlist', { id: 'recently-played', title: 'Recently Played', songs: recentlyPlayed })}
-                className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
-              >
-                <div className="flex flex-col">
-                  <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
-                    Recently Played
-                  </span>
-                  <span className="text-[10px] text-[#777] font-bold">
-                    History • {recentlyPlayed.length} songs
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {unifiedLibrary.map(item => (
-              <LibraryItem 
-                key={`${item.type}-${item.id}`}
-                item={item}
-                type={item.type}
-                onNavigate={onNavigate}
-                isPinned={(item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)) || (item.type === 'artist' && pinnedArtists.some(a => a.id === item.id))}
-                onTogglePin={handleTogglePin}
-                onEdit={setEditingPlaylist}
-                onDelete={handleDeleteOrRemove}
-                activeMenu={activeMenu}
-                setActiveMenu={setActiveMenu}
-                menuRef={menuRef}
-                user={user}
-              />
-            ))}
-          </div>
+          {unifiedLibrary.map(item => (
+            <LibraryItem
+              key={`${item.type}-${item.id}`}
+              item={item}
+              type={item.type}
+              onNavigate={onNavigate}
+              isPinned={(item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)) || (item.type === 'artist' && pinnedArtists.some(a => a.id === item.id))}
+              onTogglePin={handleTogglePin}
+              onEdit={setEditingPlaylist}
+              onDelete={handleDeleteOrRemove}
+              activeMenu={activeMenu}
+              setActiveMenu={setActiveMenu}
+              menuRef={menuRef}
+              user={user}
+            />
+          ))}
         </div>
+      </div>
 
-        <CreatePlaylistModal 
-          isOpen={isModalOpen || !!editingPlaylist}
-          onClose={() => { setIsModalOpen(false); setEditingPlaylist(null); }}
-          onSubmit={editingPlaylist ? handleUpdatePlaylist : handleCreatePlaylist}
-          isSubmitting={isCreating}
-          initialData={editingPlaylist}
-        />
+      <CreatePlaylistModal
+        isOpen={isModalOpen || !!editingPlaylist}
+        onClose={() => { setIsModalOpen(false); setEditingPlaylist(null); }}
+        onSubmit={editingPlaylist ? handleUpdatePlaylist : handleCreatePlaylist}
+        isSubmitting={isCreating}
+        initialData={editingPlaylist}
+      />
 
     </aside>
   );
@@ -352,7 +352,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 
 
 const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, onDelete, activeMenu, setActiveMenu, menuRef, user }) => (
-  <div 
+  <div
     onClick={() => onNavigate(type, item)}
     className="group relative flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer"
   >
@@ -371,7 +371,7 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
     </div>
 
     <div className="flex items-center gap-3">
-      <button 
+      <button
         onClick={(e) => {
           e.stopPropagation();
           setActiveMenu(activeMenu === item.id ? null : item.id);
@@ -382,7 +382,7 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
       </button>
     </div>
 
-    <ContextMenu 
+    <ContextMenu
       isOpen={activeMenu === item.id}
       onClose={() => setActiveMenu(null)}
       item={item}
@@ -396,7 +396,7 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
 );
 
 const PlaylistMenuItem = ({ icon, label, onClick, muted = false }) => (
-  <button 
+  <button
     onClick={onClick}
     disabled={muted}
     className={`w-full px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-tighter rounded-xl flex items-center justify-between transition-colors
@@ -413,7 +413,7 @@ const PlaylistMenuItem = ({ icon, label, onClick, muted = false }) => (
 );
 
 const SortOption = ({ active, onClick, label }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`w-full px-3 py-2 text-left text-[11px] font-bold rounded-xl flex items-center justify-between transition-colors ${active ? 'bg-vibaura-primary/5 text-vibaura-primary' : 'text-[#666] hover:bg-gray-50 hover:text-[#1A1A1A]'}`}
   >

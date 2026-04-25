@@ -74,7 +74,7 @@ const TrackRow = ({ track, index, allTracks }) => {
   return (
     <div 
       onClick={() => setTrack(track, allTracks)}
-      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/5 ring-1 ring-vibaura-primary/10' : 'hover:bg-gray-50'}`}
+      className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10 ring-1 ring-vibaura-primary/20' : 'hover:bg-black/5'}`}
     >
       {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">

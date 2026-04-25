@@ -3,7 +3,6 @@ import Sidebar from './components/layout/sidebar';
 import Header from './components/layout/header';
 import PlayerBar from './components/layout/playerBar';
 import ViewRenderer from './components/layout/ViewRenderer';
-import FullscreenPlayer from './components/layout/FullscreenPlayer';
 import AuthPage from './pages/AuthPage';
 import Toast from './components/ui/Toast';
 import ConfirmModal from './components/ui/ConfirmModal';
@@ -57,10 +56,10 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-vibaura-surface font-jost overflow-hidden">
-      
+
       {/* 1. Header with navigation controls */}
-      <Header 
-        onNavigate={navigateTo} 
+      <Header
+        onNavigate={navigateTo}
         canGoBack={canGoBack}
         canGoForward={canGoForward}
         goBack={goBack}
@@ -75,10 +74,10 @@ function App() {
 
         {/* The Rounded "Pod" (Main Content area) */}
         <main className="flex-1 bg-vibaura-view-bg rounded-tl-[40px] rounded-bl-[40px] overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto custom-scrollbar page-scroll-area relative pb-32">
-            
+          <div className="flex-1 overflow-y-auto custom-scrollbar page-scroll-area relative">
+
             {/* Modular View Management */}
-            <ViewRenderer 
+            <ViewRenderer
               currentPage={currentPage}
               selectedData={selectedData}
               navigateTo={navigateTo}
@@ -89,11 +88,8 @@ function App() {
         </main>
       </div>
 
-      {/* Global PlayerBar */}
+      {/* 3. Global PlayerBar */}
       <PlayerBar />
-
-      {/* Immersive Fullscreen Layer */}
-      <FullscreenPlayer />
 
       {/* Global Notifications */}
       <Toast />
