@@ -11,6 +11,7 @@ class LibraryController {
     const user = await User.findById(req.user.id)
       .populate('libraryPlaylists')
       .populate('pinnedPlaylists')
+      .populate('pinnedArtists')
       .populate({
         path: 'likedSongs',
         populate: { path: 'artists', model: 'Artist' }
@@ -28,6 +29,7 @@ class LibraryController {
     res.json({
       playlists: user.libraryPlaylists,
       pinnedPlaylists: user.pinnedPlaylists,
+      pinnedArtists: user.pinnedArtists,
       likedSongs: user.likedSongs,
       artists: user.libraryArtists,
       recentlyPlayed: user.recentlyPlayed
@@ -149,19 +151,45 @@ class LibraryController {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const index = user.pinnedPlaylists.indexOf(playlistId);
+    const isPinned = user.pinnedPlaylists.some(id => id.toString() === playlistId);
     let pinned = false;
 
-    if (index === -1) {
+    if (!isPinned) {
       user.pinnedPlaylists.push(playlistId);
       pinned = true;
     } else {
-      user.pinnedPlaylists.splice(index, 1);
+      user.pinnedPlaylists = user.pinnedPlaylists.filter(id => id.toString() !== playlistId);
       pinned = false;
     }
 
     await user.save();
     res.json({ pinned, message: pinned ? 'Playlist pinned' : 'Playlist unpinned' });
+  });
+
+  /**
+   * Toggle an artist in the user's pinned artists.
+   */
+  togglePinArtist = asyncHandler(async (req, res) => {
+    const { artistId } = req.params;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isPinned = user.pinnedArtists.some(id => id.toString() === artistId);
+    let pinned = false;
+
+    if (!isPinned) {
+      user.pinnedArtists.push(artistId);
+      pinned = true;
+    } else {
+      user.pinnedArtists = user.pinnedArtists.filter(id => id.toString() !== artistId);
+      pinned = false;
+    }
+
+    await user.save();
+    res.json({ pinned, message: pinned ? 'Artist pinned' : 'Artist unpinned' });
   });
 }
 

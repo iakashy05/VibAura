@@ -7,7 +7,7 @@ import { useAuthStore } from '../../store/authStore';
 import { toggleLikeSong } from '../../services/libraryService';
 import { formatTime } from '../../utils/time';
 import LikeButton from '../ui/LikeButton';
-import TrackContextMenu from '../ui/TrackContextMenu';
+import ContextMenu from '../ui/ContextMenu';
 
 const TrackList = ({ tracks }) => {
   return (
@@ -139,10 +139,11 @@ const TrackRow = ({ track, index, allTracks }) => {
           <FontAwesomeIcon icon={faEllipsisV} size="sm" />
         </button>
 
-        <TrackContextMenu 
+        <ContextMenu 
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
-          track={track}
+          item={track}
+          type="track"
           isLiked={localLiked}
           onLikeToggle={handleLikeClick}
         />

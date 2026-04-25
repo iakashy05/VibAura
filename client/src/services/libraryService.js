@@ -10,6 +10,7 @@ export const getLibrary = async () => {
     return {
       playlists: response.data.playlists.map(mapPlaylistToUI),
       pinnedPlaylists: (response.data.pinnedPlaylists || []).map(mapPlaylistToUI),
+      pinnedArtists: (response.data.pinnedArtists || []).map(mapArtistToUI),
       likedSongs: response.data.likedSongs.map(mapSongToUI),
       artists: (response.data.artists || []).map(mapArtistToUI),
       recentlyPlayed: (response.data.recentlyPlayed || []).map(mapSongToUI)
@@ -66,6 +67,16 @@ export const togglePinPlaylist = async (playlistId) => {
     return response.data;
   } catch (error) {
     console.error('❌ Failed to toggle pin:', error.message);
+    throw error;
+  }
+};
+
+export const togglePinArtist = async (artistId) => {
+  try {
+    const response = await api.post(`/library/artists/${artistId}/pin`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Failed to toggle artist pin:', error.message);
     throw error;
   }
 };

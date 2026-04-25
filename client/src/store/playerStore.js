@@ -154,6 +154,10 @@ export const usePlayerStore = create((set, get) => ({
   // Set Duration
   setDuration: (d) => set({ duration: d }),
 
+  // Fullscreen
+  isFullscreen: false,
+  toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
+
   // Stop / Clear
   stop: () => set({ currentTrack: null, isPlaying: false, queue: [], currentIndex: -1 })
 }));

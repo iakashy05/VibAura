@@ -90,8 +90,8 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
           <ContextMenu 
             isOpen={isMenuOpen} 
             onClose={() => setIsMenuOpen(false)} 
-            itemId={itemId}
-            itemType={itemType}
+            item={{ id: itemId }}
+            type={itemType}
           />
         </div>
       </div>

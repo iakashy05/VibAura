@@ -3,6 +3,7 @@ import Sidebar from './components/layout/sidebar';
 import Header from './components/layout/header';
 import PlayerBar from './components/layout/playerBar';
 import ViewRenderer from './components/layout/ViewRenderer';
+import FullscreenPlayer from './components/layout/FullscreenPlayer';
 import AuthPage from './pages/AuthPage';
 import Toast from './components/ui/Toast';
 import ConfirmModal from './components/ui/ConfirmModal';
@@ -74,7 +75,7 @@ function App() {
 
         {/* The Rounded "Pod" (Main Content area) */}
         <main className="flex-1 bg-vibaura-view-bg rounded-tl-[40px] rounded-bl-[40px] overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto custom-scrollbar page-scroll-area relative">
+          <div className="flex-1 overflow-y-auto custom-scrollbar page-scroll-area relative pb-32">
             
             {/* Modular View Management */}
             <ViewRenderer 
@@ -88,8 +89,11 @@ function App() {
         </main>
       </div>
 
-      {/* 3. Global PlayerBar */}
+      {/* Global PlayerBar */}
       <PlayerBar />
+
+      {/* Immersive Fullscreen Layer */}
+      <FullscreenPlayer />
 
       {/* Global Notifications */}
       <Toast />

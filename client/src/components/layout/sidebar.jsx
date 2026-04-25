@@ -27,11 +27,14 @@ import { useUIStore } from '../../store/uiStore';
 import { usePlayerStore } from '../../store/playerStore';
 import LikeButton from '../ui/LikeButton';
 import { toggleLikeSong } from '../../services/libraryService';
+import Dropdown from '../ui/Dropdown';
+import ContextMenu from '../ui/ContextMenu';
 
 const Sidebar = ({ onNavigate, currentPage }) => {
   const [playlists, setPlaylists] = useState([]);
   const [artists, setArtists] = useState([]);
   const [pinnedPlaylists, setPinnedPlaylists] = useState([]);
+  const [pinnedArtists, setPinnedArtists] = useState([]);
   const [likedSongs, setLikedSongs] = useState([]);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,7 +50,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const sortMenuRef = React.useRef(null);
   
   // Player state for info island
-  const { currentTrack, isPlaying } = usePlayerStore();
+  const { currentTrack, isPlaying, toggleFullscreen } = usePlayerStore();
   const { updateUser, isAuthenticated } = useAuthStore();
 
   const fetchLibrary = async () => {
@@ -56,6 +59,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
       setPlaylists(data.playlists);
       setArtists(data.artists || []);
       setPinnedPlaylists(data.pinnedPlaylists || []);
+      setPinnedArtists(data.pinnedArtists || []);
       setLikedSongs(data.likedSongs);
       setRecentlyPlayed(data.recentlyPlayed || []);
     } catch (err) {
@@ -201,8 +205,10 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     ...artists.filter(a => a.title?.toLowerCase().includes(searchQuery.toLowerCase())).map(a => ({ ...a, type: 'artist' }))
   ].sort((a, b) => {
     // Priority: Pinned items first
-    const aPinned = a.type === 'playlist' && pinnedPlaylists.some(p => p.id === a.id);
-    const bPinned = b.type === 'playlist' && pinnedPlaylists.some(p => p.id === b.id);
+    const aPinned = (a.type === 'playlist' && pinnedPlaylists.some(p => p.id === a.id)) || 
+                    (a.type === 'artist' && pinnedArtists.some(pa => pa.id === a.id));
+    const bPinned = (b.type === 'playlist' && pinnedPlaylists.some(p => p.id === b.id)) || 
+                    (b.type === 'artist' && pinnedArtists.some(pa => pa.id === b.id));
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
 
@@ -253,26 +259,29 @@ const Sidebar = ({ onNavigate, currentPage }) => {
                 <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
               </button>
 
-              {isSortMenuOpen && (
-                <div className="absolute right-0 top-10 z-50 bg-white border border-[#F0F0F0] rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] overflow-hidden min-w-[160px] animate-scale-in p-1.5">
-                  <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
-                  <SortOption 
-                    active={sortOrder === 'recent'} 
-                    onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }} 
-                    label="Recently Added" 
-                  />
-                  <SortOption 
-                    active={sortOrder === 'alphabetical'} 
-                    onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }} 
-                    label="A-Z" 
-                  />
-                  <SortOption 
-                    active={sortOrder === 'most-played'} 
-                    onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }} 
-                    label="Most Played" 
-                  />
-                </div>
-              )}
+              <Dropdown 
+                isOpen={isSortMenuOpen} 
+                onClose={() => setIsSortMenuOpen(false)}
+                positionClass="right-0 top-10"
+                minWidth="160px"
+              >
+                <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
+                <SortOption 
+                  active={sortOrder === 'recent'} 
+                  onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }} 
+                  label="Recently Added" 
+                />
+                <SortOption 
+                  active={sortOrder === 'alphabetical'} 
+                  onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }} 
+                  label="A-Z" 
+                />
+                <SortOption 
+                  active={sortOrder === 'most-played'} 
+                  onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }} 
+                  label="Most Played" 
+                />
+              </Dropdown>
             </div>
           </div>
 
@@ -316,7 +325,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
                 item={item}
                 type={item.type}
                 onNavigate={onNavigate}
-                isPinned={item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)}
+                isPinned={(item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)) || (item.type === 'artist' && pinnedArtists.some(a => a.id === item.id))}
                 onTogglePin={handleTogglePin}
                 onEdit={setEditingPlaylist}
                 onDelete={handleDeleteOrRemove}
@@ -337,37 +346,6 @@ const Sidebar = ({ onNavigate, currentPage }) => {
           initialData={editingPlaylist}
         />
 
-      {/* Track Info Island (Now at bottom of sidebar) */}
-      <div className="mt-6 flex-shrink-0">
-        <div className="flex items-center gap-4 bg-white backdrop-blur-md rounded-[32px] p-3 pl-3 pr-6 w-full transition-transform hover:scale-[1.02] duration-300 border border-black/5">
-          <div className="w-14 h-14 rounded-[22px] bg-vibaura-bg-muted overflow-hidden shadow-sm group cursor-pointer relative flex-shrink-0">
-            <img 
-              src={currentTrack?.image || "https://placehold.co/100x100/6367FF/FFFFFF?text=Aura"} 
-              alt="Album" 
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-            />
-          </div>
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="font-bold text-[#1A1A1A] truncate text-[13px] tracking-tight leading-tight mb-0.5 hover:text-vibaura-primary cursor-pointer transition-colors">
-              {currentTrack?.title || "Select a Song"}
-            </span>
-            <span className="text-[10px] font-black text-[#666] uppercase tracking-tighter truncate hover:text-[#666] cursor-pointer transition-colors">
-              {Array.isArray(currentTrack?.artists) 
-                ? currentTrack.artists.map(a => a.name).join(', ') 
-                : (currentTrack?.artist || 'VibAura Artist')}
-            </span>
-          </div>
-          <div className="flex items-center">
-            {currentTrack && (
-              <LikeButton 
-                isLiked={isLiked}
-                onClick={handleLikeClick}
-                className="scale-90 hover:scale-110 transition-transform"
-              />
-            )}
-          </div>
-        </div>
-      </div>
     </aside>
   );
 };
@@ -404,45 +382,16 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
       </button>
     </div>
 
-    {activeMenu === item.id && (
-      <div 
-        ref={menuRef}
-        className="absolute right-2 top-10 z-50 bg-white border border-[#F0F0F0] rounded-[24px] shadow-[0_12px_32px_rgba(0,0,0,0.1)] overflow-hidden min-w-[170px] animate-scale-in p-1.5"
-      >
-        {type === 'playlist' && onEdit && (
-          <PlaylistMenuItem 
-            icon={faPen} 
-            label="Edit Details" 
-            onClick={(e) => { e.stopPropagation(); onEdit(item); setActiveMenu(null); }} 
-          />
-        )}
-        {type === 'playlist' && onTogglePin && (
-          <PlaylistMenuItem 
-            icon={faThumbtack} 
-            label={isPinned ? "Unpin from Top" : "Pin to Top"} 
-            onClick={(e) => onTogglePin(e, item.id)} 
-          />
-        )}
-        <PlaylistMenuItem 
-          icon={faShareNodes} 
-          label="Share" 
-          muted 
-          onClick={(e) => e.stopPropagation()} 
-        />
-        
-        <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
-        
-        <button 
-          onClick={(e) => onDelete(e, item)}
-          className="w-full px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-tighter text-red-500 hover:bg-red-50 rounded-xl flex items-center gap-3 transition-colors"
-        >
-          <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
-            <FontAwesomeIcon icon={type === 'playlist' && item.creator === user?.id ? faTrash : faMinusCircle} />
-          </div>
-          <span>{type === 'playlist' && item.creator === user?.id ? 'Delete' : 'Remove'}</span>
-        </button>
-      </div>
-    )}
+    <ContextMenu 
+      isOpen={activeMenu === item.id}
+      onClose={() => setActiveMenu(null)}
+      item={item}
+      type={type}
+      isPinned={isPinned}
+      isInLibrary={true}
+      onEdit={onEdit}
+      positionClass="right-2 top-10"
+    />
   </div>
 );
 

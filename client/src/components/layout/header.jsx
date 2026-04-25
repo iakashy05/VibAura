@@ -18,6 +18,7 @@ import Input from '../ui/input';
 import Button from '../ui/button';
 
 import { useAuthStore } from '../../store/authStore';
+import Dropdown from '../ui/Dropdown';
 
 const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, searchQuery, setSearchQuery }) => {
   const [localQuery, setLocalQuery] = useState(searchQuery);
@@ -172,61 +173,51 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(prev => !prev)}
-            className="flex items-center gap-3 p-1.5 pr-4 rounded-[20px] bg-[#F5F5F7] border border-black/5 hover:bg-white hover:border-vibaura-primary/30 transition-all duration-300 group shadow-sm"
+            className="w-11 h-11 rounded-[14px] bg-vibaura-primary flex items-center justify-center text-white font-black text-sm active:scale-95 group relative transition-all duration-300"
             aria-label="User menu"
           >
-            {/* Avatar Circle */}
-            <div className="w-10 h-10 rounded-[14px] bg-vibaura-primary flex items-center justify-center text-white font-black text-sm shadow-md shadow-vibaura-primary/20 select-none group-hover:scale-105 transition-transform">
-              {avatarLetter}
-            </div>
-            <div className="flex flex-col items-start leading-none hidden md:flex">
-              <span className="text-[11px] font-black text-[#1A1A1A] uppercase tracking-tighter mb-0.5">Account</span>
-              <span className="text-[10px] font-bold text-[#999] uppercase tracking-tighter">Menu</span>
-            </div>
-            <FontAwesomeIcon 
-              icon={faChevronDown} 
-              className={`text-[#999] text-[9px] ml-1 transition-transform duration-300 ${menuOpen ? 'rotate-180' : ''}`} 
-            />
+            {avatarLetter}
           </button>
 
-          {/* Context Menu Dropdown */}
-          {menuOpen && (
-            <div className="absolute right-0 top-[calc(100%+12px)] w-64 bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-[#F0F0F0] overflow-hidden z-50 animate-scale-in">
-              
-              {/* User Info Header */}
-              <div className="px-6 py-5 bg-[#F8F9FA] border-b border-[#F0F0F0]">
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0 shadow-lg shadow-vibaura-primary/20">
-                    {avatarLetter}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-black text-[#1A1A1A] truncate uppercase tracking-tighter leading-none">{displayName}</p>
-                    <p className="text-[10px] text-[#999] uppercase font-black tracking-tighter mt-1">{user?.role || 'Member'}</p>
-                  </div>
+          <Dropdown 
+            isOpen={menuOpen} 
+            onClose={() => setMenuOpen(false)}
+            positionClass="right-0 top-[calc(100%+12px)]"
+            className="w-64"
+          >
+            {/* User Info Header */}
+            <div className="px-6 py-5 bg-[#F8F9FA] border-b border-[#F0F0F0]">
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0">
+                  {avatarLetter}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-[#1A1A1A] truncate uppercase tracking-tighter leading-none">{displayName}</p>
+                  <p className="text-[10px] text-[#999] uppercase font-black tracking-tighter mt-1">{user?.role || 'Member'}</p>
                 </div>
               </div>
-
-              {/* Menu Items */}
-              <div className="p-3 space-y-1">
-                <MenuItem icon={faUserCircle} label="My Profile" sublabel="View and edit your profile" onClick={() => { setMenuOpen(false); }} />
-                <MenuItem icon={faBell} label="Notifications" sublabel="Coming soon" onClick={() => { setMenuOpen(false); }} muted />
-                <MenuItem icon={faCog} label="Settings" sublabel="App preferences" onClick={() => { setMenuOpen(false); }} muted />
-              </div>
-
-              {/* Divider + Logout */}
-              <div className="p-3 border-t border-[#F0F0F0]">
-                <button
-                  onClick={() => { logout(); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all group"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transition-colors">
-                    <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
-                  </div>
-                  <span className="text-xs font-black uppercase tracking-tighter">Log Out</span>
-                </button>
-              </div>
             </div>
-          )}
+
+            {/* Menu Items */}
+            <div className="p-3 space-y-1">
+              <MenuItem icon={faUserCircle} label="My Profile" sublabel="View and edit your profile" onClick={() => { setMenuOpen(false); }} />
+              <MenuItem icon={faBell} label="Notifications" sublabel="Coming soon" onClick={() => { setMenuOpen(false); }} muted />
+              <MenuItem icon={faCog} label="Settings" sublabel="App preferences" onClick={() => { setMenuOpen(false); }} muted />
+            </div>
+
+            {/* Divider + Logout */}
+            <div className="p-3 border-t border-[#F0F0F0]">
+              <button
+                onClick={() => { logout(); setMenuOpen(false); }}
+                className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transition-colors">
+                  <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
+                </div>
+                <span className="text-xs font-black uppercase tracking-tighter">Log Out</span>
+              </button>
+            </div>
+          </Dropdown>
         </div>
       </div>
 
