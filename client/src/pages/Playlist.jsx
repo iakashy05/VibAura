@@ -104,7 +104,7 @@ const Playlist = ({ playlist }) => {
       />
 
       <div className="px-8 py-8 pb-12">
-        <TrackList tracks={data.songs || []} />
+        <TrackList tracks={data.songs || []} playlistId={data.id} />
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import { formatTime } from '../../utils/time';
 import LikeButton from '../ui/LikeButton';
 import ContextMenu from '../ui/ContextMenu';
 
-const TrackList = ({ tracks }) => {
+const TrackList = ({ tracks, playlistId }) => {
   return (
     <div className="w-full">
       {/* Table Header */}
@@ -26,14 +26,14 @@ const TrackList = ({ tracks }) => {
       {/* Track Rows */}
       <div className="space-y-0.5">
         {tracks.map((track, index) => (
-          <TrackRow key={track.id} track={track} index={index + 1} allTracks={tracks} />
+          <TrackRow key={track.id} track={track} index={index + 1} allTracks={tracks} playlistId={playlistId} />
         ))}
       </div>
     </div>
   );
 };
 
-const TrackRow = ({ track, index, allTracks }) => {
+const TrackRow = ({ track, index, allTracks, playlistId }) => {
   const { currentTrack, isPlaying, setTrack, togglePlay } = usePlayerStore();
   const { user, updateUser, isAuthenticated } = useAuthStore();
   const isSelected = currentTrack?.id === track.id;
@@ -47,7 +47,7 @@ const TrackRow = ({ track, index, allTracks }) => {
     if (isSelected) {
       togglePlay();
     } else {
-      setTrack(track, allTracks);
+      setTrack(track, allTracks, playlistId);
     }
   };
 
@@ -73,7 +73,7 @@ const TrackRow = ({ track, index, allTracks }) => {
 
   return (
     <div 
-      onClick={() => setTrack(track, allTracks)}
+      onClick={() => setTrack(track, allTracks, playlistId)}
       className={`group grid grid-cols-[32px_4fr_3fr_minmax(120px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10 ring-1 ring-vibaura-primary/20' : 'hover:bg-black/5'}`}
     >
       {/* Index / Play / Playing Animation */}

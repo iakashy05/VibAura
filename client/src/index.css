@@ -228,3 +228,8 @@
 .animate-particle {
   animation: particle-burst 0.4s ease-out forwards;
 }
+@keyframes gradient-xy {
+  0%, 100% { background-size: 400% 400%; background-position: 0% 50%; }
+  50% { background-size: 200% 200%; background-position: 100% 50%; }
+}
+.animate-gradient-xy { animation: gradient-xy 15s ease infinite; }

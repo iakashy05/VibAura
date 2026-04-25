@@ -4,6 +4,7 @@ import Artist from '../../pages/Artist';
 import Playlist from '../../pages/Playlist';
 import Search from '../../pages/Search';
 import AuthPage from '../../pages/AuthPage';
+import Vibrance from '../../pages/Vibrance';
 
 /**
  * ViewRenderer is the "Traffic Controller" for the main content area.
@@ -25,6 +26,9 @@ const ViewRenderer = ({ currentPage, selectedData, navigateTo, searchQuery }) =>
 
     case 'search':
       return <Search query={searchQuery} onNavigate={navigateTo} />;
+
+    case 'vibrance':
+      return <Vibrance />;
 
 
     default:

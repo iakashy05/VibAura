@@ -26,25 +26,22 @@ const MusicSection = ({ title, items, type, onCardClick, onItemContextClick }) =
 
   return (
     <section className="relative group/section">
-      <div className="flex items-center justify-between mb-6 px-1">
-        <h2 className="text-2xl font-bold text-text-primary uppercase tracking-tighter">{title}</h2>
-        <button className="text-vibaura-primary font-semibold hover:underline text-sm opacity-60 hover:opacity-100 transition-opacity">
-          Show all
-        </button>
+      <div className="flex items-center justify-between mb-4 px-1">
+        <h2 className="text-xl font-bold text-text-primary uppercase tracking-tighter">{title}</h2>
       </div>
 
-      <div className="relative">
-        {/* Navigation Buttons */}
+      <div className="relative -mx-6">
+        {/* Navigation Buttons - Centered on the image part (145px height) */}
         <button 
           onClick={() => scroll('left')}
-          className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-vibaura-surface/60 backdrop-blur-md border border-white/5 text-text-primary opacity-0 group-hover/section:opacity-100 transition-all duration-300 shadow-xl hover:bg-vibaura-surface hover:text-vibaura-primary active:scale-90"
+          className="absolute left-2 top-[72.5px] -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-vibaura-surface/60 backdrop-blur-md border border-white/5 text-text-primary opacity-0 group-hover/section:opacity-100 transition-all duration-300 shadow-xl hover:bg-vibaura-surface hover:text-vibaura-primary active:scale-90"
         >
           <FontAwesomeIcon icon={faChevronLeft} />
         </button>
 
         <button 
           onClick={() => scroll('right')}
-          className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-vibaura-surface/60 backdrop-blur-md border border-white/5 text-text-primary opacity-0 group-hover/section:opacity-100 transition-all duration-300 shadow-xl hover:bg-vibaura-surface hover:text-vibaura-primary active:scale-90"
+          className="absolute right-2 top-[72.5px] -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-vibaura-surface/60 backdrop-blur-md border border-white/5 text-text-primary opacity-0 group-hover/section:opacity-100 transition-all duration-300 shadow-xl hover:bg-vibaura-surface hover:text-vibaura-primary active:scale-90"
         >
           <FontAwesomeIcon icon={faChevronRight} />
         </button>
@@ -52,10 +49,10 @@ const MusicSection = ({ title, items, type, onCardClick, onItemContextClick }) =
         {/* Scroll Container */}
         <div 
           ref={scrollRef}
-          className="flex overflow-x-auto no-scrollbar gap-5 pb-4 px-1"
+          className="flex overflow-x-auto no-scrollbar gap-5 pb-4 px-6"
         >
           {items.map(item => (
-            <div key={item.id} className="flex-shrink-0 w-[200px]">
+            <div key={item.id} className="flex-shrink-0 w-[145px]">
               <Card 
                 {...item} 
                 rounded={type === 'artist' ? "full" : "lg"} 

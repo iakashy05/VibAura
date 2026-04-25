@@ -8,6 +8,7 @@ import Toast from './components/ui/Toast';
 import ConfirmModal from './components/ui/ConfirmModal';
 import { useVibauraNavigation } from './hooks/useVibauraNavigation';
 import { useAuthStore } from './store/authStore';
+import FullscreenPlayer from './components/layout/FullscreenPlayer';
 import { checkServerHealth } from './services/api';
 
 function App() {
@@ -69,12 +70,12 @@ function App() {
       />
 
       {/* 2. Middle Row: Sidebar + Main Content Pod */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden pb-4">
         <Sidebar onNavigate={navigateTo} currentPage={currentPage} />
 
         {/* The Rounded "Pod" (Main Content area) */}
-        <main className="flex-1 bg-vibaura-view-bg rounded-tl-[40px] rounded-bl-[40px] overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto custom-scrollbar page-scroll-area relative">
+        <main className="flex-1 bg-vibaura-view-bg rounded-[40px] overflow-hidden flex flex-col mr-6 ml-2 py-6">
+          <div className="flex-1 overflow-y-auto no-scrollbar page-scroll-area relative">
 
             {/* Modular View Management */}
             <ViewRenderer
@@ -94,6 +95,7 @@ function App() {
       {/* Global Notifications */}
       <Toast />
       <ConfirmModal />
+      <FullscreenPlayer />
     </div>
   );
 }

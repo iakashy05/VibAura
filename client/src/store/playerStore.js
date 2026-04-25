@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { logPlayHistory } from '../services/libraryService';
+import { logPlayHistory, logHeartbeat } from '../services/libraryService';
 
 export const usePlayerStore = create((set, get) => ({
   // --- State ---
@@ -14,14 +14,15 @@ export const usePlayerStore = create((set, get) => ({
   isShuffle: false,
   isRepeat: false,
   originalQueue: [], // Store the original order
+  currentPlaylistId: null, // Track where the music is playing from
 
   // --- Actions ---
   
   // Set a single track and start playing
-  setTrack: (track, newQueue = []) => {
+  setTrack: (track, newQueue = [], playlistId = null) => {
     // Fire and forget history log
     if (track?.id) {
-      logPlayHistory(track.id).catch(() => {});
+      logPlayHistory(track.id, playlistId || get().currentPlaylistId).catch(() => {});
     }
 
     set({ 
@@ -33,8 +34,22 @@ export const usePlayerStore = create((set, get) => ({
       originalQueue: newQueue.length > 0 ? newQueue : [track],
       currentIndex: newQueue.length > 0 
         ? newQueue.findIndex(t => t.id === track.id) 
-        : 0
+        : 0,
+      currentPlaylistId: playlistId
     });
+
+    // Reset heartbeat
+    const { heartbeatInterval } = get();
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    
+    const newInterval = setInterval(() => {
+      const state = get();
+      if (state.isPlaying && state.currentTrack) {
+        logHeartbeat(state.currentTrack.id);
+      }
+    }, 10000); // Every 10 seconds
+
+    set({ heartbeatInterval: newInterval });
   },
 
   // Toggle Shuffle
@@ -66,14 +81,14 @@ export const usePlayerStore = create((set, get) => ({
   toggleRepeat: () => set((state) => ({ isRepeat: !state.isRepeat })),
 
   // Shuffle and Play from a list
-  shufflePlay: (newQueue) => {
+  shufflePlay: (newQueue, playlistId = null) => {
     if (!newQueue || newQueue.length === 0) return;
     
     const shuffled = [...newQueue].sort(() => Math.random() - 0.5);
     const firstTrack = shuffled[0];
 
     if (firstTrack?.id) {
-      logPlayHistory(firstTrack.id).catch(() => {});
+      logPlayHistory(firstTrack.id, playlistId).catch(() => {});
     }
 
     set({
@@ -84,7 +99,8 @@ export const usePlayerStore = create((set, get) => ({
       isPlaying: true,
       isShuffle: true,
       progress: 0,
-      currentTime: 0
+      currentTime: 0,
+      currentPlaylistId: playlistId
     });
   },
 
@@ -96,14 +112,14 @@ export const usePlayerStore = create((set, get) => ({
 
   // Skip to Next Track
   nextTrack: () => {
-    const { queue, currentIndex } = get();
+    const { queue, currentIndex, currentPlaylistId } = get();
     if (queue.length === 0 || currentIndex === -1) return;
     
     const nextIndex = (currentIndex + 1) % queue.length;
     const nextItem = queue[nextIndex];
 
     if (nextItem?.id) {
-      logPlayHistory(nextItem.id).catch(() => {});
+      logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
     }
 
     set({ 
@@ -115,14 +131,14 @@ export const usePlayerStore = create((set, get) => ({
 
   // Skip to Previous Track
   prevTrack: () => {
-    const { queue, currentIndex } = get();
+    const { queue, currentIndex, currentPlaylistId } = get();
     if (queue.length === 0 || currentIndex === -1) return;
     
     const prevIndex = (currentIndex - 1 + queue.length) % queue.length;
     const prevItem = queue[prevIndex];
 
     if (prevItem?.id) {
-      logPlayHistory(prevItem.id).catch(() => {});
+      logPlayHistory(prevItem.id, currentPlaylistId).catch(() => {});
     }
 
     set({ 

@@ -21,13 +21,33 @@ export const getLibrary = async () => {
   }
 };
 
-export const logPlayHistory = async (songId) => {
+export const logPlayHistory = async (songId, playlistId = null) => {
   try {
-    const response = await api.post('/library/history', { songId });
+    const response = await api.post('/library/history', { songId, playlistId });
     return response.data;
   } catch (error) {
     console.error('❌ Failed to log play history:', error.message);
     throw error;
+  }
+};
+
+export const getVibrance = async () => {
+  try {
+    const response = await api.get('/library/vibrance');
+    return response.data;
+  } catch (error) {
+    console.error('❌ Failed to fetch vibrance:', error.message);
+    throw error;
+  }
+};
+
+export const logHeartbeat = async (songId) => {
+  try {
+    const response = await api.post('/library/history/heartbeat', { songId });
+    return response.data;
+  } catch (error) {
+    // Silent fail for heartbeats to not disrupt UI
+    return null;
   }
 };
 

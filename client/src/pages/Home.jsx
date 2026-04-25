@@ -13,8 +13,8 @@ const Home = ({ onNavigate }) => {
   useEffect(() => {
     const loadHome = async () => {
       try {
-        const data = await getDiscoveryData();
-        setSections(data);
+        const discoveryData = await getDiscoveryData();
+        setSections(discoveryData);
       } catch (err) {
         setError('Failed to load music selections.');
       } finally {
@@ -45,7 +45,7 @@ const Home = ({ onNavigate }) => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-10 space-y-14 pb-12">
+    <div className="max-w-7xl mx-auto px-6 py-10 space-y-10 pb-12">
       {sections.map(section => (
         <MusicSection 
           key={section.id || section.title} 

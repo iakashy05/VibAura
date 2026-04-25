@@ -10,7 +10,13 @@ import {
   faCheck,
   faPen,
   faThumbtack,
-  faShareNodes
+  faShareNodes,
+  faWaveSquare,
+  faHeart,
+  faHistory,
+  faFolder,
+  faMicrophoneLines,
+  faUsers
 } from '@fortawesome/free-solid-svg-icons';
 import Button from '../ui/button';
 import CreatePlaylistModal from '../library/CreatePlaylistModal';
@@ -220,7 +226,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   });
 
   return (
-    <aside className="w-80 flex flex-col h-full bg-vibaura-surface p-6">
+    <aside className="w-[360px] flex flex-col h-full bg-vibaura-surface p-6 transition-all duration-300">
 
 
 
@@ -286,19 +292,44 @@ const Sidebar = ({ onNavigate, currentPage }) => {
         </div>
 
         {/* Playlist List (Scrollable) */}
-        <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto space-y-1 pr-1 no-scrollbar">
           {/* Liked Songs synthetic playlist */}
           <div
             onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
-            className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
+            className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
           >
-            <div className="flex flex-col">
-              <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
-                Liked Songs
-              </span>
-              <span className="text-[10px] text-[#777] font-bold">
-                Playlist • {likedSongs.length} songs
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary">
+                <FontAwesomeIcon icon={faHeart} size="lg" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight">
+                  Liked Songs
+                </span>
+                <span className="text-[10px] text-[#777] font-bold">
+                  Playlist • {likedSongs.length} songs
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Vibrance (Monthly Report) */}
+          <div
+            onClick={() => onNavigate('vibrance')}
+            className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary">
+                <FontAwesomeIcon icon={faWaveSquare} size="lg" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight">
+                  Vibrance
+                </span>
+                <span className="text-[10px] text-[#777] font-bold">
+                  Monthly Report
+                </span>
+              </div>
             </div>
           </div>
 
@@ -306,15 +337,20 @@ const Sidebar = ({ onNavigate, currentPage }) => {
           {recentlyPlayed.length > 0 && (
             <div
               onClick={() => onNavigate('playlist', { id: 'recently-played', title: 'Recently Played', songs: recentlyPlayed })}
-              className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
+              className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
             >
-              <div className="flex flex-col">
-                <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
-                  Recently Played
-                </span>
-                <span className="text-[10px] text-[#777] font-bold">
-                  History • {recentlyPlayed.length} songs
-                </span>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary">
+                  <FontAwesomeIcon icon={faHistory} size="lg" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight">
+                    Recently Played
+                  </span>
+                  <span className="text-[10px] text-[#777] font-bold">
+                    History • {recentlyPlayed.length} songs
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -354,20 +390,25 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, onDelete, activeMenu, setActiveMenu, menuRef, user }) => (
   <div
     onClick={() => onNavigate(type, item)}
-    className="group relative flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer"
+    className="group relative flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer"
   >
-    <div className="flex flex-col min-w-0 flex-1">
-      <div className="flex items-center gap-2 mb-0.5">
-        <span className="font-bold text-[#1A1A1A] transition-colors truncate text-[13px] tracking-tight">
-          {item.title}
-        </span>
-        {isPinned && (
-          <FontAwesomeIcon icon={faThumbtack} className="text-[9px] text-vibaura-primary rotate-[30deg]" />
-        )}
+    <div className="flex items-center gap-4 min-w-0 flex-1">
+      <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-vibaura-primary">
+        <FontAwesomeIcon icon={type === 'artist' ? faMicrophoneLines : faFolder} size="lg" />
       </div>
-      <span className="text-[10px] text-[#777] font-bold">
-        {type === 'artist' ? 'Artist' : `Playlist • ${item.songs?.length || 0} songs`}
-      </span>
+      <div className="flex flex-col min-w-0 flex-1">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors truncate text-[13px] tracking-tight">
+            {item.title}
+          </span>
+          {isPinned && (
+            <FontAwesomeIcon icon={faThumbtack} className="text-[9px] text-vibaura-primary rotate-[30deg]" />
+          )}
+        </div>
+        <span className="text-[10px] text-[#777] font-bold">
+          {type === 'artist' ? 'Artist' : `Playlist • ${item.songs?.length || 0} songs`}
+        </span>
+      </div>
     </div>
 
     <div className="flex items-center gap-3">

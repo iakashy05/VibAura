@@ -1,7 +1,10 @@
 import User from '../models/User.js';
 import Song from '../models/Song.js';
 import Playlist from '../models/Playlist.js';
+import PlayLog from '../models/PlayLog.js';
+import Artist from '../models/Artist.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import mongoose from 'mongoose';
 
 class LibraryController {
   /**
@@ -121,12 +124,13 @@ class LibraryController {
    * Log a song to recently played history.
    */
   logPlayHistory = asyncHandler(async (req, res) => {
-    const { songId } = req.body;
+    const { songId, playlistId } = req.body;
     if (!songId) return res.status(400).json({ message: 'songId is required' });
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // 1. Update Recently Played (Legacy/Quick Access)
     // Remove song if it already exists to avoid duplicates, then unshift to start
     user.recentlyPlayed = user.recentlyPlayed.filter(entry => entry.song.toString() !== songId);
     user.recentlyPlayed.unshift({ song: songId, playedAt: Date.now() });
@@ -137,7 +141,141 @@ class LibraryController {
     }
 
     await user.save();
+
+    // 2. Create detailed PlayLog for Analytics
+    await PlayLog.create({
+      user: req.user.id,
+      song: songId,
+      playlist: playlistId || null,
+      playedAt: Date.now()
+    });
+
     res.json({ message: 'History updated' });
+  });
+
+  /**
+   * Get Monthly Vibrance (Monthly Report) analytics.
+   */
+  getVibrance = asyncHandler(async (req, res) => {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    // 1. Aggregation for Top Songs
+    const topSongs = await PlayLog.aggregate([
+      { $match: { user: userId, playedAt: { $gte: startOfMonth } } },
+      { $group: { _id: '$song', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'songs',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'songDetails'
+        }
+      },
+      { $unwind: '$songDetails' },
+      {
+        $lookup: {
+          from: 'artists',
+          localField: 'songDetails.artists',
+          foreignField: '_id',
+          as: 'artistDetails'
+        }
+      }
+    ]);
+
+    // 2. Aggregation for Top Artists
+    const topArtistsRaw = await PlayLog.aggregate([
+      { $match: { user: userId, playedAt: { $gte: startOfMonth } } },
+      {
+        $lookup: {
+          from: 'songs',
+          localField: 'song',
+          foreignField: '_id',
+          as: 'song'
+        }
+      },
+      { $unwind: '$song' },
+      { $unwind: '$song.artists' },
+      { $group: { _id: '$song.artists', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'artists',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'artistDetails'
+        }
+      },
+      { $unwind: '$artistDetails' }
+    ]);
+
+    // 3. Aggregation for Top Playlists
+    const topPlaylists = await PlayLog.aggregate([
+      { $match: { user: userId, playedAt: { $gte: startOfMonth }, playlist: { $ne: null } } },
+      { $group: { _id: '$playlist', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: 'playlists',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'playlistDetails'
+        }
+      },
+      { $unwind: '$playlistDetails' }
+    ]);
+
+    // 4. Total Listen Time (Rough estimate based on song duration)
+    // First get all unique songs played this month and their counts
+    const songCounts = await PlayLog.aggregate([
+      { $match: { user: userId, playedAt: { $gte: startOfMonth } } },
+      { $group: { _id: '$song', count: { $sum: 1 } } }
+    ]);
+
+    let totalDuration = 0;
+    for (const item of songCounts) {
+      const logs = await PlayLog.find({ 
+        user: userId, 
+        song: item._id, 
+        playedAt: { $gte: startOfMonth } 
+      });
+      
+      // Calculate actual time spent based on heartbeat updates
+      for (const log of logs) {
+        if (log.listenedSeconds) {
+          totalDuration += log.listenedSeconds;
+        } else {
+          // Fallback for logs without heartbeats (legacy or 1-click)
+          // We'll give them 10 seconds as a baseline if they just clicked
+          totalDuration += 10; 
+        }
+      }
+    }
+
+    res.json({
+      month: startOfMonth.toLocaleString('default', { month: 'long' }),
+      totalMinutes: Math.round(totalDuration / 60),
+      topSongs: topSongs.map(s => ({
+        ...s.songDetails,
+        playCount: s.count,
+        artists: s.artistDetails
+      })),
+      topArtists: topArtistsRaw.map(a => ({
+        ...a.artistDetails,
+        playCount: a.count
+      })),
+      topPlaylists: topPlaylists.map(p => ({
+        ...p.playlistDetails,
+        playCount: p.count
+      })),
+      totalMinutes: Math.round(totalDuration / 60)
+    });
   });
 
   /**
@@ -190,6 +328,29 @@ class LibraryController {
 
     await user.save();
     res.json({ pinned, message: pinned ? 'Artist pinned' : 'Artist unpinned' });
+  });
+
+  /**
+   * Record a heartbeat (10s of listening) for the current song.
+   */
+  logHeartbeat = asyncHandler(async (req, res) => {
+    const { songId } = req.body;
+    if (!songId) return res.status(400).json({ message: 'songId is required' });
+
+    // Find the most recent play log for this user and song within the last hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const log = await PlayLog.findOne({
+      user: req.user.id,
+      song: songId,
+      playedAt: { $gte: oneHourAgo }
+    }).sort({ playedAt: -1 });
+
+    if (log) {
+      log.listenedSeconds = (log.listenedSeconds || 0) + 10;
+      await log.save();
+    }
+
+    res.json({ message: 'Heartbeat recorded' });
   });
 }
 
