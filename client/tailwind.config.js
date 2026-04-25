@@ -12,10 +12,10 @@ export default {
           primary: '#6367FF',
           'primary-light': '#C9BEFF',
           'primary-hover': '#8494FF',
-          surface: '#ffffff',
+          surface: '#E8E8EC',
           tint: 'rgba(99, 103, 255, 0.05)',
-          'bg-muted': '#F1F2FF',
-          'view-bg': '#F1F2FF',
+          'bg-muted': '#E4E4E9',
+          'view-bg': '#E4E4E9',
           border: '#C9BEFF',
         },
         text: {

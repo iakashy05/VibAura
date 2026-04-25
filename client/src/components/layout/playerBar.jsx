@@ -39,7 +39,9 @@ const PlayerBar = () => {
     setCurrentTime,
     setDuration,
     isShuffle,
-    toggleShuffle
+    toggleShuffle,
+    isRepeat,
+    toggleRepeat
   } = usePlayerStore();
 
   // --- 1. Audio Playback Core ---
@@ -94,6 +96,15 @@ const PlayerBar = () => {
     }
   };
 
+  const handleEnded = () => {
+    if (isRepeat && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    } else {
+      nextTrack();
+    }
+  };
+
   // --- 2. Helper: Time Formatter ---
   const formatTime = (time) => {
     if (!time || isNaN(time)) return "0:00";
@@ -113,7 +124,7 @@ const PlayerBar = () => {
   const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
 
   const handleLikeClick = async (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     if (!isAuthenticated || !currentTrack) return;
     
     try {
@@ -131,80 +142,67 @@ const PlayerBar = () => {
   };
 
   return (
-    <footer className="h-24 bg-vibaura-surface flex items-center justify-between px-6 z-20 border-t border-black/5">
+    <div className="fixed bottom-6 left-0 right-0 px-8 z-50 flex items-center justify-center pointer-events-none select-none">
       <audio 
         ref={audioRef}
         src={currentTrack?.url}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={nextTrack}
+        onEnded={handleEnded}
       />
       
-      {/* 1. Track Info Section */}
-      <div className="flex items-center gap-4 w-[30%]">
-        <div className="w-14 h-14 rounded-lg bg-vibaura-bg-muted overflow-hidden shadow-lg group cursor-pointer relative">
-          <img 
-            src={currentTrack?.image || "https://placehold.co/100x100/6367FF/FFFFFF?text=Aura"} 
-            alt="Album" 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-          />
-          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </div>
-        <div className="flex flex-col min-w-0">
-          <span className="font-bold text-text-primary truncate hover:text-vibaura-primary cursor-pointer transition-colors">
-            {currentTrack?.title || "Select a Song"}
-          </span>
-          <span className="text-sm text-text-secondary truncate hover:text-vibaura-primary/80 cursor-pointer transition-colors">
-            {Array.isArray(currentTrack?.artists) 
-              ? currentTrack.artists.map(a => a.name).join(', ') 
-              : (currentTrack?.artist || 'VibAura Artist')}
-          </span>
-        </div>
-        {currentTrack && (
-          <LikeButton 
-            isLiked={isLiked}
-            onClick={handleLikeClick}
-            className="ml-2"
-          />
-        )}
-      </div>
+      {/* 1. Main Playback Controls Island (Center) */}
+      <div className="pointer-events-auto flex flex-col items-center gap-1.5 bg-white/60 backdrop-blur-xl border border-white rounded-[32px] px-10 py-4 w-full max-w-2xl relative overflow-hidden group/center shadow-[0_8px_40px_rgba(0,0,0,0.03)] transition-all duration-500 hover:bg-white/70 hover:border-black/5">
+        {/* Subtle decorative glows */}
+        <div className="absolute -left-20 -top-20 w-40 h-40 bg-vibaura-primary/5 blur-[60px] rounded-full pointer-events-none animate-pulse"></div>
+        <div className="absolute -right-20 -bottom-20 w-40 h-40 bg-vibaura-secondary/5 blur-[60px] rounded-full pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
 
-      {/* 2. Main Playback Controls Center */}
-      <div className="flex flex-col items-center gap-2 max-w-xl w-full">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-10 relative z-10 mb-1">
           <button 
             onClick={toggleShuffle}
-            className={`transition-all active:scale-90 ${isShuffle ? 'text-vibaura-primary drop-shadow-[0_0_8px_rgba(99,103,255,0.4)]' : 'text-text-muted hover:text-vibaura-primary'}`}
+            className={`transition-all active:scale-75 text-[13px] ${isShuffle ? 'text-vibaura-primary drop-shadow-[0_0_8px_rgba(99,103,255,0.4)]' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+            title="Shuffle"
           >
             <FontAwesomeIcon icon={faShuffle} />
           </button>
           <button 
             onClick={prevTrack}
-            className="text-text-primary hover:text-vibaura-primary transition-all text-xl active:scale-90"
+            className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[15px] active:scale-75"
+            title="Previous"
           >
             <FontAwesomeIcon icon={faStepBackward} />
           </button>
           
-          <Button 
-            onClick={togglePlay}
-            size="icon" 
-            className="w-11 h-11 shadow-lg shadow-vibaura-primary/20 hover:scale-110"
-          >
-            <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "ml-0.5" : ""} />
-          </Button>
+          <div className="relative group/play">
+            <div className="absolute inset-0 bg-vibaura-primary/25 blur-2xl rounded-full scale-125 opacity-0 group-hover/play:opacity-100 transition-opacity duration-500"></div>
+            <Button 
+              onClick={togglePlay}
+              size="icon" 
+              className="w-12 h-12 shadow-[0_6px_20px_rgba(99,103,255,0.3)] hover:scale-110 active:scale-90 relative z-10 bg-vibaura-primary text-white border-none transition-all duration-300"
+            >
+              <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "ml-1" : ""} />
+            </Button>
+          </div>
 
           <button 
             onClick={nextTrack}
-            className="text-text-primary hover:text-vibaura-primary transition-all text-xl active:scale-90"
+            className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[15px] active:scale-75"
+            title="Next"
           >
             <FontAwesomeIcon icon={faStepForward} />
           </button>
-          <button className="text-text-muted hover:text-vibaura-primary transition-all active:scale-90"><FontAwesomeIcon icon={faRepeat} /></button>
+          <button 
+            onClick={toggleRepeat}
+            className={`transition-all active:scale-75 text-[13px] ${isRepeat ? 'text-vibaura-primary drop-shadow-[0_0_8px_rgba(99,103,255,0.4)]' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+            title="Repeat"
+          >
+            <FontAwesomeIcon icon={faRepeat} />
+          </button>
         </div>
         
-        {/* Progress Bar */}
-        <div className="flex items-center gap-3 w-full group">
-          <span className="text-[10px] text-text-muted font-mono w-8">
+        {/* Progress Bar (Integrated) */}
+        <div className="flex items-center gap-4 w-full group/progress">
+          <span className="text-[9px] text-[#777] font-black uppercase tracking-widest w-8 text-center tabular-nums">
             {formatTime(currentTime)}
           </span>
           <div className="flex-1 relative flex items-center h-4">
@@ -218,31 +216,33 @@ const PlayerBar = () => {
               onMouseUp={handleSeekEnd}
               className="absolute inset-0 w-full opacity-0 cursor-pointer z-10"
             />
-            <div className="w-full h-1 bg-vibaura-tint rounded-full relative">
+            <div className="w-full h-1.5 bg-black/5 rounded-full relative overflow-hidden transition-all duration-300 group-hover/progress:h-2 group-hover/progress:bg-black/10">
               <div 
-                className="h-full bg-vibaura-primary group-hover:bg-vibaura-primary/80 shadow-[0_0_12px_rgba(99,103,255,0.4)] rounded-full"
+                className="h-full bg-vibaura-primary rounded-full transition-all duration-100"
                 style={{ width: `${progress}%` }}
               ></div>
-              {/* Playhead thumb handle */}
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md pointer-events-none"
-                style={{ left: `calc(${progress}% - 6px)` }}
-              ></div>
             </div>
+            {/* Playhead thumb handle (Visual only) */}
+            <div 
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover/progress:opacity-100 transition-all shadow-lg pointer-events-none scale-0 group-hover/progress:scale-100"
+              style={{ left: `calc(${progress}% - 8px)` }}
+            ></div>
           </div>
-          <span className="text-[10px] text-text-muted font-mono w-8 text-right">
+          <span className="text-[9px] text-[#777] font-black uppercase tracking-widest w-8 text-center tabular-nums">
             {formatTime(duration)}
           </span>
         </div>
       </div>
 
-      {/* 3. Volume & Tools Section */}
-      <div className="flex items-center justify-end gap-5 w-[30%] text-text-secondary">
-        <button className="hover:text-vibaura-primary transition-colors active:scale-90"><FontAwesomeIcon icon={faExpand} size="sm" /></button>
-        <div className="flex items-center gap-3 w-32 group relative">
+      {/* 2. Volume & Tools Island (Absolute right) */}
+      <div className="absolute right-8 pointer-events-auto flex items-center gap-6 bg-white/60 backdrop-blur-xl border border-white rounded-[28px] p-3.5 px-6 min-w-[220px] justify-end shadow-[0_8px_40px_rgba(0,0,0,0.03)] transition-all duration-500 hover:bg-white/70 hover:border-black/5">
+        <button className="text-[#888] hover:text-[#1A1A1A] transition-colors active:scale-75" title="Expand">
+          <FontAwesomeIcon icon={faExpand} size="sm" />
+        </button>
+        <div className="flex items-center gap-3 w-32 group/volume relative">
           <button 
             onClick={toggleMute}
-            className="w-5 flex justify-center hover:text-vibaura-primary transition-colors"
+            className="w-5 flex justify-center text-[#888] hover:text-[#1A1A1A] transition-colors"
           >
             <FontAwesomeIcon icon={getVolumeIcon()} size="sm" />
           </button>
@@ -256,22 +256,22 @@ const PlayerBar = () => {
               onChange={(e) => setVolume(parseFloat(e.target.value))}
               className="absolute inset-0 w-full opacity-0 cursor-pointer z-10"
             />
-            <div className="w-full h-1 bg-vibaura-tint rounded-full relative">
+            <div className="w-full h-1.5 bg-black/5 rounded-full relative overflow-hidden transition-all duration-300 group-hover/volume:h-2 group-hover/volume:bg-black/10">
               <div 
-                className="h-full bg-vibaura-primary group-hover:bg-vibaura-primary/80 rounded-full"
+                className="h-full bg-vibaura-primary rounded-full transition-all duration-200"
                 style={{ width: `${volume * 100}%` }}
               ></div>
-              {/* Volume thumb handle */}
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md pointer-events-none"
-                style={{ left: `calc(${volume * 100}% - 6px)` }}
-              ></div>
             </div>
+            
+            {/* Custom Handle for Volume (Visual only) */}
+            <div 
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover/volume:opacity-100 transition-all duration-300 shadow-lg pointer-events-none scale-0 group-hover/volume:scale-100"
+              style={{ left: `calc(${volume * 100}% - 8px)` }}
+            ></div>
           </div>
         </div>
       </div>
-
-    </footer>
+    </div>
   );
 };
 

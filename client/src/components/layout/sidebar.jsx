@@ -24,6 +24,9 @@ import {
 } from '../../services/libraryService';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
+import { usePlayerStore } from '../../store/playerStore';
+import LikeButton from '../ui/LikeButton';
+import { toggleLikeSong } from '../../services/libraryService';
 
 const Sidebar = ({ onNavigate, currentPage }) => {
   const [playlists, setPlaylists] = useState([]);
@@ -42,6 +45,10 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const { showToast, showConfirm } = useUIStore();
   const menuRef = React.useRef(null);
   const sortMenuRef = React.useRef(null);
+  
+  // Player state for info island
+  const { currentTrack, isPlaying } = usePlayerStore();
+  const { updateUser, isAuthenticated } = useAuthStore();
 
   const fetchLibrary = async () => {
     try {
@@ -151,6 +158,26 @@ const Sidebar = ({ onNavigate, currentPage }) => {
       setIsCreating(false);
     }
   };
+
+  const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
+
+  const handleLikeClick = async (e) => {
+    if (e) e.stopPropagation();
+    if (!isAuthenticated || !currentTrack) return;
+    
+    try {
+      const res = await toggleLikeSong(currentTrack.id);
+      
+      const newLikedSongs = res.liked 
+        ? [...(user.likedSongs || []), currentTrack.id]
+        : (user.likedSongs || []).filter(id => id !== currentTrack.id);
+      
+      updateUser({ ...user, likedSongs: newLikedSongs });
+      window.dispatchEvent(new Event('vibaura-library-updated'));
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+    }
+  };
   const filteredPlaylists = playlists
     .filter(p => p.title?.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
@@ -187,127 +214,160 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   });
 
   return (
-    <aside className="w-72 flex flex-col h-full bg-vibaura-surface p-6">
+    <aside className="w-80 flex flex-col h-full bg-vibaura-surface p-6">
       
 
 
-      {/* Library Section */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="flex items-center justify-between mb-4 px-2">
-          <div className="flex items-center gap-3 text-text-secondary">
-            <FontAwesomeIcon icon={faBookOpen} />
-            <h3 className="font-semibold text-sm uppercase tracking-wider">Your Library</h3>
+        <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-4 flex-1 flex flex-col min-h-0 border border-black/5">
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="flex items-center gap-3 text-[#999]">
+              <FontAwesomeIcon icon={faBookOpen} size="sm" />
+              <h3 className="font-black text-[11px] uppercase tracking-[0.2em]">Your Library</h3>
+            </div>
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="text-[#999] hover:text-[#1A1A1A] transition-colors"
+            >
+              <FontAwesomeIcon icon={faPlus} size="sm" />
+            </button>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setIsModalOpen(true)}
-            className="w-8 h-8 hover:bg-vibaura-primary-light hover:text-vibaura-primary"
-          >
-            <FontAwesomeIcon icon={faPlus} size="sm" />
-          </Button>
+
+          {/* Sort & Filter Controls */}
+          <div className="flex items-center gap-2 mb-6 px-2">
+            <div className="flex-1 relative">
+              <input 
+                type="text" 
+                placeholder="Search library..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-4 py-2 text-[10px] text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
+              />
+            </div>
+            
+            <div className="relative" ref={sortMenuRef}>
+              <button 
+                onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
+                className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
+                title="Sort Library"
+              >
+                <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
+              </button>
+
+              {isSortMenuOpen && (
+                <div className="absolute right-0 top-10 z-50 bg-white border border-[#F0F0F0] rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] overflow-hidden min-w-[160px] animate-scale-in p-1.5">
+                  <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
+                  <SortOption 
+                    active={sortOrder === 'recent'} 
+                    onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }} 
+                    label="Recently Added" 
+                  />
+                  <SortOption 
+                    active={sortOrder === 'alphabetical'} 
+                    onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }} 
+                    label="A-Z" 
+                  />
+                  <SortOption 
+                    active={sortOrder === 'most-played'} 
+                    onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }} 
+                    label="Most Played" 
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Playlist List (Scrollable) */}
+          <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+            {/* Liked Songs synthetic playlist */}
+            <div 
+              onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
+              className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
+            >
+              <div className="flex flex-col">
+                <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
+                  Liked Songs
+                </span>
+                <span className="text-[10px] text-[#777] font-bold">
+                  Playlist • {likedSongs.length} songs
+                </span>
+              </div>
+            </div>
+
+            {/* Recently Played synthetic playlist */}
+            {recentlyPlayed.length > 0 && (
+              <div 
+                onClick={() => onNavigate('playlist', { id: 'recently-played', title: 'Recently Played', songs: recentlyPlayed })}
+                className="group flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer mb-2"
+              >
+                <div className="flex flex-col">
+                  <span className="font-bold text-[#1A1A1A] transition-colors text-[13px] tracking-tight mb-0.5">
+                    Recently Played
+                  </span>
+                  <span className="text-[10px] text-[#777] font-bold">
+                    History • {recentlyPlayed.length} songs
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {unifiedLibrary.map(item => (
+              <LibraryItem 
+                key={`${item.type}-${item.id}`}
+                item={item}
+                type={item.type}
+                onNavigate={onNavigate}
+                isPinned={item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)}
+                onTogglePin={handleTogglePin}
+                onEdit={setEditingPlaylist}
+                onDelete={handleDeleteOrRemove}
+                activeMenu={activeMenu}
+                setActiveMenu={setActiveMenu}
+                menuRef={menuRef}
+                user={user}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Sort & Filter Controls */}
-        <div className="flex items-center gap-2 mb-4 px-2">
-          <div className="flex-1 relative">
-            <input 
-              type="text" 
-              placeholder="Search library..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#F5F5F7] border border-[#E9E9EB] rounded-xl px-4 py-2 text-[11px] text-[#1A1A1A] placeholder-[#AAA] focus:outline-none focus:border-vibaura-primary transition-all font-bold shadow-sm"
+        <CreatePlaylistModal 
+          isOpen={isModalOpen || !!editingPlaylist}
+          onClose={() => { setIsModalOpen(false); setEditingPlaylist(null); }}
+          onSubmit={editingPlaylist ? handleUpdatePlaylist : handleCreatePlaylist}
+          isSubmitting={isCreating}
+          initialData={editingPlaylist}
+        />
+
+      {/* Track Info Island (Now at bottom of sidebar) */}
+      <div className="mt-6 flex-shrink-0">
+        <div className="flex items-center gap-4 bg-white backdrop-blur-md rounded-[32px] p-3 pl-3 pr-6 w-full transition-transform hover:scale-[1.02] duration-300 border border-black/5">
+          <div className="w-14 h-14 rounded-[22px] bg-vibaura-bg-muted overflow-hidden shadow-sm group cursor-pointer relative flex-shrink-0">
+            <img 
+              src={currentTrack?.image || "https://placehold.co/100x100/6367FF/FFFFFF?text=Aura"} 
+              alt="Album" 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
             />
           </div>
-          
-          <div className="relative" ref={sortMenuRef}>
-            <button 
-              onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-              className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'bg-vibaura-primary text-white shadow-lg shadow-vibaura-primary/20' : 'bg-[#F5F5F7] text-[#999] hover:text-[#1A1A1A] hover:bg-gray-100'}`}
-              title="Sort Library"
-            >
-              <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
-            </button>
-
-            {isSortMenuOpen && (
-              <div className="absolute right-0 top-11 z-50 bg-white border border-[#F0F0F0] rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] overflow-hidden min-w-[160px] animate-scale-in p-1.5">
-                <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
-                <SortOption 
-                  active={sortOrder === 'recent'} 
-                  onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }} 
-                  label="Recently Added" 
-                />
-                <SortOption 
-                  active={sortOrder === 'alphabetical'} 
-                  onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }} 
-                  label="A-Z" 
-                />
-                <SortOption 
-                  active={sortOrder === 'most-played'} 
-                  onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }} 
-                  label="Most Played" 
-                />
-              </div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="font-bold text-[#1A1A1A] truncate text-[13px] tracking-tight leading-tight mb-0.5 hover:text-vibaura-primary cursor-pointer transition-colors">
+              {currentTrack?.title || "Select a Song"}
+            </span>
+            <span className="text-[10px] font-black text-[#666] uppercase tracking-tighter truncate hover:text-[#666] cursor-pointer transition-colors">
+              {Array.isArray(currentTrack?.artists) 
+                ? currentTrack.artists.map(a => a.name).join(', ') 
+                : (currentTrack?.artist || 'VibAura Artist')}
+            </span>
+          </div>
+          <div className="flex items-center">
+            {currentTrack && (
+              <LikeButton 
+                isLiked={isLiked}
+                onClick={handleLikeClick}
+                className="scale-90 hover:scale-110 transition-transform"
+              />
             )}
           </div>
         </div>
-
-        {/* Playlist List (Scrollable) */}
-        <div className="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
-          {/* Liked Songs synthetic playlist */}
-          <div 
-            onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
-            className="group flex flex-col px-4 py-4 rounded-[24px] border border-transparent hover:bg-gray-50 transition-all cursor-pointer mb-2 bg-white shadow-sm hover:shadow-md"
-          >
-            <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-sm tracking-tight">
-              Liked Songs
-            </span>
-            <span className="text-[10px] text-[#999] uppercase font-black tracking-tighter">
-              {likedSongs.length} tracks
-            </span>
-          </div>
-
-          {/* Recently Played synthetic playlist */}
-          {recentlyPlayed.length > 0 && (
-            <div 
-              onClick={() => onNavigate('playlist', { id: 'recently-played', title: 'Recently Played', songs: recentlyPlayed })}
-              className="group flex flex-col px-4 py-4 rounded-[24px] border border-transparent hover:bg-gray-50 transition-all cursor-pointer mb-2 bg-white shadow-sm hover:shadow-md"
-            >
-              <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-secondary transition-colors text-sm tracking-tight">
-                Recently Played
-              </span>
-              <span className="text-[10px] text-[#999] uppercase font-black tracking-tighter">
-                History
-              </span>
-            </div>
-          )}
-
-          {unifiedLibrary.map(item => (
-            <LibraryItem 
-              key={`${item.type}-${item.id}`}
-              item={item}
-              type={item.type}
-              onNavigate={onNavigate}
-              isPinned={item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)}
-              onTogglePin={handleTogglePin}
-              onEdit={setEditingPlaylist}
-              onDelete={handleDeleteOrRemove}
-              activeMenu={activeMenu}
-              setActiveMenu={setActiveMenu}
-              menuRef={menuRef}
-              user={user}
-            />
-          ))}
-        </div>
       </div>
-
-      <CreatePlaylistModal 
-        isOpen={isModalOpen || !!editingPlaylist}
-        onClose={() => { setIsModalOpen(false); setEditingPlaylist(null); }}
-        onSubmit={editingPlaylist ? handleUpdatePlaylist : handleCreatePlaylist}
-        isSubmitting={isCreating}
-        initialData={editingPlaylist}
-      />
     </aside>
   );
 };
@@ -316,31 +376,33 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, onDelete, activeMenu, setActiveMenu, menuRef, user }) => (
   <div 
     onClick={() => onNavigate(type, item)}
-    className="group relative flex items-center justify-between px-4 py-3 rounded-2xl border border-transparent hover:bg-gray-50 transition-all cursor-pointer"
+    className="group relative flex items-center justify-between px-4 py-4 rounded-[24px] hover:bg-white transition-all cursor-pointer"
   >
     <div className="flex flex-col min-w-0 flex-1">
-      <div className="flex items-center gap-2">
-        <span className="font-bold text-[#1A1A1A] transition-colors truncate text-sm tracking-tight">
+      <div className="flex items-center gap-2 mb-0.5">
+        <span className="font-bold text-[#1A1A1A] transition-colors truncate text-[13px] tracking-tight">
           {item.title}
         </span>
         {isPinned && (
-          <FontAwesomeIcon icon={faThumbtack} className="text-[10px] text-vibaura-primary rotate-[30deg]" />
+          <FontAwesomeIcon icon={faThumbtack} className="text-[9px] text-vibaura-primary rotate-[30deg]" />
         )}
       </div>
-      <span className="text-[9px] text-[#CCC] uppercase font-black tracking-tighter">
-        {type === 'artist' ? 'Artist' : `${item.songs?.length || 0} tracks`}
+      <span className="text-[10px] text-[#777] font-bold">
+        {type === 'artist' ? 'Artist' : `Playlist • ${item.songs?.length || 0} songs`}
       </span>
     </div>
-    
-    <button 
-      onClick={(e) => {
-        e.stopPropagation();
-        setActiveMenu(activeMenu === item.id ? null : item.id);
-      }}
-      className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded-full transition-all text-text-muted"
-    >
-      <FontAwesomeIcon icon={faEllipsisV} size="xs" />
-    </button>
+
+    <div className="flex items-center gap-3">
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveMenu(activeMenu === item.id ? null : item.id);
+        }}
+        className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded-full transition-all text-[#CCC]"
+      >
+        <FontAwesomeIcon icon={faEllipsisV} size="xs" />
+      </button>
+    </div>
 
     {activeMenu === item.id && (
       <div 

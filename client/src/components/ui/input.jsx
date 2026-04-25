@@ -4,6 +4,7 @@ const Input = forwardRef(({
   label, 
   icon, 
   className = '', 
+  inputClassName = '',
   ...props 
 }, ref) => {
   return (
@@ -16,7 +17,7 @@ const Input = forwardRef(({
       
       <div className="relative flex items-center group">
         {icon && (
-          <div className="absolute left-6 text-[#BBB] group-focus-within:text-vibaura-primary transition-colors">
+          <div className="absolute left-5 text-[#BBB] group-focus-within:text-vibaura-primary transition-colors">
             {icon}
           </div>
         )}
@@ -25,10 +26,11 @@ const Input = forwardRef(({
           ref={ref}
           className={`
             w-full bg-[#F5F5F7] border border-[#E9E9EB] rounded-[24px] py-4
-            ${icon ? 'pl-16 pr-6' : 'px-6'} 
+            ${icon ? 'pl-14 pr-6' : 'px-6'} 
             text-[#1A1A1A] placeholder-[#CCC] font-bold text-sm
             transition-all duration-300
-            focus:outline-none focus:border-vibaura-primary focus:bg-white focus:shadow-lg focus:shadow-vibaura-primary/5
+            focus:outline-none focus:border-vibaura-primary focus:bg-white focus:shadow-lg focus:shadow-black/5
+            ${inputClassName}
           `}
           {...props}
         />

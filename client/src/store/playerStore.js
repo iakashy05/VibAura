@@ -12,6 +12,7 @@ export const usePlayerStore = create((set, get) => ({
   currentTime: 0, // in seconds
   duration: 0,  // in seconds
   isShuffle: false,
+  isRepeat: false,
   originalQueue: [], // Store the original order
 
   // --- Actions ---
@@ -60,6 +61,9 @@ export const usePlayerStore = create((set, get) => ({
       });
     }
   },
+
+  // Toggle Repeat
+  toggleRepeat: () => set((state) => ({ isRepeat: !state.isRepeat })),
 
   // Shuffle and Play from a list
   shufflePlay: (newQueue) => {

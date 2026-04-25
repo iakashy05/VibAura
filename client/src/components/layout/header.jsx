@@ -91,7 +91,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
   };
 
   return (
-    <header className="h-16 flex items-center px-8 bg-vibaura-surface transition-all duration-300">
+    <header className="h-20 flex items-center px-8 bg-vibaura-surface transition-all duration-300">
       
       {/* 1. Left Section: Branding & Navigation Controls */}
       <div className="flex-1 flex items-center gap-6">
@@ -100,15 +100,15 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           className="flex items-center gap-3 px-2 cursor-pointer group"
           onClick={() => onNavigate('home')}
         >
-          <div className="w-9 h-9 bg-vibaura-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-vibaura-primary/20 transition-transform group-hover:scale-110">
-            <FontAwesomeIcon icon={faMusic} size="sm" />
+          <div className="w-11 h-11 bg-vibaura-primary rounded-[14px] flex items-center justify-center text-white shadow-lg shadow-vibaura-primary/20 transition-transform group-hover:scale-110">
+            <FontAwesomeIcon icon={faMusic} className="text-lg" />
           </div>
-          <span className="text-xl font-bold text-text-primary tracking-tight hidden md:block">VibAura</span>
+          <span className="text-2xl font-bold text-text-primary tracking-tight hidden md:block">VibAura</span>
         </div>
  
         <div className="h-6 w-[1px] bg-vibaura-border ml-2" />
  
-        <div className="flex gap-2 pl-4">
+        <div className="flex gap-2.5 pl-4">
           <IconButton 
             icon={faChevronLeft} 
             onClick={goBack} 
@@ -121,7 +121,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           />
           <IconButton 
             icon={faHome} 
-            className="ml-2 !bg-vibaura-primary !text-white shadow-lg" 
+            className="ml-2 !bg-vibaura-primary !text-white shadow-lg !border-none" 
             onClick={() => onNavigate('home')}
           />
         </div>
@@ -129,12 +129,12 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
 
       {/* 2. Center Section: Search Bar */}
       <div className="flex-[2] flex justify-center">
-        <div className="w-full max-w-md px-4 relative">
+        <div className="w-full max-w-lg px-4 relative group/search">
           <Input 
             ref={inputRef}
             placeholder="Search for magic..." 
-            icon={<FontAwesomeIcon icon={faSearch} size="sm" />}
-            className="!py-0.5" 
+            icon={<FontAwesomeIcon icon={faSearch} size="sm" className="text-[#999] group-focus-within/search:text-vibaura-primary transition-colors" />}
+            inputClassName="!py-3.5 !rounded-[24px] !bg-white !border-black/5 !text-sm !pl-14 !shadow-none focus:!bg-white focus:!border-vibaura-primary/30 focus:!shadow-none transition-all" 
             value={localQuery}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
@@ -172,16 +172,20 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(prev => !prev)}
-            className="flex items-center gap-2 p-1 rounded-full hover:bg-vibaura-bg-muted transition-all duration-200 group"
+            className="flex items-center gap-3 p-1.5 pr-4 rounded-[20px] bg-[#F5F5F7] border border-black/5 hover:bg-white hover:border-vibaura-primary/30 transition-all duration-300 group shadow-sm"
             aria-label="User menu"
           >
             {/* Avatar Circle */}
-            <div className="w-9 h-9 rounded-full bg-vibaura-primary flex items-center justify-center text-white font-black text-sm shadow-md shadow-vibaura-primary/30 select-none group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-[14px] bg-vibaura-primary flex items-center justify-center text-white font-black text-sm shadow-md shadow-vibaura-primary/20 select-none group-hover:scale-105 transition-transform">
               {avatarLetter}
+            </div>
+            <div className="flex flex-col items-start leading-none hidden md:flex">
+              <span className="text-[11px] font-black text-[#1A1A1A] uppercase tracking-tighter mb-0.5">Account</span>
+              <span className="text-[10px] font-bold text-[#999] uppercase tracking-tighter">Menu</span>
             </div>
             <FontAwesomeIcon 
               icon={faChevronDown} 
-              className={`text-text-muted text-[10px] transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} 
+              className={`text-[#999] text-[9px] ml-1 transition-transform duration-300 ${menuOpen ? 'rotate-180' : ''}`} 
             />
           </button>
 
@@ -260,9 +264,9 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
 const IconButton = ({ icon, className = '', onClick }) => (
   <button 
     onClick={onClick}
-    className={`w-8 h-8 flex items-center justify-center rounded-full bg-vibaura-bg-muted text-text-secondary hover:text-vibaura-primary hover:bg-vibaura-primary-light transition-all duration-200 shadow-sm ${className}`}
+    className={`w-11 h-11 flex items-center justify-center rounded-[14px] bg-[#F5F5F7] border border-black/5 text-[#999] hover:text-vibaura-primary hover:bg-white hover:border-vibaura-primary/30 transition-all duration-300 group shadow-sm ${className}`}
   >
-    <FontAwesomeIcon icon={icon} size="sm" />
+    <FontAwesomeIcon icon={icon} className="text-sm group-hover:scale-110 transition-transform" />
   </button>
 );
 
