@@ -47,7 +47,21 @@ const userSchema = new mongoose.Schema({
   recentlyPlayed: [{
     song: { type: mongoose.Schema.Types.ObjectId, ref: 'Song' },
     playedAt: { type: Date, default: Date.now }
-  }]
+  }],
+  // --- Password Reset OTP ---
+  resetOTP: {
+    type: String,
+    select: false
+  },
+  resetOTPExpires: {
+    type: Date,
+    select: false
+  },
+  resetOTPAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  }
 }, {
   timestamps: true
 });

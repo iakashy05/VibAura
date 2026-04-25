@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faEnvelope, faLock, faUserPlus, faSignInAlt,
   faMusic, faHeadphones, faMagic,
   faEye, faEyeSlash, faCheckCircle, faCircleExclamation,
-  faUserCircle
+  faUserCircle, faArrowLeft, faShieldAlt
 } from '@fortawesome/free-solid-svg-icons';
-import { login, signup } from '../services/authService';
+import { login, signup, forgotPassword, verifyOTP, resetPassword } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
 
 // --- Validation Helpers ---
@@ -102,6 +102,13 @@ const AuthPage = () => {
   const [serverError, setServerError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
+  // Forgot Password Flow States
+  const [isForgot, setIsForgot] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [newPassword, setNewPassword] = useState('');
+  const otpRefs = useRef([]);
+
   // Touched state for progressive validation
   const [touched, setTouched] = useState({ name: false, email: false, password: false });
 
@@ -154,6 +161,126 @@ const AuthPage = () => {
     setPassword('');
     setShowPassword(false);
     setTouched({ name: false, email: false, password: false });
+  };
+
+  // Auto-focus first OTP box when entering Step 2
+  useEffect(() => {
+    if (isForgot && forgotStep === 2 && otpRefs.current[0]) {
+      setTimeout(() => {
+        otpRefs.current[0].focus();
+      }, 100);
+    }
+  }, [isForgot, forgotStep]);
+
+  // --- Forgot Password Handlers ---
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (validateEmail(email)) return;
+    setLoading(true);
+    setServerError(null);
+    try {
+      await forgotPassword(email);
+      setForgotStep(2);
+      setSuccessMsg('OTP sent! Please check your email.');
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return; // Only numbers
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1); // Only take the last digit
+    setOtp(newOtp);
+
+    // Auto-focus next box
+    if (value && index < 5) {
+      otpRefs.current[index + 1].focus();
+    }
+
+    // AUTO-VERIFY: If the last digit is entered and all boxes have values
+    if (value && index === 5) {
+      const fullOtp = newOtp.join('');
+      if (fullOtp.length === 6) {
+        // Use a tiny timeout to ensure state is updated and UI reflects the 6th digit
+        setTimeout(() => {
+          triggerAutoVerify(fullOtp);
+        }, 50);
+      }
+    }
+  };
+
+  const triggerAutoVerify = async (otpString) => {
+    setLoading(true);
+    setServerError(null);
+    try {
+      await verifyOTP(email, otpString);
+      setForgotStep(3);
+      setSuccessMsg('OTP verified! Set your new password.');
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPKeyDown = (index, e) => {
+    // Backspace to previous box
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1].focus();
+    }
+  };
+
+  const handleVerifyOTPSubmit = async (e) => {
+    e.preventDefault();
+    const otpString = otp.join('');
+    if (otpString.length < 6) return;
+    setLoading(true);
+    setServerError(null);
+    try {
+      await verifyOTP(email, otpString);
+      setForgotStep(3);
+      setSuccessMsg('OTP verified! Set your new password.');
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    const error = validatePassword(newPassword, false);
+    if (error) {
+      setServerError(error);
+      return;
+    }
+    setLoading(true);
+    setServerError(null);
+    try {
+      await resetPassword(email, otp.join(''), newPassword);
+      setSuccessMsg('Password updated! You can now sign in.');
+      setIsForgot(false);
+      setIsLogin(true);
+      setForgotStep(1);
+      setOtp(['', '', '', '', '', '']);
+      setNewPassword('');
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBackToAuth = () => {
+    setIsForgot(false);
+    setForgotStep(1);
+    setServerError(null);
+    setSuccessMsg(null);
+    setOtp(['', '', '', '', '', '']);
+    setNewPassword('');
   };
 
   return (
@@ -245,34 +372,36 @@ const AuthPage = () => {
           {/* Card Body */}
           <div className="p-8 space-y-6">
 
-            {/* Heading */}
-            <div>
-              <h3 className="text-2xl font-black text-text-primary tracking-tight">
-                {isLogin ? 'Welcome Back' : 'Create Your Account'}
-              </h3>
-              <p className="text-text-muted text-sm font-medium mt-1">
-                {isLogin
-                  ? 'Enter your credentials to access your personal aura.'
-                  : 'Sign up and start experiencing music differently.'}
-              </p>
-            </div>
+            {!isForgot ? (
+              <>
+                {/* Heading */}
+                <div>
+                  <h3 className="text-2xl font-black text-text-primary tracking-tight">
+                    {isLogin ? 'Welcome Back' : 'Create Your Account'}
+                  </h3>
+                  <p className="text-text-muted text-sm font-medium mt-1">
+                    {isLogin
+                      ? 'Enter your credentials to access your personal aura.'
+                      : 'Sign up and start experiencing music differently.'}
+                  </p>
+                </div>
 
-            {/* Server Messages */}
-            {serverError && (
-              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl">
-                <FontAwesomeIcon icon={faCircleExclamation} className="text-red-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-red-600 font-semibold">{serverError}</p>
-              </div>
-            )}
-            {successMsg && (
-              <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-100 rounded-2xl">
-                <FontAwesomeIcon icon={faCheckCircle} className="text-green-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-green-700 font-semibold">{successMsg}</p>
-              </div>
-            )}
+                {/* Server Messages */}
+                {serverError && (
+                  <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl">
+                    <FontAwesomeIcon icon={faCircleExclamation} className="text-red-500 mt-0.5 shrink-0" />
+                    <p className="text-sm text-red-600 font-semibold">{serverError}</p>
+                  </div>
+                )}
+                {successMsg && (
+                  <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-100 rounded-2xl">
+                    <FontAwesomeIcon icon={faCheckCircle} className="text-green-500 mt-0.5 shrink-0" />
+                    <p className="text-sm text-green-700 font-semibold">{successMsg}</p>
+                  </div>
+                )}
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                {/* Form */}
+                <form onSubmit={handleSubmit} noValidate className="space-y-5">
               {/* Name - signup only */}
               {!isLogin && (
                 <AuthInput
@@ -369,7 +498,11 @@ const AuthPage = () => {
               {/* Forgot Password */}
               {isLogin && (
                 <div className="flex justify-end -mt-1">
-                  <button type="button" className="text-xs font-bold text-vibaura-primary hover:underline tracking-wide">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgot(true)}
+                    className="text-xs font-bold text-vibaura-primary hover:underline tracking-wide"
+                  >
                     Forgot your password?
                   </button>
                 </div>
@@ -402,6 +535,131 @@ const AuthPage = () => {
                 )}
               </button>
             </form>
+          </>
+        ) : (
+          /* ───── FORGOT PASSWORD FLOW ───── */
+          <div className="space-y-6">
+              {/* Back Button */}
+              <button
+                onClick={handleBackToAuth}
+                className="flex items-center gap-2 text-xs font-black text-text-muted hover:text-vibaura-primary uppercase tracking-widest transition-colors"
+              >
+                <FontAwesomeIcon icon={faArrowLeft} />
+                Back to Login
+              </button>
+
+              {/* Step Heading */}
+              <div>
+                <h3 className="text-2xl font-black text-text-primary tracking-tight">
+                  {forgotStep === 1 ? 'Reset Password' : forgotStep === 2 ? 'Verify OTP' : 'Set New Password'}
+                </h3>
+                <p className="text-text-muted text-sm font-medium mt-1 leading-relaxed">
+                  {forgotStep === 1
+                    ? 'Enter your email and we will send you a 6-digit verification code.'
+                    : forgotStep === 2
+                      ? `Enter the 6-digit code sent to ${email}.`
+                      : 'Create a new secure password for your account.'}
+                </p>
+              </div>
+
+              {/* Step 1: Email Form */}
+              {forgotStep === 1 && (
+                <form onSubmit={handleForgotPasswordSubmit} className="space-y-5">
+                  <AuthInput
+                    id="forgot-email"
+                    label="Email Address"
+                    type="email"
+                    placeholder="Enter your registered email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    icon={faEnvelope}
+                    error={touched.email ? emailError : null}
+                    touched={touched.email}
+                    onBlur={() => handleBlur('email')}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading || emailError || !email}
+                    className={`w-full h-[52px] rounded-2xl text-white text-sm font-black tracking-wide flex items-center justify-center gap-3 transition-all duration-200
+                      ${loading || emailError || !email ? 'bg-vibaura-primary/50 cursor-not-allowed' : 'bg-vibaura-primary hover:bg-vibaura-primary-hover shadow-lg'}
+                    `}
+                  >
+                    {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Send Verification Code'}
+                  </button>
+                </form>
+              )}
+
+              {/* Step 2: OTP Form */}
+              {forgotStep === 2 && (
+                <form onSubmit={handleVerifyOTPSubmit} className="space-y-8">
+                  <div className="flex justify-between gap-2.5">
+                    {otp.map((digit, i) => (
+                      <input
+                        key={i}
+                        ref={el => otpRefs.current[i] = el}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={e => handleOTPChange(i, e.target.value)}
+                        onKeyDown={e => handleOTPKeyDown(i, e)}
+                        className="w-12 h-14 bg-vibaura-bg-muted border-2 border-transparent focus:border-vibaura-primary focus:ring-4 focus:ring-vibaura-primary/10 rounded-xl text-center text-xl font-black text-text-primary transition-all outline-none"
+                      />
+                    ))}
+                  </div>
+                  <div className="space-y-4">
+                    <button
+                      type="submit"
+                      disabled={loading || otp.join('').length < 6}
+                      className={`w-full h-[52px] rounded-2xl text-white text-sm font-black tracking-wide flex items-center justify-center gap-3 transition-all duration-200
+                        ${loading || otp.join('').length < 6 ? 'bg-vibaura-primary/50 cursor-not-allowed' : 'bg-vibaura-primary hover:bg-vibaura-primary-hover shadow-lg'}
+                      `}
+                    >
+                      {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Verify Code'}
+                    </button>
+                    <p className="text-center text-xs font-bold text-text-muted uppercase tracking-widest">
+                      Didn't get code? <button type="button" onClick={handleForgotPasswordSubmit} className="text-vibaura-primary hover:underline ml-1">Resend</button>
+                    </p>
+                  </div>
+                </form>
+              )}
+
+              {/* Step 3: New Password Form */}
+              {forgotStep === 3 && (
+                <form onSubmit={handleResetPasswordSubmit} className="space-y-5">
+                  <AuthInput
+                    id="new-password"
+                    label="New Password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your new password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    icon={faLock}
+                    error={validatePassword(newPassword, false)}
+                    touched={true}
+                    rightElement={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(prev => !prev)}
+                        className="text-text-muted hover:text-vibaura-primary"
+                        tabIndex={-1}
+                      >
+                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="text-sm" />
+                      </button>
+                    }
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading || validatePassword(newPassword, false)}
+                    className={`w-full h-[52px] rounded-2xl text-white text-sm font-black tracking-wide flex items-center justify-center gap-3 transition-all duration-200
+                      ${loading || validatePassword(newPassword, false) ? 'bg-vibaura-primary/50 cursor-not-allowed' : 'bg-vibaura-primary hover:bg-vibaura-primary-hover shadow-lg'}
+                    `}
+                  >
+                    {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Update Password'}
+                  </button>
+                </form>
+              )}
+            </div>
+            )}
           </div>
 
           {/* Card Footer */}

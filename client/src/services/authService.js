@@ -29,3 +29,30 @@ export const getMe = async () => {
     throw error.response?.data || { message: 'Failed to fetch user data' };
   }
 };
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to send OTP' };
+  }
+};
+
+export const verifyOTP = async (email, otp) => {
+  try {
+    const response = await api.post('/auth/verify-otp', { email, otp });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Invalid OTP' };
+  }
+};
+
+export const resetPassword = async (email, otp, newPassword) => {
+  try {
+    const response = await api.post('/auth/reset-password', { email, otp, newPassword });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to reset password' };
+  }
+};
