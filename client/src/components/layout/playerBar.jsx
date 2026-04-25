@@ -231,7 +231,7 @@ const PlayerBar = () => {
             onClick={togglePlay}
             className="w-11 h-11 rounded-full bg-vibaura-primary text-white shadow-[0_6px_20px_rgba(99,103,255,0.2)] hover:scale-110 active:scale-90 transition-all duration-300 flex items-center justify-center"
           >
-            <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "ml-1" : ""} size="sm" />
+            <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "pl-1" : ""} size="sm" />
           </button>
 
           <button 
