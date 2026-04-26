@@ -1,8 +1,13 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import dns from 'dns';
 import { error, info, warn } from '../utils/logger.js';
 
 dotenv.config();
+
+// Fix for DNS resolution issues with MongoDB Atlas on some ISPs/Routers
+// This ensures the app can resolve SRV records regardless of local network constraints
+dns.setDefaultResultOrder('ipv4first');
 
 /**
  * Establishes a connection to the MongoDB database using Mongoose.
