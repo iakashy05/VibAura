@@ -5,6 +5,7 @@ import Playlist from '../../pages/Playlist';
 import Search from '../../pages/Search';
 import AuthPage from '../../pages/AuthPage';
 import Vibrance from '../../pages/Vibrance';
+import Payment from '../../pages/Payment';
 
 /**
  * ViewRenderer is the "Traffic Controller" for the main content area.
@@ -30,6 +31,8 @@ const ViewRenderer = ({ currentPage, selectedData, navigateTo, searchQuery }) =>
     case 'vibrance':
       return <Vibrance />;
 
+    case 'payment':
+      return <Payment navigateTo={navigateTo} />;
 
     default:
       return (

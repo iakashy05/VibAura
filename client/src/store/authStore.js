@@ -7,15 +7,17 @@ export const useAuthStore = create(
       user: null,
       token: null,
       isAuthenticated: false,
+      isSubscribed: false,
 
-      setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
+      setAuth: (user, token, isSubscribed = false) => set({ user, token, isAuthenticated: true, isSubscribed }),
       
       logout: () => {
-
-        set({ user: null, token: null, isAuthenticated: false });
+        set({ user: null, token: null, isAuthenticated: false, isSubscribed: false });
       },
 
-      updateUser: (user) => set({ user }),
+      updateUser: (user) => set({ user, isSubscribed: user?.isSubscribed ?? false }),
+
+      setSubscribed: (isSubscribed) => set({ isSubscribed }),
     }),
     {
       name: 'vibaura-auth', // name of the item in storage (default: localStorage)

@@ -20,6 +20,7 @@ import playlistRoutes from './routes/playlistRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import libraryRoutes from './routes/libraryRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import { authenticateToken } from './middlewares/authMiddleware.js';
 import errorMiddleware from './middlewares/errorMiddleware.js';
 
@@ -29,6 +30,7 @@ app.get('/api/v1/health', (req, res) => {
 
 // --- Public Routes ---
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/payments', paymentRoutes);
 
 // --- Protected Routes (Strict Auth) ---
 app.use(authenticateToken); // Every route below this line requires login

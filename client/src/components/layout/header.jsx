@@ -12,7 +12,8 @@ import {
   faUserCircle,
   faCog,
   faChevronDown,
-  faBell
+  faBell,
+  faRupeeSign
 } from '@fortawesome/free-solid-svg-icons';
 import Input from '../ui/input';
 import Button from '../ui/button';
@@ -25,7 +26,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
   const menuRef = useRef(null);
-  const { user, logout, isAuthenticated } = useAuthStore();
+  const { user, logout, isAuthenticated, isSubscribed } = useAuthStore();
 
   // Derive avatar letter — prefer name, fallback to email
   const displayName = user?.name || user?.email || 'Aura User';
@@ -162,7 +163,22 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
       </div>
 
       {/* 3. Right Section: Theme & Profile */}
-      <div className="flex-1 flex items-center justify-end gap-1">
+      <div className="flex-1 flex items-center justify-end gap-2">
+        {isSubscribed ? (
+          <div className="rounded-[14px] bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 text-xs font-black uppercase tracking-[0.3em]">
+            Subscribed
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onNavigate('payment')}
+            className="w-10 h-10 rounded-[14px] bg-vibaura-primary/10 border border-vibaura-primary text-vibaura-primary flex items-center justify-center hover:bg-vibaura-primary/15 transition-all duration-300"
+            aria-label="Pay ₹10"
+          >
+            <FontAwesomeIcon icon={faRupeeSign} />
+          </button>
+        )}
+
         <Button variant="ghost" size="icon" className="w-10 h-10 text-text-secondary">
           <FontAwesomeIcon icon={faSun} />
         </Button>
