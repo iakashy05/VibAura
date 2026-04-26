@@ -6,7 +6,8 @@ import { error } from '../utils/logger.js';
  */
 const errorMiddleware = (err, req, res, next) => {
   // 1. Log the error for internal debugging
-  error(`[GLOBAL ERROR HANDLER]: ${err.stack || err.message}`);
+  const logMessage = err.stack || err.message || (err.error && err.error.description) || JSON.stringify(err);
+  error(`[GLOBAL ERROR HANDLER]: ${logMessage}`);
 
   // 2. Determine status code (default to 500 if not set)
   const statusCode = err.statusCode || 500;

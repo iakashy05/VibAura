@@ -9,7 +9,12 @@ export const useAuthStore = create(
       isAuthenticated: false,
       isSubscribed: false,
 
-      setAuth: (user, token, isSubscribed = false) => set({ user, token, isAuthenticated: true, isSubscribed }),
+      setAuth: (user, token) => set({ 
+        user, 
+        token, 
+        isAuthenticated: true, 
+        isSubscribed: user?.isSubscribed ?? false 
+      }),
       
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false, isSubscribed: false });

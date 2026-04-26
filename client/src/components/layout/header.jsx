@@ -163,37 +163,44 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
       </div>
 
       {/* 3. Right Section: Theme & Profile */}
-      <div className="flex-1 flex items-center justify-end gap-2">
-        {isSubscribed ? (
-          <div className="rounded-[14px] bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 text-xs font-black uppercase tracking-[0.3em]">
-            Subscribed
-          </div>
-        ) : (
+      <div className="flex-1 flex items-center justify-end gap-3">
+        {!isSubscribed && (
           <button
             type="button"
             onClick={() => onNavigate('payment')}
-            className="w-10 h-10 rounded-[14px] bg-vibaura-primary/10 border border-vibaura-primary text-vibaura-primary flex items-center justify-center hover:bg-vibaura-primary/15 transition-all duration-300"
-            aria-label="Pay ₹10"
+            className="h-11 px-6 rounded-[14px] bg-vibaura-primary text-white flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all duration-300 group"
           >
-            <FontAwesomeIcon icon={faRupeeSign} />
+            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pro Vibe</span>
           </button>
         )}
 
-        <Button variant="ghost" size="icon" className="w-10 h-10 text-text-secondary">
+        <Button variant="ghost" size="icon" className="w-11 h-11 text-text-secondary !bg-vibaura-bg-muted !rounded-[14px] border border-black/5 hover:!bg-white hover:text-vibaura-primary transition-all">
           <FontAwesomeIcon icon={faSun} />
         </Button>
 
-        <div className="h-6 w-[1px] bg-vibaura-border mx-2" />
+        <div className="h-6 w-[1px] bg-vibaura-border mx-1" />
 
         {/* Avatar + Dropdown */}
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen(prev => !prev)}
-            className="w-11 h-11 rounded-[14px] bg-vibaura-primary flex items-center justify-center text-white font-black text-sm active:scale-95 group relative transition-all duration-300"
-            aria-label="User menu"
-          >
-            {avatarLetter}
-          </button>
+        <div className="relative flex items-center" ref={menuRef}>
+          <div className="relative p-[3px] flex items-center justify-center">
+            {isSubscribed && (
+              <div className="absolute inset-0 rounded-[16px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 animate-in fade-in duration-500"></div>
+            )}
+            <button
+              onClick={() => setMenuOpen(prev => !prev)}
+              className={`relative w-11 h-11 rounded-[14px] bg-vibaura-primary flex items-center justify-center text-white font-black text-sm active:scale-95 group transition-all duration-300 z-10
+                ${isSubscribed ? 'border-2 border-vibaura-surface' : ''}`}
+              aria-label="User menu"
+            >
+              {avatarLetter}
+              {isSubscribed && (
+                <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center z-20">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                </div>
+              )}
+            </button>
+          </div>
 
           <Dropdown
             isOpen={menuOpen}
@@ -202,14 +209,19 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
             className="w-64"
           >
             {/* User Info Header */}
-            <div className="px-6 py-5 bg-[#F8F9FA] border-b border-[#F0F0F0]">
+            <div className="px-6 py-5 bg-[#F8F9FA] border-b border-[#F0F0F0] rounded-t-[20px]">
               <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0">
-                  {avatarLetter}
+                <div className="relative">
+                  {isSubscribed && (
+                    <div className="absolute -inset-[3px] rounded-[18px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></div>
+                  )}
+                  <div className={`w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0 relative z-10 ${isSubscribed ? 'border-2 border-[#F8F9FA]' : ''}`}>
+                    {avatarLetter}
+                  </div>
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-black text-[#1A1A1A] truncate uppercase tracking-tighter leading-none">{displayName}</p>
-                  <p className="text-[10px] text-[#999] uppercase font-black tracking-tighter mt-1">{user?.role || 'Member'}</p>
+                  <p className="text-[10px] text-vibaura-primary uppercase font-black tracking-tighter mt-1">{isSubscribed ? 'PRO MEMBER' : (user?.role || 'Member')}</p>
                 </div>
               </div>
             </div>
@@ -225,7 +237,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
             <div className="p-3 border-t border-[#F0F0F0]">
               <button
                 onClick={() => { logout(); setMenuOpen(false); }}
-                className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all group"
+                className="w-full flex items-center gap-4 px-4 py-3 rounded-[20px] text-red-500 hover:bg-red-50 transition-all group"
               >
                 <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transition-colors">
                   <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
