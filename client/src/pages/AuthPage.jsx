@@ -287,61 +287,54 @@ const AuthPage = () => {
     <div className="fixed inset-0 z-[200] flex flex-col md:flex-row w-full h-full overflow-hidden bg-[#0a0a14]">
 
       {/* ─── LEFT PANEL: HERO ─── */}
-      <div className="relative hidden md:flex flex-1 items-center justify-center overflow-hidden">
-        <img
-          src="/auth-hero.png"
-          alt="VibAura — Feel the Sonic Aura"
-          className="absolute inset-0 w-full h-full object-cover scale-105 animate-slow-zoom"
-        />
-        {/* Multi-layer overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-vibaura-primary/50 via-[#0a0a14]/30 to-[#0a0a14]/80" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/60 via-transparent to-transparent" />
-
-        {/* Content */}
-        <div className="relative z-10 px-14 text-white max-w-lg">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-12 h-12 bg-white/15 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/25 shadow-2xl">
-              <FontAwesomeIcon icon={faMusic} className="text-xl" />
+      <div className="relative hidden md:flex w-1/2 items-center justify-center overflow-hidden bg-gradient-to-br from-[#1A1A2E] via-[#16213E] to-[#0F3460]">
+        {/* Dynamic Glowing Background */}
+        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-vibaura-primary/30 blur-[140px] animate-pulse" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-500/30 blur-[120px] animate-pulse delay-700" />
+        <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-500/20 blur-[100px] animate-pulse delay-1000" />
+        <div className="absolute inset-0 bg-black/20" />
+        
+        <div className="relative z-10 px-14 text-white max-w-lg flex flex-col items-center text-center">
+          <div className="mb-10">
+            <div className="w-48 h-48">
+              <img src="/logo.webp" alt="VibAura Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="text-2xl font-black tracking-widest uppercase opacity-90">VibAura</span>
           </div>
 
           <h2 className="text-6xl font-black mb-5 leading-[1.05] tracking-tighter">
             Feel the<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-vibaura-primary-light via-white to-vibaura-primary-light">
-              Sonic Aura
+              Rhythmic Vibe
             </span>
           </h2>
-          <p className="text-white/60 text-base font-medium mb-10 leading-relaxed">
-            Your personal universe of sound. Curated playlists, hi-res audio, and music that moves with you.
+          <p className="text-white/70 text-base font-medium leading-relaxed">
+            Your world, perfectly tuned. Experience the rhythm of VibAura with every beat.
           </p>
-
-          <div className="flex items-center gap-8 text-white/70 text-sm font-semibold">
-            <div className="flex items-center gap-2.5">
-              <FontAwesomeIcon icon={faHeadphones} className="text-vibaura-primary-light" />
-              <span>Hi-Res Audio</span>
-            </div>
-            <div className="w-1 h-1 bg-white/30 rounded-full" />
-            <div className="flex items-center gap-2.5">
-              <FontAwesomeIcon icon={faMagic} className="text-vibaura-primary-light" />
-              <span>AI Curated</span>
-            </div>
-          </div>
         </div>
 
-        {/* Bottom animated progress bar */}
-        <div className="absolute bottom-10 left-14 right-14 h-0.5 bg-white/10 rounded-full overflow-hidden">
-          <div className="h-full bg-white/40 w-1/3 animate-progress-loop rounded-full" />
+        {/* Bottom Music Wave Visualizer */}
+        <div className="absolute bottom-12 left-14 right-14 flex items-center justify-center gap-1.5 h-12 opacity-40">
+          {[...Array(40)].map((_, i) => (
+            <div 
+              key={i} 
+              className="w-1 bg-white/60 rounded-full animate-wave"
+              style={{ 
+                height: `${Math.random() * 100}%`,
+                animationDelay: `${i * 0.05}s`,
+                animationDuration: `${0.5 + Math.random() * 1}s`
+              }}
+            />
+          ))}
         </div>
       </div>
 
       {/* ─── RIGHT PANEL: AUTH CARD ─── */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-vibaura-view-bg md:bg-[#f8f8ff]">
+      <div className="md:w-1/2 flex items-center justify-center p-6 bg-vibaura-view-bg md:bg-[#f8f8ff] relative">
 
         {/* Mobile logo */}
         <div className="absolute top-6 left-6 md:hidden flex items-center gap-2">
-          <div className="w-9 h-9 bg-vibaura-primary rounded-xl flex items-center justify-center text-white">
-            <FontAwesomeIcon icon={faMusic} className="text-sm" />
+          <div className="w-10 h-10">
+            <img src="/logo.webp" alt="VibAura Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-xl font-black tracking-tighter text-text-primary">VibAura</span>
         </div>
@@ -684,12 +677,11 @@ const AuthPage = () => {
           0%, 100% { transform: scale(1.05); }
           50% { transform: scale(1.12); }
         }
-        @keyframes progress-loop {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(350%); }
+        @keyframes wave {
+          0%, 100% { height: 10%; opacity: 0.3; }
+          50% { height: 100%; opacity: 1; }
         }
-        .animate-slow-zoom { animation: slow-zoom 20s ease-in-out infinite; }
-        .animate-progress-loop { animation: progress-loop 3s linear infinite; }
+        .animate-wave { animation: wave 1s ease-in-out infinite; }
       `}} />
     </div>
   );

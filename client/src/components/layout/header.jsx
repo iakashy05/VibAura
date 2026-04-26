@@ -102,8 +102,8 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           className="flex items-center gap-3 px-2 cursor-pointer group"
           onClick={() => onNavigate('home')}
         >
-          <div className="w-11 h-11 bg-vibaura-primary rounded-[14px] flex items-center justify-center text-white shadow-lg shadow-vibaura-primary/20 transition-transform group-hover:scale-110">
-            <FontAwesomeIcon icon={faMusic} className="text-lg" />
+          <div className="w-11 h-11">
+            <img src="/logo.webp" alt="VibAura Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-2xl font-bold text-text-primary tracking-tight hidden md:block">VibAura</span>
         </div>
