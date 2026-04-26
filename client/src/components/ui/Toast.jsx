@@ -20,24 +20,18 @@ const Toast = () => {
   };
 
   const colors = {
-    success: 'bg-white text-[#1DB954] border-green-100 shadow-[0_20px_40px_rgba(0,0,0,0.1)]',
-    error: 'bg-white text-[#E91E63] border-red-100 shadow-[0_20px_40px_rgba(0,0,0,0.1)]',
-    info: 'bg-white text-vibaura-primary border-vibaura-border/50 shadow-[0_20px_40px_rgba(0,0,0,0.1)]'
+    success: 'text-emerald-400',
+    error: 'text-rose-400',
+    info: 'text-indigo-400'
   };
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] animate-bounce-in">
-      <div className={`flex items-center gap-4 px-8 py-4 rounded-full border shadow-2xl ${colors[toast.type]}`}>
-        <FontAwesomeIcon icon={icons[toast.type]} className="text-lg" />
-        <span className="font-bold tracking-tight whitespace-nowrap uppercase text-xs text-[#1A1A1A]">
+    <div className="fixed bottom-28 left-1/2 z-[10000] animate-toast-fade pointer-events-none">
+      <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-[#1A1A1A]/80 backdrop-blur-lg shadow-2xl border border-white/5">
+        <FontAwesomeIcon icon={icons[toast.type]} className={`text-sm ${colors[toast.type]}`} />
+        <span className="font-bold tracking-wide whitespace-nowrap text-[11px] text-white">
           {toast.message}
         </span>
-        <button 
-          onClick={hideToast}
-          className="ml-2 opacity-30 hover:opacity-100 transition-opacity text-[#1A1A1A]"
-        >
-          <FontAwesomeIcon icon={faTimes} />
-        </button>
       </div>
     </div>
   );

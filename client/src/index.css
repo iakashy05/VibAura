@@ -156,6 +156,17 @@
   animation: scale-in 0.3s ease-out forwards;
 }
 
+@keyframes toast-fade {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  85% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+}
+
+.animate-toast-fade {
+  animation: toast-fade 3s ease-in-out forwards;
+}
+
 @keyframes heart-pop {
   0% {
     transform: scale(1);

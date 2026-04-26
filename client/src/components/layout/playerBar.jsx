@@ -18,7 +18,7 @@ import { useAuthStore } from '../../store/authStore';
 import { toggleLikeSong } from '../../services/libraryService';
 import LikeButton from '../ui/LikeButton';
 
-const PlayerBar = () => {
+const PlayerBar = ({ onNavigate }) => {
   const audioRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const {
@@ -42,6 +42,17 @@ const PlayerBar = () => {
     toggleRepeat,
     toggleFullscreen
   } = usePlayerStore();
+
+  const { user, updateUser, isAuthenticated, isSubscribed } = useAuthStore();
+
+  const handleFullscreen = (e) => {
+    if (e) e.stopPropagation();
+    if (!isSubscribed) {
+      if (onNavigate) onNavigate('payment');
+      return;
+    }
+    toggleFullscreen();
+  };
 
   // --- 1. Audio Playback Core ---
   useEffect(() => {
@@ -119,7 +130,6 @@ const PlayerBar = () => {
     return faVolumeUp;
   };
 
-  const { user, updateUser, isAuthenticated } = useAuthStore();
   const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
 
   const handleLikeClick = async (e) => {
@@ -153,7 +163,7 @@ const PlayerBar = () => {
       <div className="flex items-center justify-between w-full max-w-7xl px-8 pointer-events-none">
         {/* 1. Song Info Island (Left) */}
         <div
-          onClick={toggleFullscreen}
+          onClick={handleFullscreen}
           className="pointer-events-auto flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] px-2.5 w-[240px] md:w-[280px] h-[64px] transition-all duration-500 cursor-pointer group/info shadow-[0_12px_40px_rgba(0,0,0,0.08)]"
         >
           <style>
@@ -284,9 +294,9 @@ const PlayerBar = () => {
         {/* 3. Volume & Tools Island (Right) */}
         <div className="pointer-events-auto flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] px-6 w-auto min-w-[200px] h-[64px] justify-between transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
           <button
-            onClick={toggleFullscreen}
-            className="text-[#888] hover:text-[#1A1A1A] transition-colors active:scale-75"
-            title="Fullscreen"
+            onClick={handleFullscreen}
+            className={`transition-colors active:scale-75 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+            title={isSubscribed ? "Fullscreen" : "Pro Feature: Fullscreen"}
           >
             <FontAwesomeIcon icon={faExpand} size="sm" />
           </button>

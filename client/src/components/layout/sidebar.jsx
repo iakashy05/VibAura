@@ -50,7 +50,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const [sortOrder, setSortOrder] = useState('recent'); // 'recent', 'alphabetical', 'most-played'
   const [activeMenu, setActiveMenu] = useState(null);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-  const { user } = useAuthStore();
+  const { user, isSubscribed } = useAuthStore();
   const { showToast, showConfirm } = useUIStore();
   const menuRef = React.useRef(null);
   const sortMenuRef = React.useRef(null);
@@ -237,8 +237,16 @@ const Sidebar = ({ onNavigate, currentPage }) => {
             <h3 className="font-black text-[11px] uppercase tracking-[0.2em]">Your Library</h3>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="text-[#999] hover:text-[#1A1A1A] transition-colors"
+            onClick={() => {
+              if (!isSubscribed && playlists.length >= 5) {
+                onNavigate('payment');
+                showToast('Playlist limit reached! Upgrade to Pro for unlimited vibes.', 'info');
+                return;
+              }
+              setIsModalOpen(true);
+            }}
+            className={`transition-colors ${!isSubscribed && playlists.length >= 5 ? 'text-vibaura-primary animate-pulse' : 'text-[#999] hover:text-[#1A1A1A]'}`}
+            title={!isSubscribed && playlists.length >= 5 ? 'Upgrade to Pro for more playlists' : 'Create Playlist'}
           >
             <FontAwesomeIcon icon={faPlus} size="sm" />
           </button>
@@ -315,22 +323,38 @@ const Sidebar = ({ onNavigate, currentPage }) => {
           
           {/* Vibrance (Monthly Report) */}
           <div
-            onClick={() => onNavigate('vibrance')}
+            onClick={() => {
+              if (!isSubscribed) {
+                onNavigate('payment');
+                return;
+              }
+              onNavigate('vibrance');
+            }}
             className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary">
+              <div className={`w-10 h-10 flex items-center justify-center ${!isSubscribed ? 'text-gray-300' : 'text-vibaura-primary'}`}>
                 <FontAwesomeIcon icon={faWaveSquare} size="lg" />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight">
-                  Vibrance
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`font-bold transition-colors text-[13px] tracking-tight ${!isSubscribed ? 'text-gray-400' : 'text-[#1A1A1A] group-hover:text-vibaura-primary'}`}>
+                    Vibrance
+                  </span>
+                  {!isSubscribed && (
+                    <div className="px-1.5 py-0.5 rounded-md bg-vibaura-primary/10 text-vibaura-primary text-[8px] font-black uppercase tracking-tighter">Pro</div>
+                  )}
+                </div>
                 <span className="text-[10px] text-[#777] font-bold">
                   Monthly Report
                 </span>
               </div>
             </div>
+            {!isSubscribed && (
+              <div className="text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+            )}
           </div>
 
           {/* Recently Played synthetic playlist */}

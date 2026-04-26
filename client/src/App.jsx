@@ -90,7 +90,7 @@ function App() {
       </div>
 
       {/* 3. Global PlayerBar */}
-      <PlayerBar />
+      <PlayerBar onNavigate={navigateTo} />
 
       {/* Global Notifications */}
       <Toast />
