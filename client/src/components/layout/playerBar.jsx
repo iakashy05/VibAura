@@ -11,6 +11,7 @@ import {
   faVolumeDown,
   faVolumeMute,
   faExpand,
+  faInfinity,
   faHeart as faHeartSolid
 } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '../../store/playerStore';
@@ -38,7 +39,7 @@ const PlayerBar = ({ onNavigate }) => {
     setDuration,
     isShuffle,
     toggleShuffle,
-    isRepeat,
+    repeatMode,
     toggleRepeat,
     toggleFullscreen
   } = usePlayerStore();
@@ -107,11 +108,43 @@ const PlayerBar = ({ onNavigate }) => {
   };
 
   const handleEnded = () => {
-    if (isRepeat && audioRef.current) {
+    const { repeatMode: currentRepeatMode, hasRepeatedOnce, queue, currentIndex, nextTrack: storeNextTrack } = usePlayerStore.getState();
+    
+    // 'all' mode loops the current song infinitely natively.
+    if (currentRepeatMode === 'all' && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
+      return;
+    }
+
+    if (currentRepeatMode === 'once') {
+      if (!hasRepeatedOnce && audioRef.current) {
+        // Repeat the current song exactly once
+        usePlayerStore.setState({ hasRepeatedOnce: true });
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+        return;
+      }
+      // If it already repeated once, we continue to the next track
+    }
+
+    // Reset hasRepeatedOnce for safety
+    usePlayerStore.setState({ hasRepeatedOnce: false });
+
+    if (currentRepeatMode === 'off' && currentIndex === queue.length - 1) {
+      // Reached end of queue
+      usePlayerStore.setState({ isPlaying: false, progress: 0, currentTime: 0 });
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+      }
     } else {
-      nextTrack();
+      storeNextTrack();
+      // If queue has only 1 song, storeNextTrack() doesn't change the currentTrack object reference,
+      // so the useEffect won't run. We need to manually replay the audio.
+      if (queue.length === 1 && audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+      }
     }
   };
 
@@ -130,7 +163,8 @@ const PlayerBar = ({ onNavigate }) => {
     return faVolumeUp;
   };
 
-  const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
+  const trackId = currentTrack?.id || currentTrack?._id;
+  console.log('isLiked debug:', { trackId, currentTrack, likedSongs: user?.likedSongs }); const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
 
   const handleLikeClick = async (e) => {
     if (e) e.stopPropagation();
@@ -141,7 +175,7 @@ const PlayerBar = ({ onNavigate }) => {
 
       const newLikedSongs = res.liked
         ? [...(user.likedSongs || []), currentTrack.id]
-        : (user.likedSongs || []).filter(id => id !== currentTrack.id);
+        : (user.likedSongs || []).filter(song => (typeof song === 'string' ? song : (song._id || song.id)) !== currentTrack.id);
 
       updateUser({ ...user, likedSongs: newLikedSongs });
       window.dispatchEvent(new Event('vibaura-library-updated'));
@@ -223,14 +257,14 @@ const PlayerBar = ({ onNavigate }) => {
           <div className="flex items-center gap-8 relative z-10 mb-1">
             <button
               onClick={toggleShuffle}
-              className={`transition-all active:scale-75 text-[12px] ${isShuffle ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+              className={`transition-all active:scale-95 active:opacity-70 text-[12px] ${isShuffle ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
               title="Shuffle"
             >
               <FontAwesomeIcon icon={faShuffle} />
             </button>
             <button
               onClick={prevTrack}
-              className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[14px] active:scale-75"
+              className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[14px] active:scale-95 active:opacity-70"
               title="Previous"
             >
               <FontAwesomeIcon icon={faStepBackward} />
@@ -238,24 +272,29 @@ const PlayerBar = ({ onNavigate }) => {
 
             <button
               onClick={togglePlay}
-              className="w-11 h-11 rounded-full bg-vibaura-primary text-white shadow-[0_6px_20px_rgba(99,103,255,0.2)] hover:scale-110 active:scale-90 transition-all duration-300 flex items-center justify-center"
+              className="w-12 h-12 rounded-full bg-white text-vibaura-primary shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-lg"
             >
-              <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "pl-1" : ""} size="sm" />
+              <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "ml-0.5" : ""} />
             </button>
 
             <button
               onClick={nextTrack}
-              className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[14px] active:scale-75"
+              className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[14px] active:scale-95 active:opacity-70"
               title="Next"
             >
               <FontAwesomeIcon icon={faStepForward} />
             </button>
             <button
               onClick={toggleRepeat}
-              className={`transition-all active:scale-75 text-[12px] ${isRepeat ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+              className={`transition-all active:scale-95 active:opacity-70 text-[12px] relative ${repeatMode !== 'off' ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
               title="Repeat"
             >
-              <FontAwesomeIcon icon={faRepeat} />
+              <FontAwesomeIcon icon={repeatMode === 'all' ? faInfinity : faRepeat} className={repeatMode === 'all' ? "text-[14px]" : ""} />
+              {repeatMode === 'once' && (
+                <span className="absolute -top-1.5 -right-1.5 bg-vibaura-primary text-white text-[8px] font-black w-3 h-3 flex items-center justify-center rounded-full leading-none shadow-sm">
+                  1
+                </span>
+              )}
             </button>
           </div>
 
@@ -295,7 +334,7 @@ const PlayerBar = ({ onNavigate }) => {
         <div className="pointer-events-auto flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] px-6 w-auto min-w-[200px] h-[64px] justify-between transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
           <button
             onClick={handleFullscreen}
-            className={`transition-colors active:scale-75 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+            className={`transition-all active:scale-95 active:opacity-70 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
             title={isSubscribed ? "Fullscreen" : "Pro Feature: Fullscreen"}
           >
             <FontAwesomeIcon icon={faExpand} size="sm" />
@@ -303,7 +342,7 @@ const PlayerBar = ({ onNavigate }) => {
           <div className="flex items-center gap-3 w-32 group/volume relative">
             <button
               onClick={toggleMute}
-              className="w-5 flex justify-center text-[#888] hover:text-[#1A1A1A] transition-colors"
+              className="w-5 flex justify-center text-[#888] hover:text-[#1A1A1A] transition-all active:scale-95 active:opacity-70"
             >
               <FontAwesomeIcon icon={getVolumeIcon()} size="sm" />
             </button>

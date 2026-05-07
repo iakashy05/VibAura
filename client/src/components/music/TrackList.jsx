@@ -38,8 +38,14 @@ const TrackRow = ({ track, index, allTracks, playlistId }) => {
   const { user, updateUser, isAuthenticated } = useAuthStore();
   const isSelected = currentTrack?.id === track.id;
   
-  const isLiked = user?.likedSongs?.includes(track.id);
+  const trackId = track?.id || track?._id;
+  const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
   const [localLiked, setLocalLiked] = useState(isLiked);
+
+  // Keep local state perfectly in sync with global store changes
+  React.useEffect(() => {
+    setLocalLiked(isLiked);
+  }, [isLiked]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handlePlayClick = (e) => {
@@ -62,7 +68,7 @@ const TrackRow = ({ track, index, allTracks, playlistId }) => {
       // Update global user state
       const newLikedSongs = res.liked 
         ? [...(user.likedSongs || []), track.id]
-        : (user.likedSongs || []).filter(id => id !== track.id);
+        : (user.likedSongs || []).filter(song => (typeof song === 'string' ? song : (song._id || song.id)) !== track.id);
       
       updateUser({ ...user, likedSongs: newLikedSongs });
       window.dispatchEvent(new Event('vibaura-library-updated'));

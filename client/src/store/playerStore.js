@@ -12,7 +12,8 @@ export const usePlayerStore = create((set, get) => ({
   currentTime: 0, // in seconds
   duration: 0,  // in seconds
   isShuffle: false,
-  isRepeat: false,
+  repeatMode: 'off', // 'off' | 'once' | 'all'
+  hasRepeatedOnce: false, // Tracks if current song has been repeated in 'once' mode
   originalQueue: [], // Store the original order
   currentPlaylistId: null, // Track where the music is playing from
 
@@ -30,6 +31,7 @@ export const usePlayerStore = create((set, get) => ({
       isPlaying: true, 
       progress: 0,
       currentTime: 0,
+      hasRepeatedOnce: false,
       queue: newQueue.length > 0 ? newQueue : [track],
       originalQueue: newQueue.length > 0 ? newQueue : [track],
       currentIndex: newQueue.length > 0 
@@ -78,7 +80,11 @@ export const usePlayerStore = create((set, get) => ({
   },
 
   // Toggle Repeat
-  toggleRepeat: () => set((state) => ({ isRepeat: !state.isRepeat })),
+  toggleRepeat: () => set((state) => {
+    if (state.repeatMode === 'off') return { repeatMode: 'once' };
+    if (state.repeatMode === 'once') return { repeatMode: 'all' };
+    return { repeatMode: 'off' };
+  }),
 
   // Shuffle and Play from a list
   shufflePlay: (newQueue, playlistId = null) => {
@@ -98,6 +104,7 @@ export const usePlayerStore = create((set, get) => ({
       currentIndex: 0,
       isPlaying: true,
       isShuffle: true,
+      hasRepeatedOnce: false,
       progress: 0,
       currentTime: 0,
       currentPlaylistId: playlistId
@@ -125,7 +132,8 @@ export const usePlayerStore = create((set, get) => ({
     set({ 
       currentTrack: nextItem, 
       currentIndex: nextIndex,
-      isPlaying: true 
+      isPlaying: true,
+      hasRepeatedOnce: false
     });
   },
 
@@ -144,7 +152,8 @@ export const usePlayerStore = create((set, get) => ({
     set({ 
       currentTrack: prevItem, 
       currentIndex: prevIndex,
-      isPlaying: true 
+      isPlaying: true,
+      hasRepeatedOnce: false
     });
   },
 

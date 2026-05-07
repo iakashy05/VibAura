@@ -169,7 +169,8 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     }
   };
 
-  const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
+  const trackId = currentTrack?.id || currentTrack?._id;
+  const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
 
   const handleLikeClick = async (e) => {
     if (e) e.stopPropagation();
@@ -180,7 +181,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 
       const newLikedSongs = res.liked
         ? [...(user.likedSongs || []), currentTrack.id]
-        : (user.likedSongs || []).filter(id => id !== currentTrack.id);
+        : (user.likedSongs || []).filter(song => (typeof song === 'string' ? song : (song._id || song.id)) !== currentTrack.id);
 
       updateUser({ ...user, likedSongs: newLikedSongs });
       window.dispatchEvent(new Event('vibaura-library-updated'));

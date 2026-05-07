@@ -13,6 +13,7 @@ import {
   faChevronDown,
   faEllipsisH,
   faExpand,
+  faInfinity,
   faHeart as faHeartSolid
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
@@ -35,14 +36,16 @@ const FullscreenPlayer = () => {
     toggleFullscreen,
     isShuffle,
     toggleShuffle,
-    isRepeat,
+    repeatMode,
     toggleRepeat,
     volume,
-    setVolume
+    setVolume,
+    toggleMute
   } = usePlayerStore();
 
   const { user, updateUser, isAuthenticated } = useAuthStore();
-  const isLiked = currentTrack && user?.likedSongs?.includes(currentTrack.id);
+  const trackId = currentTrack?.id || currentTrack?._id;
+  const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
   const [showControls, setShowControls] = useState(true);
 
   useEffect(() => {
@@ -91,6 +94,12 @@ const FullscreenPlayer = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const getVolumeIcon = () => {
+    if (volume === 0) return faVolumeMute;
+    if (volume < 0.5) return faVolumeDown;
+    return faVolumeUp;
+  };
+
   const handleLikeClick = async (e) => {
     if (e) e.stopPropagation();
     if (!isAuthenticated || !currentTrack) return;
@@ -99,7 +108,7 @@ const FullscreenPlayer = () => {
       const res = await toggleLikeSong(currentTrack.id);
       const newLikedSongs = res.liked
         ? [...(user.likedSongs || []), currentTrack.id]
-        : (user.likedSongs || []).filter(id => id !== currentTrack.id);
+        : (user.likedSongs || []).filter(song => (typeof song === 'string' ? song : (song._id || song.id)) !== currentTrack.id);
       updateUser({ ...user, likedSongs: newLikedSongs });
     } catch (err) {
       console.error('Failed to toggle like:', err);
@@ -208,10 +217,10 @@ const FullscreenPlayer = () => {
 
             {/* 1. Left: Controls */}
             <div className="flex items-center gap-6">
-              <button onClick={toggleShuffle} className={`text-sm transition-all ${isShuffle ? 'text-vibaura-primary' : 'text-black/20 hover:text-black/40'}`}>
+              <button onClick={toggleShuffle} className={`text-sm transition-all active:scale-95 active:opacity-70 ${isShuffle ? 'text-vibaura-primary' : 'text-black/20 hover:text-black/40'}`}>
                 <FontAwesomeIcon icon={faShuffle} />
               </button>
-              <button onClick={prevTrack} className="text-xl text-black/60 hover:text-black transition-all">
+              <button onClick={prevTrack} className="text-xl text-black/60 hover:text-black transition-all active:scale-95 active:opacity-70">
                 <FontAwesomeIcon icon={faStepBackward} />
               </button>
               <button
@@ -220,11 +229,16 @@ const FullscreenPlayer = () => {
               >
                 <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "ml-0.5" : ""} />
               </button>
-              <button onClick={nextTrack} className="text-xl text-black/60 hover:text-black transition-all">
+              <button onClick={nextTrack} className="text-xl text-black/60 hover:text-black transition-all active:scale-95 active:opacity-70">
                 <FontAwesomeIcon icon={faStepForward} />
               </button>
-              <button onClick={toggleRepeat} className={`text-sm transition-all ${isRepeat ? 'text-vibaura-primary' : 'text-black/20 hover:text-black/40'}`}>
-                <FontAwesomeIcon icon={faRepeat} />
+              <button onClick={toggleRepeat} className={`text-sm relative transition-all active:scale-95 active:opacity-70 ${repeatMode !== 'off' ? 'text-vibaura-primary' : 'text-black/20 hover:text-black/40'}`}>
+                <FontAwesomeIcon icon={repeatMode === 'all' ? faInfinity : faRepeat} className={repeatMode === 'all' ? "text-[16px]" : ""} />
+                {repeatMode === 'once' && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-vibaura-primary text-white text-[8px] font-black w-3 h-3 flex items-center justify-center rounded-full leading-none shadow-sm">
+                    1
+                  </span>
+                )}
               </button>
             </div>
 
@@ -255,7 +269,12 @@ const FullscreenPlayer = () => {
             {/* 3. Right: Volume & Extra */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3 w-32 group/vol relative">
-                <FontAwesomeIcon icon={volume === 0 ? faVolumeMute : faVolumeDown} className="text-black/30 text-sm w-4 flex justify-center" />
+                <button
+                  onClick={toggleMute}
+                  className="w-5 flex justify-center text-black/30 hover:text-black/50 transition-all active:scale-95 active:opacity-70"
+                >
+                  <FontAwesomeIcon icon={getVolumeIcon()} className="text-sm" />
+                </button>
                 <div className="flex-1 relative flex items-center h-4">
                   <input
                     type="range" min="0" max="1" step="0.01" value={volume}
@@ -276,7 +295,7 @@ const FullscreenPlayer = () => {
                   />
                 </div>
               </div>
-              <button onClick={toggleFullscreen} className="text-black/20 hover:text-black/40 transition-colors">
+              <button onClick={toggleFullscreen} className="text-black/20 hover:text-black/40 transition-all active:scale-95 active:opacity-70">
                 <FontAwesomeIcon icon={faExpand} className="text-sm" />
               </button>
             </div>
