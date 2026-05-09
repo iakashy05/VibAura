@@ -140,3 +140,12 @@ export const addSongToPlaylist = async (playlistId, songId) => {
     throw error;
   }
 };
+export const removeSongFromPlaylist = async (playlistId, songId) => {
+  try {
+    const response = await api.delete(`/playlists/${playlistId}/songs/${songId}`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Failed to remove song from playlist:', error.message);
+    throw error;
+  }
+};

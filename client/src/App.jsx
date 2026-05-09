@@ -8,6 +8,7 @@ import Toast from './components/ui/Toast';
 import ConfirmModal from './components/ui/ConfirmModal';
 import { useVibauraNavigation } from './hooks/useVibauraNavigation';
 import { useAuthStore } from './store/authStore';
+import { useUIStore } from './store/uiStore';
 import FullscreenPlayer from './components/layout/FullscreenPlayer';
 import { checkServerHealth } from './services/api';
 
@@ -31,6 +32,8 @@ function App() {
     };
     runHealthCheck();
   }, []);
+
+  const { setSidebarCollapsed } = useUIStore();
   const {
     currentPage,
     selectedData,
@@ -49,6 +52,15 @@ function App() {
       navigateTo('home');
     }
   }, [isAuthenticated, currentPage, navigateTo]);
+
+  // Handle automatic sidebar collapse
+  useEffect(() => {
+    const handleResize = () => {
+      setSidebarCollapsed(window.innerWidth < 1200);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setSidebarCollapsed]);
 
   // If we are on the login page, render it full screen without layout
   if (currentPage === 'login') {

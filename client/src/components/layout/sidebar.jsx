@@ -35,6 +35,7 @@ import LikeButton from '../ui/LikeButton';
 import { toggleLikeSong } from '../../services/libraryService';
 import Dropdown from '../ui/Dropdown';
 import ContextMenu from '../ui/ContextMenu';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({ onNavigate, currentPage }) => {
   const [playlists, setPlaylists] = useState([]);
@@ -48,16 +49,24 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('recent'); // 'recent', 'alphabetical', 'most-played'
-  const [activeMenu, setActiveMenu] = useState(null);
-  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-  const { user, isSubscribed } = useAuthStore();
-  const { showToast, showConfirm } = useUIStore();
+  const { user, isSubscribed, isAuthenticated, updateUser } = useAuthStore();
+  const { 
+    showToast, 
+    showConfirm, 
+    isSidebarCollapsed: isCollapsed,
+    activeMenuId,
+    setActiveMenuId
+  } = useUIStore();
   const menuRef = React.useRef(null);
   const sortMenuRef = React.useRef(null);
 
+  const isSortMenuOpen = activeMenuId === 'sidebar-sort';
+  const setIsSortMenuOpen = (open) => setActiveMenuId(open ? 'sidebar-sort' : null);
+  const activeMenu = activeMenuId?.startsWith('sidebar-item-') ? activeMenuId.replace('sidebar-item-', '') : null;
+  const setActiveMenu = (id) => setActiveMenuId(id ? `sidebar-item-${id}` : null);
+
   // Player state for info island
   const { currentTrack, isPlaying, toggleFullscreen } = usePlayerStore();
-  const { updateUser, isAuthenticated } = useAuthStore();
 
   const fetchLibrary = async () => {
     try {
@@ -227,15 +236,28 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   });
 
   return (
-    <aside className="w-[360px] flex flex-col h-full bg-vibaura-surface p-6 transition-all duration-300">
-
-
-
-      <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-4 flex-1 flex flex-col min-h-0 border border-black/5">
-        <div className="flex items-center justify-between mb-6 px-2">
+    <motion.aside 
+      initial={false}
+      animate={{ 
+        width: isCollapsed ? 88 : 360,
+        padding: isCollapsed ? '16px 8px' : '24px'
+      }}
+      transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+      className="flex flex-col h-full bg-vibaura-surface z-[60] relative transition-colors duration-500"
+    >
+      <div className={`bg-white/90 backdrop-blur-md rounded-[32px] flex-1 flex flex-col min-h-0 border border-black/5 ${isCollapsed ? 'items-center p-2' : 'p-4'}`}>
+        <div className={`flex items-center justify-between mb-6 px-2 w-full ${isCollapsed ? 'flex-col gap-4' : ''}`}>
           <div className="flex items-center gap-3 text-[#999]">
             <FontAwesomeIcon icon={faBookOpen} size="sm" />
-            <h3 className="font-black text-[11px] uppercase tracking-[0.2em]">Your Library</h3>
+            {!isCollapsed && (
+              <motion.h3 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="font-black text-[11px] tracking-[0.2em]"
+              >
+                Your Library
+              </motion.h3>
+            )}
           </div>
           <button
             onClick={() => {
@@ -254,132 +276,85 @@ const Sidebar = ({ onNavigate, currentPage }) => {
         </div>
 
         {/* Sort & Filter Controls */}
-        <div className="flex items-center gap-2 mb-6 px-2">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search library..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-4 py-2 text-[10px] text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
-            />
-          </div>
+        {!isCollapsed && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 mb-6 px-2 w-full"
+          >
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Search library..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-4 py-2 text-[10px] text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
+              />
+            </div>
 
-          <div className="relative" ref={sortMenuRef}>
-            <button
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-              className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
-              title="Sort Library"
-            >
-              <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
-            </button>
+            <div className="relative" ref={sortMenuRef}>
+              <button
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => {
+                  setIsSortMenuOpen(!isSortMenuOpen);
+                }}
+                className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
+                title="Sort Library"
+              >
+                <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
+              </button>
 
-            <Dropdown
-              isOpen={isSortMenuOpen}
-              onClose={() => setIsSortMenuOpen(false)}
-              positionClass="right-0 top-10"
-              minWidth="160px"
-            >
-              <p className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter px-3 py-2">Sort by</p>
-              <SortOption
-                active={sortOrder === 'recent'}
-                onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }}
-                label="Recently Added"
-              />
-              <SortOption
-                active={sortOrder === 'alphabetical'}
-                onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }}
-                label="A-Z"
-              />
-              <SortOption
-                active={sortOrder === 'most-played'}
-                onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }}
-                label="Most Played"
-              />
-            </Dropdown>
-          </div>
-        </div>
+              <Dropdown
+                isOpen={isSortMenuOpen}
+                onClose={() => setIsSortMenuOpen(false)}
+                positionClass="right-0 top-10"
+                minWidth="160px"
+              >
+                <p className="text-[9px] font-black text-[#CCC] tracking-tighter px-3 py-2">Sort by</p>
+                <SortOption
+                  active={sortOrder === 'recent'}
+                  onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }}
+                  label="Recently Added"
+                />
+                <SortOption
+                  active={sortOrder === 'alphabetical'}
+                  onClick={() => { setSortOrder('alphabetical'); setIsSortMenuOpen(false); }}
+                  label="A-Z"
+                />
+                <SortOption
+                  active={sortOrder === 'most-played'}
+                  onClick={() => { setSortOrder('most-played'); setIsSortMenuOpen(false); }}
+                  label="Most Played"
+                />
+              </Dropdown>
+            </div>
+          </motion.div>
+        )}
 
         {/* Playlist List (Scrollable) */}
-        <div className="flex-1 overflow-y-auto space-y-1 pr-1 no-scrollbar">
+        <div className="flex-1 overflow-y-auto space-y-1 pr-1 no-scrollbar w-full">
           {/* Liked Songs synthetic playlist */}
           <div
             onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
-            className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
+            className={`group flex items-center transition-all cursor-pointer mb-2 ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 mx-auto' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5'}`}
+            title="Liked Songs"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary">
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-4'}`}>
+              <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary flex-shrink-0 bg-black/5 rounded-lg">
                 <FontAwesomeIcon icon={faHeart} size="lg" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight">
-                  Liked Songs
-                </span>
-                <span className="text-[10px] text-[#777] font-bold">
-                  Playlist • {likedSongs.length} songs
-                </span>
-              </div>
+              {!isCollapsed && (
+                <div className="flex flex-col overflow-hidden">
+                  <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight truncate">
+                    Liked Songs
+                  </span>
+                  <span className="text-[10px] text-[#777] font-bold truncate">
+                    Playlist • {likedSongs.length} songs
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-          
-          {/* Vibrance (Monthly Report) */}
-          <div
-            onClick={() => {
-              if (!isSubscribed) {
-                onNavigate('payment');
-                return;
-              }
-              onNavigate('vibrance');
-            }}
-            className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 flex items-center justify-center ${!isSubscribed ? 'text-gray-300' : 'text-vibaura-primary'}`}>
-                <FontAwesomeIcon icon={faWaveSquare} size="lg" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className={`font-bold transition-colors text-[13px] tracking-tight ${!isSubscribed ? 'text-gray-400' : 'text-[#1A1A1A] group-hover:text-vibaura-primary'}`}>
-                    Vibrance
-                  </span>
-                  {!isSubscribed && (
-                    <div className="px-1.5 py-0.5 rounded-md bg-vibaura-primary/10 text-vibaura-primary text-[8px] font-black uppercase tracking-tighter">Pro</div>
-                  )}
-                </div>
-                <span className="text-[10px] text-[#777] font-bold">
-                  Monthly Report
-                </span>
-              </div>
-            </div>
-            {!isSubscribed && (
-              <div className="text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              </div>
-            )}
-          </div>
-
-          {/* Recently Played synthetic playlist */}
-          {recentlyPlayed.length > 0 && (
-            <div
-              onClick={() => onNavigate('playlist', { id: 'recently-played', title: 'Recently Played', songs: recentlyPlayed })}
-              className="group flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer mb-2"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary">
-                  <FontAwesomeIcon icon={faHistory} size="lg" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight">
-                    Recently Played
-                  </span>
-                  <span className="text-[10px] text-[#777] font-bold">
-                    History • {recentlyPlayed.length} songs
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {unifiedLibrary.map(item => (
             <LibraryItem
@@ -395,6 +370,8 @@ const Sidebar = ({ onNavigate, currentPage }) => {
               setActiveMenu={setActiveMenu}
               menuRef={menuRef}
               user={user}
+              isCollapsed={isCollapsed}
+              setIsSortMenuOpen={setIsSortMenuOpen}
             />
           ))}
         </div>
@@ -408,58 +385,75 @@ const Sidebar = ({ onNavigate, currentPage }) => {
         initialData={editingPlaylist}
       />
 
-    </aside>
+    </motion.aside>
   );
 };
 
 
-const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, onDelete, activeMenu, setActiveMenu, menuRef, user }) => (
+
+const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, onDelete, activeMenu, setActiveMenu, menuRef, user, isCollapsed, setIsSortMenuOpen }) => (
   <div
     onClick={() => onNavigate(type, item)}
-    className="group relative flex items-center justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 transition-all cursor-pointer"
+    className={`group relative flex items-center transition-all cursor-pointer ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 mx-auto mb-1' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 mb-1'}`}
+    title={item.title}
   >
-    <div className="flex items-center gap-4 min-w-0 flex-1">
-      <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-vibaura-primary">
-        <FontAwesomeIcon icon={type === 'artist' ? faMicrophoneLines : faFolder} size="lg" />
+    <div className={`flex items-center min-w-0 ${isCollapsed ? 'justify-center' : 'gap-4 flex-1'}`}>
+      <div className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden bg-black/5 ${type === 'artist' ? 'rounded-full' : 'rounded-lg'}`}>
+        {(item.image || item.artwork || item.albumArt) ? (
+          <img 
+            src={item.image || item.artwork || item.albumArt} 
+            alt={item.title} 
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <FontAwesomeIcon icon={type === 'artist' ? faMicrophoneLines : faFolder} className="text-vibaura-primary" size="lg" />
+        )}
       </div>
-      <div className="flex flex-col min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors truncate text-[13px] tracking-tight">
-            {item.title}
+      {!isCollapsed && (
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors truncate text-[13px] tracking-tight">
+              {item.title}
+            </span>
+            {isPinned && (
+              <FontAwesomeIcon icon={faThumbtack} className="text-[9px] text-vibaura-primary rotate-[30deg]" />
+            )}
+          </div>
+          <span className="text-[10px] text-[#777] font-bold">
+            {type === 'artist' ? 'Artist' : `Playlist • ${item.songs?.length || 0} songs`}
           </span>
-          {isPinned && (
-            <FontAwesomeIcon icon={faThumbtack} className="text-[9px] text-vibaura-primary rotate-[30deg]" />
-          )}
         </div>
-        <span className="text-[10px] text-[#777] font-bold">
-          {type === 'artist' ? 'Artist' : `Playlist • ${item.songs?.length || 0} songs`}
-        </span>
+      )}
+    </div>
+
+    {!isCollapsed && (
+      <div className="flex items-center gap-3">
+        <button
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            const stringId = String(item.id);
+            setActiveMenu(activeMenu === stringId ? null : stringId);
+          }}
+          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded-full transition-all text-[#CCC]"
+        >
+          <FontAwesomeIcon icon={faEllipsisV} size="xs" />
+        </button>
       </div>
-    </div>
+    )}
 
-    <div className="flex items-center gap-3">
-      <button
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          setActiveMenu(activeMenu === item.id ? null : item.id);
-        }}
-        className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded-full transition-all text-[#CCC]"
-      >
-        <FontAwesomeIcon icon={faEllipsisV} size="xs" />
-      </button>
-    </div>
-
-    <ContextMenu
-      isOpen={activeMenu === item.id}
-      onClose={() => setActiveMenu(null)}
-      item={item}
-      type={type}
-      isPinned={isPinned}
-      isInLibrary={true}
-      onEdit={onEdit}
-      positionClass="right-2 top-10"
-    />
+    {!isCollapsed && (
+      <ContextMenu
+        isOpen={activeMenu === String(item.id)}
+        onClose={() => setActiveMenu(null)}
+        item={item}
+        type={type}
+        isPinned={isPinned}
+        isInLibrary={true}
+        onEdit={onEdit}
+        positionClass="right-2 top-10"
+      />
+    )}
   </div>
 );
 

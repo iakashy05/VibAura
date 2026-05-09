@@ -13,7 +13,10 @@ const ConfirmModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-4 transition-all duration-300"
+      style={{ paddingLeft: 'var(--sidebar-width)' }}
+    >
       <div className="absolute inset-0 bg-[#0A0A0A]/10 backdrop-blur-[1px] animate-fade-in" onClick={hideConfirm}></div>
       
       <div className="relative bg-white border border-[#F0F0F0] rounded-[32px] p-8 max-w-[360px] w-full shadow-[0_20px_40px_rgba(0,0,0,0.08)] animate-scale-in">
@@ -25,7 +28,7 @@ const ConfirmModal = () => {
             onClick={handleConfirm}
             className="w-full py-3.5 bg-vibaura-primary hover:brightness-110 text-white rounded-xl font-black text-sm transition-all active:scale-95 shadow-lg shadow-vibaura-primary/20 uppercase tracking-tighter"
           >
-            Yes, Delete it
+            {confirm.confirmText || 'Yes, Confirm'}
           </button>
           <button 
             onClick={hideConfirm}

@@ -14,6 +14,23 @@
   --vibaura-surface: #FFFFFE;
   --vibaura-view-bg: #F9F5F6;
   --vibaura-action-bar: #FDFDFD;
+
+  /* --- Layout Variables --- */
+  --sidebar-width: 360px;
+  --card-size: 180px;
+}
+
+@media (max-width: 1440px) {
+  :root {
+    --card-size: 160px;
+  }
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --sidebar-width: 88px;
+    --card-size: 145px;
+  }
 }
 
 @layer base {
@@ -105,6 +122,16 @@
   .group:hover .volume-slider::-moz-range-thumb {
     opacity: 1;
   }
+
+  .hide-collapsed {
+    transition: all 0.3s ease;
+  }
+
+  @media (max-width: 1200px) {
+    .hide-collapsed {
+      display: none !important;
+    }
+  }
 }
 
 @keyframes music-bar {
@@ -157,10 +184,10 @@
 }
 
 @keyframes toast-fade {
-  0% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+  0% { opacity: 0; transform: translate(-50%, -20px) scale(0.9); }
   15% { opacity: 1; transform: translate(-50%, 0) scale(1); }
   85% { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+  100% { opacity: 0; transform: translate(-50%, -20px) scale(0.9); }
 }
 
 .animate-toast-fade {

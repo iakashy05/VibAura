@@ -13,20 +13,24 @@ import {
   faCog,
   faChevronDown,
   faBell,
-  faRupeeSign
+  faRupeeSign,
+  faWaveSquare
 } from '@fortawesome/free-solid-svg-icons';
 import Input from '../ui/input';
 import Button from '../ui/button';
 
 import { useAuthStore } from '../../store/authStore';
+import { useUIStore } from '../../store/uiStore';
 import Dropdown from '../ui/Dropdown';
 
 const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, searchQuery, setSearchQuery }) => {
   const [localQuery, setLocalQuery] = useState(searchQuery);
-  const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
   const menuRef = useRef(null);
   const { user, logout, isAuthenticated, isSubscribed } = useAuthStore();
+  const { activeMenuId, setActiveMenuId } = useUIStore();
+  const menuOpen = activeMenuId === 'header-profile';
+  const setMenuOpen = (open) => setActiveMenuId(open ? 'header-profile' : null);
 
   // Derive avatar letter — prefer name, fallback to email
   const displayName = user?.name || user?.email || 'Aura User';
@@ -221,8 +225,8 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-black text-[#1A1A1A] truncate uppercase tracking-tighter leading-none">{displayName}</p>
-                  <p className="text-[10px] text-vibaura-primary uppercase font-black tracking-tighter mt-1">{isSubscribed ? 'PRO MEMBER' : (user?.role || 'Member')}</p>
+                  <p className="text-sm font-black text-[#1A1A1A] truncate tracking-tighter leading-none">{displayName}</p>
+                  <p className="text-[10px] text-vibaura-primary font-black tracking-tighter mt-1">{isSubscribed ? 'Pro Member' : (user?.role || 'Member')}</p>
                 </div>
               </div>
             </div>
@@ -230,6 +234,13 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
             {/* Menu Items */}
             <div className="p-3 space-y-1">
               <MenuItem icon={faUserCircle} label="My Profile" sublabel="View and edit your profile" onClick={() => { setMenuOpen(false); }} />
+              <MenuItem 
+                icon={faWaveSquare} 
+                label="Vibrance" 
+                sublabel="Your monthly music report" 
+                onClick={() => { onNavigate('vibrance'); setMenuOpen(false); }} 
+                active={!isSubscribed}
+              />
               <MenuItem icon={faBell} label="Notifications" sublabel="Coming soon" onClick={() => { setMenuOpen(false); }} muted />
               <MenuItem icon={faCog} label="Settings" sublabel="App preferences" onClick={() => { setMenuOpen(false); }} muted />
             </div>
@@ -243,7 +254,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
                 <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transition-colors">
                   <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
                 </div>
-                <span className="text-xs font-black uppercase tracking-tighter">Log Out</span>
+                <span className="text-xs font-black tracking-tighter">Log Out</span>
               </button>
             </div>
           </Dropdown>
@@ -270,8 +281,8 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
       <FontAwesomeIcon icon={icon} className="text-xs" />
     </div>
     <div className="min-w-0">
-      <p className="text-xs font-black text-[#1A1A1A] leading-none uppercase tracking-tighter">{label}</p>
-      <p className="text-[9px] text-[#999] font-black uppercase tracking-tighter mt-1 truncate">{sublabel}</p>
+      <p className="text-xs font-black text-[#1A1A1A] leading-none tracking-tighter">{label}</p>
+      <p className="text-[9px] text-[#999] font-black tracking-tighter mt-1 truncate">{sublabel}</p>
     </div>
     {muted && (
       <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-[#CCC] bg-gray-50 px-2 py-1 rounded-full shrink-0">

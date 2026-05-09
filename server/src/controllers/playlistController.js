@@ -120,3 +120,26 @@ export const addSongToPlaylist = async (req, res, next) => {
     next(err);
   }
 };
+
+export const removeSongFromPlaylist = async (req, res, next) => {
+  try {
+    const { id, songId } = req.params;
+
+    const playlist = await Playlist.findById(id);
+    if (!playlist) {
+      return res.status(404).json({ message: 'Playlist not found' });
+    }
+
+    if (playlist.creator?.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to modify this playlist' });
+    }
+
+    playlist.songs = playlist.songs.filter(sid => sid.toString() !== songId);
+    await playlist.save();
+
+    res.json({ message: 'Song removed from playlist', playlist });
+  } catch (err) {
+    error(`playlistController.removeSongFromPlaylist: ${err.message}`);
+    next(err);
+  }
+};

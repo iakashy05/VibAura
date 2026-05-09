@@ -21,7 +21,8 @@ import {
   toggleLibraryPlaylist, 
   togglePinPlaylist,
   togglePinArtist,
-  toggleLibraryArtist 
+  toggleLibraryArtist,
+  removeSongFromPlaylist
 } from '../../services/libraryService';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
@@ -41,7 +42,10 @@ const ContextMenu = ({
   onEdit, // for own playlists
   isPinned, // for sidebar items
   isInLibrary = false, // new prop to distinguish actions
-  positionClass = 'right-0 top-full mt-2'
+  playlistId = null, // ID of the playlist if we are inside one
+  isPlaylistOwner = false, // if the current user owns the playlist containing the track
+  positionClass = 'right-0 top-full mt-2',
+  onNavigate = null
 }) => {
   const [showPlaylists, setShowPlaylists] = useState(false);
   const [playlists, setPlaylists] = useState([]);
@@ -77,7 +81,15 @@ const ContextMenu = ({
       window.dispatchEvent(new Event('vibaura-library-updated'));
       onClose();
     } catch (err) {
-      showToast('Failed to add to playlist', 'error');
+      const isDuplicate = err.response?.status === 400 || 
+                         err.response?.status === 409 || 
+                         err.response?.data?.message?.includes('already');
+      
+      if (isDuplicate) {
+        showToast('Song is already in this playlist', 'error');
+      } else {
+        showToast('Failed to add to playlist', 'error');
+      }
     }
   };
 
@@ -109,11 +121,13 @@ const ContextMenu = ({
             await deletePlaylist(item.id);
             window.dispatchEvent(new Event('vibaura-library-updated'));
             showToast('Playlist deleted', 'success');
+            if (onNavigate) onNavigate('home');
             onClose();
           } catch (err) {
             showToast('Failed to delete playlist', 'error');
           }
-        }
+        },
+        'Yes, Delete it'
       );
     } else {
       handleLibraryToggle(e);
@@ -144,18 +158,11 @@ const ContextMenu = ({
           {type === 'track' && (
             <>
               <ContextMenuItem
-                icon={isLiked ? faHeartSolid : faHeartRegular}
-                label={isLiked ? 'Remove from Liked' : 'Like Song'}
-                iconClass={isLiked ? 'text-vibaura-primary' : ''}
-                onClick={async (e) => { e.stopPropagation(); await onLikeToggle(); onClose(); }}
-              />
-              <ContextMenuItem
                 icon={faPlus}
                 label="Add to Playlist"
                 hasSubmenu
                 onClick={(e) => { e.stopPropagation(); setShowPlaylists(true); }}
               />
-              <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
               <ContextMenuItem 
                 icon={faListUl} 
                 label="Add to Queue" 
@@ -167,6 +174,28 @@ const ContextMenu = ({
                 }} 
               />
               <ContextMenuItem icon={faShareNodes} label="Share" muted />
+              {playlistId && isPlaylistOwner && (
+                <>
+                  <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
+                  <ContextMenuItem 
+                    icon={faTrash} 
+                    label="Remove from Playlist" 
+                    danger
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        await removeSongFromPlaylist(playlistId, item.id);
+                        showToast('Removed from playlist', 'success');
+                        window.dispatchEvent(new Event('vibaura-library-updated'));
+                        onClose();
+                      } catch (err) {
+                        const errorMsg = err.response?.data?.message || 'Failed to remove song';
+                        showToast(errorMsg, 'error');
+                      }
+                    }}
+                  />
+                </>
+              )}
             </>
           )}
 
@@ -180,12 +209,14 @@ const ContextMenu = ({
                     label="Edit Details" 
                     onClick={(e) => { e.stopPropagation(); onEdit ? onEdit(item) : null; onClose(); }} 
                   />
-                  <ContextMenuItem 
-                    icon={faThumbtack} 
-                    label={isPinned ? "Unpin from Top" : "Pin to Top"} 
-                    iconClass={isPinned ? 'text-vibaura-primary' : ''}
-                    onClick={handleTogglePin} 
-                  />
+                  {isInLibrary && (
+                    <ContextMenuItem 
+                      icon={faThumbtack} 
+                      label={isPinned ? "Unpin from Top" : "Pin to Top"} 
+                      iconClass={isPinned ? 'text-vibaura-primary' : ''}
+                      onClick={handleTogglePin} 
+                    />
+                  )}
                   <ContextMenuItem icon={faShareNodes} label="Share" muted />
                   <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
                   <ContextMenuItem 
@@ -208,12 +239,14 @@ const ContextMenu = ({
                     </>
                   ) : (
                     <>
-                      <ContextMenuItem 
-                        icon={faThumbtack} 
-                        label={isPinned ? "Unpin from Top" : "Pin to Top"} 
-                        iconClass={isPinned ? 'text-vibaura-primary' : ''}
-                        onClick={handleTogglePin} 
-                      />
+                      {isInLibrary && (
+                        <ContextMenuItem 
+                          icon={faThumbtack} 
+                          label={isPinned ? "Unpin from Top" : "Pin to Top"} 
+                          iconClass={isPinned ? 'text-vibaura-primary' : ''}
+                          onClick={handleTogglePin} 
+                        />
+                      )}
                       <ContextMenuItem icon={faShareNodes} label="Share" muted />
                       <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
                       <ContextMenuItem 
@@ -239,12 +272,14 @@ const ContextMenu = ({
                 </>
               ) : (
                 <>
-                  <ContextMenuItem 
-                    icon={faThumbtack} 
-                    label={isPinned ? "Unpin from Top" : "Pin to Top"} 
-                    iconClass={isPinned ? 'text-vibaura-primary' : ''}
-                    onClick={handleTogglePin} 
-                  />
+                  {isInLibrary && (
+                    <ContextMenuItem 
+                      icon={faThumbtack} 
+                      label={isPinned ? "Unpin from Top" : "Pin to Top"} 
+                      iconClass={isPinned ? 'text-vibaura-primary' : ''}
+                      onClick={handleTogglePin} 
+                    />
+                  )}
                   <ContextMenuItem icon={faShareNodes} label="Share" muted />
                   <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
                   <ContextMenuItem 
@@ -268,15 +303,22 @@ const ContextMenu = ({
              >
                 <FontAwesomeIcon icon={faChevronRight} className="rotate-180 text-[10px]" />
              </button>
-             <span className="text-[9px] font-black text-[#CCC] uppercase tracking-tighter">Choose Playlist</span>
+             <span className="text-[9px] font-black text-[#CCC] tracking-tighter">Choose Playlist</span>
           </div>
           <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
             {playlists.length > 0 ? (
               playlists.map(p => (
                 <button
+                  type="button"
                   key={p.id}
-                  onClick={(e) => handlePlaylistSelect(e, p.id, p.title)}
-                  className="w-full px-3 py-2 text-left text-[10px] font-bold uppercase tracking-tight text-[#666] hover:bg-vibaura-primary/5 hover:text-vibaura-primary rounded-lg transition-colors flex items-center justify-between"
+                  onClick={(e) => {
+                    if (e) {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }
+                    handlePlaylistSelect(e, p.id, p.title);
+                  }}
+                  className="w-full px-3 py-2 text-left text-[10px] font-bold tracking-tight text-[#666] hover:bg-vibaura-primary/5 hover:text-vibaura-primary rounded-lg transition-colors flex items-center justify-between"
                 >
                   <span className="truncate">{p.title}</span>
                   {p.songs?.some(s => s.id === item.id) && (
@@ -298,9 +340,22 @@ const ContextMenu = ({
 
 const ContextMenuItem = ({ icon, label, onClick, muted = false, danger = false, hasSubmenu = false, iconClass = '' }) => (
   <button 
-    onClick={onClick}
+    type="button"
+    onClick={(e) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      if (onClick) onClick(e);
+    }}
+    onMouseDown={(e) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }}
     disabled={muted}
-    className={`w-full px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-tighter rounded-xl flex items-center justify-between transition-colors
+    className={`w-full px-3 py-2.5 text-left text-[10px] font-black tracking-tighter rounded-xl flex items-center justify-between transition-colors
       ${muted ? 'opacity-30 cursor-not-allowed' : ''}
       ${danger ? 'text-red-500 hover:bg-red-50' : 'text-[#666] hover:bg-gray-50 hover:text-[#1A1A1A]'}
     `}

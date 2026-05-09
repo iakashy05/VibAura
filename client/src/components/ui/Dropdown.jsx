@@ -34,6 +34,8 @@ const Dropdown = ({
   return (
     <div 
       ref={containerRef}
+      onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
       className={`absolute z-[100] bg-white border border-black/5 rounded-[24px] shadow-none overflow-hidden animate-scale-in p-1.5 ${positionClass} ${className}`}
       style={{ minWidth }}
     >

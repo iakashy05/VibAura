@@ -72,6 +72,7 @@ const Artist = ({ artist }) => {
         onShuffle={handleShuffle}
         itemId={data.id}
         itemType="artist"
+        item={data}
       />
 
       <div className="px-8 py-8 pb-12">

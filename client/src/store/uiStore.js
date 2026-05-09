@@ -18,9 +18,17 @@ export const useUIStore = create((set) => ({
   // Confirmation Modal
   confirm: null, // { title: string, message: string, onConfirm: function }
   
-  showConfirm: (title, message, onConfirm) => {
-    set({ confirm: { title, message, onConfirm } });
+  showConfirm: (title, message, onConfirm, confirmText = 'Yes, Confirm') => {
+    set({ confirm: { title, message, onConfirm, confirmText } });
   },
   
-  hideConfirm: () => set({ confirm: null })
+  hideConfirm: () => set({ confirm: null }),
+  
+  // Responsive State
+  isSidebarCollapsed: window.innerWidth < 1200,
+  setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
+
+  // Global Menu Management
+  activeMenuId: null,
+  setActiveMenuId: (id) => set({ activeMenuId: id })
 }));

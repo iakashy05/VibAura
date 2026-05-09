@@ -6,6 +6,7 @@ import {
   faEllipsisH
 } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '../../store/playerStore';
+import { useUIStore } from '../../store/uiStore';
 import ContextMenu from '../ui/ContextMenu';
 
 /**
@@ -13,27 +14,41 @@ import ContextMenu from '../ui/ContextMenu';
  * A reusable sticky bar for music collection pages (Artist, Playlist, etc.)
  * Features exactly three options: Play Now, Shuffle, and Options (Three Dots)
  */
-const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
+const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNavigate }) => {
   const [isSticky, setIsSticky] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const sentinelRef = useRef(null);
   const menuBtnRef = useRef(null);
+  
+  const { activeMenuId, setActiveMenuId } = useUIStore();
+  const menuKey = `action-bar-${itemType}-${itemId}`;
+  const isMenuOpen = activeMenuId === menuKey;
+  const setIsMenuOpen = (open) => setActiveMenuId(open ? menuKey : null);
 
   const { isShuffle } = usePlayerStore();
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 0);
-      },
-      { threshold: [0], rootMargin: '-1px 0px 0px 0px' }
-    );
+    const scrollArea = document.querySelector('.page-scroll-area');
+    
+    const handleScroll = () => {
+      if (sentinelRef.current) {
+        const rect = sentinelRef.current.getBoundingClientRect();
+        // Use a small buffer (5px) for more reliable detection
+        setIsSticky(rect.top <= 5);
+      }
+    };
 
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
+    if (scrollArea) {
+      scrollArea.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      window.addEventListener('scroll', handleScroll, { passive: true });
     }
+    
+    handleScroll();
 
-    return () => observer.disconnect();
+    return () => {
+      if (scrollArea) scrollArea.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const handleMenuToggle = () => {
@@ -47,9 +62,9 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
       <div className={`
         sticky top-0 z-40 px-8 transition-all duration-300
         ${isSticky
-          ? 'bg-[#FDFDFD] border-b border-black/5 shadow-lg py-3.5'
-          : 'bg-transparent border-b border-transparent py-7'}
-        flex items-center gap-6
+          ? 'bg-white/90 backdrop-blur-md border-b border-black/5 shadow-[0_4px_30px_rgba(0,0,0,0.03)]'
+          : 'bg-transparent border-b border-transparent'}
+        flex items-center gap-6 py-6
       `}>
         {/* 1. Play Now Button */}
         <button
@@ -91,8 +106,10 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
           <ContextMenu
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
-            item={{ id: itemId }}
+            item={item || { id: itemId }}
             type={itemType}
+            onEdit={onEdit}
+            onNavigate={onNavigate}
           />
         </div>
       </div>

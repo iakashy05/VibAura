@@ -20,6 +20,8 @@ import { useAuthStore } from '../../store/authStore';
 import { toggleLikeSong } from '../../services/libraryService';
 import LikeButton from '../ui/LikeButton';
 import QueuePanel from './QueuePanel';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useUIStore } from '../../store/uiStore';
 
 const PlayerBar = ({ onNavigate }) => {
   const audioRef = useRef(null);
@@ -50,6 +52,7 @@ const PlayerBar = ({ onNavigate }) => {
   } = usePlayerStore();
 
   const { user, updateUser, isAuthenticated, isSubscribed } = useAuthStore();
+  const { isSidebarCollapsed: isCollapsed } = useUIStore();
 
   const handleFullscreen = (e) => {
     if (e) e.stopPropagation();
@@ -208,7 +211,14 @@ const PlayerBar = ({ onNavigate }) => {
   };
 
   return (
-    <div className="fixed bottom-8 left-[360px] right-0 z-50 flex justify-center pointer-events-none select-none transition-all duration-500">
+    <motion.div 
+      initial={false}
+      animate={{ 
+        left: isCollapsed ? 88 : 360,
+      }}
+      transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+      className="fixed bottom-8 right-0 z-50 flex justify-center pointer-events-none select-none transition-all duration-500"
+    >
       <audio
         ref={audioRef}
         src={currentTrack?.url}
@@ -219,9 +229,17 @@ const PlayerBar = ({ onNavigate }) => {
 
       <div className="flex items-center justify-between w-full max-w-7xl px-8 pointer-events-none relative">
         {/* 1. Song Info Island (Left) */}
-        <div
+        <motion.div
           onClick={handleFullscreen}
-          className="pointer-events-auto flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] px-2.5 w-[240px] md:w-[280px] h-[64px] transition-all duration-500 cursor-pointer group/info shadow-[0_12px_40px_rgba(0,0,0,0.08)]"
+          layout
+          initial={false}
+          animate={{
+            width: isCollapsed ? 64 : 280,
+            padding: isCollapsed ? '0px' : '10px',
+            borderRadius: isCollapsed ? '32px' : '28px'
+          }}
+          transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+          className="pointer-events-auto flex items-center bg-white/80 backdrop-blur-xl border border-white/50 h-[64px] transition-all duration-500 cursor-pointer group/info shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden justify-center"
         >
           <style>
             {`
@@ -240,40 +258,52 @@ const PlayerBar = ({ onNavigate }) => {
               }
             `}
           </style>
-          <div className="w-11 h-11 rounded-[20px] bg-vibaura-bg-muted overflow-hidden relative flex-shrink-0 border border-black/5 ml-0.5">
+          <div className={`rounded-[20px] bg-vibaura-bg-muted overflow-hidden relative flex-shrink-0 border border-black/5 transition-all duration-500 ${isCollapsed ? 'w-14 h-14' : 'w-11 h-11 ml-0.5'}`}>
             <img
               src={currentTrack?.albumArt || currentTrack?.image || "https://placehold.co/100x100/6367FF/FFFFFF?text=Aura"}
               alt="Album"
               className="w-full h-full object-cover transition-transform duration-700 group-hover/info:scale-110"
             />
           </div>
-          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-            <span className="font-bold text-[#1A1A1A] truncate text-[13px] tracking-tight leading-tight mb-0.5">
-              {currentTrack?.title || "Select a Song"}
-            </span>
-            <div className="relative overflow-hidden w-full h-4 flex items-center">
-              <div className={`${(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) ? 'animate-marquee' : 'truncate'} text-[10px] font-black text-[#666] tracking-tighter leading-none`}>
-                <span className="pr-8">
-                  {Array.isArray(currentTrack?.artists)
-                    ? currentTrack.artists.map(a => a.name).join(', ')
-                    : (currentTrack?.artist || 'VibAura Artist')}
-                </span>
-                {(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) && (
-                  <span className="pr-8">
-                    {Array.isArray(currentTrack?.artists)
-                      ? currentTrack.artists.map(a => a.name).join(', ')
-                      : (currentTrack?.artist || 'VibAura Artist')}
+          
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                className="flex items-center flex-1 min-w-0"
+              >
+                <div className="flex flex-col min-w-0 flex-1 overflow-hidden ml-3">
+                  <span className="font-bold text-[#1A1A1A] truncate text-[13px] tracking-tight leading-tight mb-0.5">
+                    {currentTrack?.title || "Select a Song"}
                   </span>
-                )}
-              </div>
-            </div>
-          </div>
-          <LikeButton
-            isLiked={isLiked}
-            onClick={handleLikeClick}
-            className="scale-90 hover:scale-110 transition-transform mr-1"
-          />
-        </div>
+                  <div className="relative overflow-hidden w-full h-4 flex items-center">
+                    <div className={`${(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) ? 'animate-marquee' : 'truncate'} text-[10px] font-black text-[#666] tracking-tighter leading-none`}>
+                      <span className="pr-8">
+                        {Array.isArray(currentTrack?.artists)
+                          ? currentTrack.artists.map(a => a.name).join(', ')
+                          : (currentTrack?.artist || 'VibAura Artist')}
+                      </span>
+                      {(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) && (
+                        <span className="pr-8">
+                          {Array.isArray(currentTrack?.artists)
+                            ? currentTrack.artists.map(a => a.name).join(', ')
+                            : (currentTrack?.artist || 'VibAura Artist')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <LikeButton
+                  isLiked={isLiked}
+                  onClick={handleLikeClick}
+                  className="scale-90 hover:scale-110 transition-transform mr-1 ml-2"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* 2. Main Playback Controls Island (Center) */}
         <div className="pointer-events-auto flex flex-col items-center gap-0.5 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[34px] px-8 py-3.5 w-full max-w-[400px] lg:max-w-[500px] transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
@@ -354,8 +384,16 @@ const PlayerBar = ({ onNavigate }) => {
         </div>
 
         {/* 3. Volume & Tools Island (Right) */}
-        <div className="pointer-events-auto flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] px-6 w-auto min-w-[200px] h-[64px] justify-between transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center gap-3">
+        <motion.div 
+          initial={false}
+          animate={{
+            width: isCollapsed ? 120 : 240,
+            padding: isCollapsed ? '0px 16px' : '0px 24px'
+          }}
+          transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+          className="pointer-events-auto flex items-center bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] h-[64px] justify-between transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden"
+        >
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button
               ref={queueButtonRef}
               onClick={() => setIsQueueOpen(!isQueueOpen)}
@@ -372,36 +410,46 @@ const PlayerBar = ({ onNavigate }) => {
               <FontAwesomeIcon icon={faExpand} size="sm" />
             </button>
           </div>
-          <div className="flex items-center gap-3 w-32 group/volume relative">
+          
+          <div className="flex items-center gap-3 group/volume relative flex-1 min-w-0 ml-3">
             <button
               onClick={toggleMute}
-              className="w-5 flex justify-center text-[#888] hover:text-[#1A1A1A] transition-all active:scale-95 active:opacity-70"
+              className="w-5 flex justify-center text-[#888] hover:text-[#1A1A1A] transition-all active:scale-95 active:opacity-70 flex-shrink-0"
             >
               <FontAwesomeIcon icon={getVolumeIcon()} size="sm" />
             </button>
-            <div className="flex-1 relative flex items-center h-4">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="absolute inset-0 w-full opacity-0 cursor-pointer z-10"
-              />
-              <div className="w-full h-1.5 bg-black/5 rounded-full relative overflow-hidden transition-all duration-300 group-hover/volume:h-2">
-                <div
-                  className="h-full bg-vibaura-primary rounded-full transition-all duration-200"
-                  style={{ width: `${volume * 100}%` }}
-                ></div>
-              </div>
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover/volume:opacity-100 transition-all duration-300 shadow-lg pointer-events-none scale-0 group-hover/volume:scale-100"
-                style={{ left: `calc(${volume * 100}% - 8px)` }}
-              ></div>
-            </div>
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.div 
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="flex-1 relative flex items-center h-4 overflow-hidden"
+                >
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={(e) => setVolume(parseFloat(e.target.value))}
+                    className="absolute inset-0 w-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="w-full h-1.5 bg-black/5 rounded-full relative overflow-hidden transition-all duration-300 group-hover/volume:h-2">
+                    <div
+                      className="h-full bg-vibaura-primary rounded-full transition-all duration-200"
+                      style={{ width: `${volume * 100}%` }}
+                    ></div>
+                  </div>
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover/volume:opacity-100 transition-all duration-300 shadow-lg pointer-events-none scale-0 group-hover/volume:scale-100"
+                    style={{ left: `calc(${volume * 100}% - 8px)` }}
+                  ></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
 
         {/* Queue Panel Overlay */}
         <QueuePanel 
@@ -410,7 +458,7 @@ const PlayerBar = ({ onNavigate }) => {
           queueRef={queueRef} 
         />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
