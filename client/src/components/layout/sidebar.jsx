@@ -267,6 +267,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 
           <div className="relative" ref={sortMenuRef}>
             <button
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
               className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
               title="Sort Library"
@@ -438,6 +439,7 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
 
     <div className="flex items-center gap-3">
       <button
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           setActiveMenu(activeMenu === item.id ? null : item.id);

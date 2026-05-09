@@ -37,10 +37,10 @@ const Card = ({
       
       {/* Text Content */}
       <div className={`space-y-0 ${isArtist ? 'text-center' : 'text-left px-0.5'}`}>
-        <h4 className="font-bold text-[12px] text-text-primary truncate leading-tight group-hover:text-vibaura-primary transition-colors">
+        <h4 className="font-bold text-[13.5px] text-text-primary truncate leading-tight group-hover:text-vibaura-primary transition-colors">
           {title}
         </h4>
-        <p className="text-[10.5px] font-black text-[#666] tracking-tighter truncate leading-snug">
+        <p className="text-[11px] font-black text-[#666] tracking-tighter truncate leading-snug">
           {subtitle}
         </p>
       </div>

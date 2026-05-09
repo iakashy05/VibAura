@@ -136,6 +136,7 @@ const TrackRow = ({ track, index, allTracks, playlistId }) => {
       {/* Context Menu Icon */}
       <div className="flex justify-center relative">
         <button 
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             setIsMenuOpen(!isMenuOpen);

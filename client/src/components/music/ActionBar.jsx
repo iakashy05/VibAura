@@ -24,9 +24,9 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsSticky(!entry.isIntersecting);
+        setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 0);
       },
-      { threshold: [1.0] }
+      { threshold: [0], rootMargin: '-1px 0px 0px 0px' }
     );
 
     if (sentinelRef.current) {
@@ -45,10 +45,10 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
       <div ref={sentinelRef} className="h-px w-full pointer-events-none" />
 
       <div className={`
-        sticky top-0 z-40 px-8 transition-all duration-500
+        sticky top-0 z-40 px-8 transition-all duration-300
         ${isSticky
-          ? 'bg-[#FDFDFD] border-b border-black/5 shadow-lg py-4'
-          : 'bg-transparent border-b border-transparent py-8'}
+          ? 'bg-[#FDFDFD] border-b border-black/5 shadow-lg py-3.5'
+          : 'bg-transparent border-b border-transparent py-7'}
         flex items-center gap-6
       `}>
         {/* 1. Play Now Button */}
@@ -78,6 +78,7 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType }) => {
         <div className="relative">
           <button
             ref={menuBtnRef}
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={handleMenuToggle}
             className={`
               w-12 h-12 flex items-center justify-center rounded-full transition-all active:scale-90

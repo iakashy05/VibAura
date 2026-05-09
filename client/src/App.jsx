@@ -75,7 +75,7 @@ function App() {
 
         {/* The Rounded "Pod" (Main Content area) */}
         <main className="flex-1 bg-vibaura-view-bg rounded-[40px] overflow-hidden flex flex-col mr-6 ml-2 pb-6 pt-0">
-          <div className="flex-1 overflow-y-auto no-scrollbar page-scroll-area relative">
+          <div className="flex-1 overflow-y-auto no-scrollbar page-scroll-area relative pb-20">
 
             {/* Modular View Management */}
             <ViewRenderer

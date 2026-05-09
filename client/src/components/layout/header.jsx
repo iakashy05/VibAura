@@ -188,6 +188,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
               <div className="absolute inset-0 rounded-[16px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 animate-in fade-in duration-500"></div>
             )}
             <button
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={() => setMenuOpen(prev => !prev)}
               className={`relative w-11 h-11 rounded-[14px] bg-vibaura-primary flex items-center justify-center text-white font-black text-sm active:scale-95 group transition-all duration-300 z-10
                 ${isSubscribed ? 'border-2 border-vibaura-surface' : ''}`}
