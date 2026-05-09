@@ -7,6 +7,7 @@ export const usePlayerStore = create((set, get) => ({
   isPlaying: false,
   volume: 0.7,
   queue: [],
+  userQueue: [], // Explicitly queued songs by the user
   currentIndex: -1,
   progress: 0, // 0 to 100
   currentTime: 0, // in seconds
@@ -19,6 +20,52 @@ export const usePlayerStore = create((set, get) => ({
 
   // --- Actions ---
   
+  // Queue Management
+  addToQueue: (track) => set((state) => ({ userQueue: [...state.userQueue, track] })),
+  removeFromQueue: (index) => set((state) => {
+    const newUserQueue = [...state.userQueue];
+    newUserQueue.splice(index, 1);
+    return { userQueue: newUserQueue };
+  }),
+  reorderQueue: (newUserQueue) => set({ userQueue: newUserQueue }),
+  
+  playFromUserQueue: (index) => {
+    const { userQueue, currentPlaylistId } = get();
+    if (index < 0 || index >= userQueue.length) return;
+    
+    const nextItem = userQueue[index];
+    const newUserQueue = userQueue.slice(index + 1);
+
+    if (nextItem?.id) {
+      logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+    }
+
+    set({ 
+      currentTrack: nextItem, 
+      userQueue: newUserQueue,
+      isPlaying: true,
+      hasRepeatedOnce: false
+    });
+  },
+
+  playFromContextQueue: (targetIndex) => {
+    const { queue, currentPlaylistId } = get();
+    if (targetIndex < 0 || targetIndex >= queue.length) return;
+    
+    const nextItem = queue[targetIndex];
+
+    if (nextItem?.id) {
+      logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+    }
+
+    set({ 
+      currentTrack: nextItem, 
+      currentIndex: targetIndex,
+      isPlaying: true,
+      hasRepeatedOnce: false
+    });
+  },
+
   // Set a single track and start playing
   setTrack: (track, newQueue = [], playlistId = null) => {
     // Fire and forget history log
@@ -32,6 +79,7 @@ export const usePlayerStore = create((set, get) => ({
       progress: 0,
       currentTime: 0,
       hasRepeatedOnce: false,
+      userQueue: [], // Reset user queue when starting a new context
       queue: newQueue.length > 0 ? newQueue : [track],
       originalQueue: newQueue.length > 0 ? newQueue : [track],
       currentIndex: newQueue.length > 0 
@@ -100,6 +148,7 @@ export const usePlayerStore = create((set, get) => ({
     set({
       currentTrack: firstTrack,
       queue: shuffled,
+      userQueue: [], // Reset user queue
       originalQueue: [...newQueue], // Save the actual order
       currentIndex: 0,
       isPlaying: true,
@@ -119,7 +168,27 @@ export const usePlayerStore = create((set, get) => ({
 
   // Skip to Next Track
   nextTrack: () => {
-    const { queue, currentIndex, currentPlaylistId } = get();
+    const { userQueue, queue, currentIndex, currentPlaylistId } = get();
+    
+    // 1. Play from User Queue first if available
+    if (userQueue.length > 0) {
+      const nextItem = userQueue[0];
+      const newUserQueue = userQueue.slice(1);
+
+      if (nextItem?.id) {
+        logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+      }
+
+      set({ 
+        currentTrack: nextItem, 
+        userQueue: newUserQueue,
+        isPlaying: true,
+        hasRepeatedOnce: false
+      });
+      return;
+    }
+
+    // 2. Fallback to normal context queue
     if (queue.length === 0 || currentIndex === -1) return;
     
     const nextIndex = (currentIndex + 1) % queue.length;
@@ -184,5 +253,5 @@ export const usePlayerStore = create((set, get) => ({
   toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
 
   // Stop / Clear
-  stop: () => set({ currentTrack: null, isPlaying: false, queue: [], currentIndex: -1 })
+  stop: () => set({ currentTrack: null, isPlaying: false, queue: [], userQueue: [], currentIndex: -1 })
 }));

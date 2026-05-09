@@ -40,7 +40,7 @@ const Card = ({
         <h4 className="font-bold text-[12px] text-text-primary truncate leading-tight group-hover:text-vibaura-primary transition-colors">
           {title}
         </h4>
-        <p className="text-[10.5px] text-text-muted truncate leading-snug">
+        <p className="text-[10.5px] font-black text-[#666] tracking-tighter truncate leading-snug">
           {subtitle}
         </p>
       </div>

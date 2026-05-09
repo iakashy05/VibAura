@@ -122,7 +122,7 @@ const TrackRow = ({ track, index, allTracks, playlistId }) => {
       </div>
 
       {/* Artists Column */}
-      <div className="hidden md:block text-text-muted text-sm truncate">
+      <div className="hidden md:block font-black text-[#666] tracking-tighter text-[11px] truncate">
         {Array.isArray(track.artists) 
           ? track.artists.map(a => a.name).join(', ') 
           : (track.artist || 'VibAura Artist')}

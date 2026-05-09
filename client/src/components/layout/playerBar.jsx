@@ -12,16 +12,21 @@ import {
   faVolumeMute,
   faExpand,
   faInfinity,
-  faHeart as faHeartSolid
+  faHeart as faHeartSolid,
+  faListUl
 } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '../../store/playerStore';
 import { useAuthStore } from '../../store/authStore';
 import { toggleLikeSong } from '../../services/libraryService';
 import LikeButton from '../ui/LikeButton';
+import QueuePanel from './QueuePanel';
 
 const PlayerBar = ({ onNavigate }) => {
   const audioRef = useRef(null);
+  const queueRef = useRef(null);
+  const queueButtonRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
   const {
     currentTrack,
     isPlaying,
@@ -54,6 +59,24 @@ const PlayerBar = ({ onNavigate }) => {
     }
     toggleFullscreen();
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        queueRef.current && !queueRef.current.contains(event.target) &&
+        queueButtonRef.current && !queueButtonRef.current.contains(event.target)
+      ) {
+        setIsQueueOpen(false);
+      }
+    };
+
+    if (isQueueOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isQueueOpen]);
 
   // --- 1. Audio Playback Core ---
   useEffect(() => {
@@ -194,7 +217,7 @@ const PlayerBar = ({ onNavigate }) => {
         onEnded={handleEnded}
       />
 
-      <div className="flex items-center justify-between w-full max-w-7xl px-8 pointer-events-none">
+      <div className="flex items-center justify-between w-full max-w-7xl px-8 pointer-events-none relative">
         {/* 1. Song Info Island (Left) */}
         <div
           onClick={handleFullscreen}
@@ -229,7 +252,7 @@ const PlayerBar = ({ onNavigate }) => {
               {currentTrack?.title || "Select a Song"}
             </span>
             <div className="relative overflow-hidden w-full h-4 flex items-center">
-              <div className={`${(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) ? 'animate-marquee' : 'truncate'} text-[10px] font-black text-[#666] uppercase tracking-tighter leading-none`}>
+              <div className={`${(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) ? 'animate-marquee' : 'truncate'} text-[10px] font-black text-[#666] tracking-tighter leading-none`}>
                 <span className="pr-8">
                   {Array.isArray(currentTrack?.artists)
                     ? currentTrack.artists.map(a => a.name).join(', ')
@@ -332,13 +355,23 @@ const PlayerBar = ({ onNavigate }) => {
 
         {/* 3. Volume & Tools Island (Right) */}
         <div className="pointer-events-auto flex items-center gap-4 bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] px-6 w-auto min-w-[200px] h-[64px] justify-between transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
-          <button
-            onClick={handleFullscreen}
-            className={`transition-all active:scale-95 active:opacity-70 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
-            title={isSubscribed ? "Fullscreen" : "Pro Feature: Fullscreen"}
-          >
-            <FontAwesomeIcon icon={faExpand} size="sm" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              ref={queueButtonRef}
+              onClick={() => setIsQueueOpen(!isQueueOpen)}
+              className={`transition-all active:scale-95 active:opacity-70 ${isQueueOpen ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+              title="Queue"
+            >
+              <FontAwesomeIcon icon={faListUl} size="sm" />
+            </button>
+            <button
+              onClick={handleFullscreen}
+              className={`transition-all active:scale-95 active:opacity-70 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+              title={isSubscribed ? "Fullscreen" : "Pro Feature: Fullscreen"}
+            >
+              <FontAwesomeIcon icon={faExpand} size="sm" />
+            </button>
+          </div>
           <div className="flex items-center gap-3 w-32 group/volume relative">
             <button
               onClick={toggleMute}
@@ -369,6 +402,13 @@ const PlayerBar = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+
+        {/* Queue Panel Overlay */}
+        <QueuePanel 
+          isOpen={isQueueOpen} 
+          onClose={() => setIsQueueOpen(false)} 
+          queueRef={queueRef} 
+        />
       </div>
     </div>
   );

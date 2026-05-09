@@ -25,6 +25,7 @@ import {
 } from '../../services/libraryService';
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
+import { usePlayerStore } from '../../store/playerStore';
 import Dropdown from './Dropdown';
 
 /**
@@ -46,6 +47,7 @@ const ContextMenu = ({
   const [playlists, setPlaylists] = useState([]);
   const { showToast, showConfirm } = useUIStore();
   const { user } = useAuthStore();
+  const { addToQueue } = usePlayerStore();
 
   const isOwner = item?.creator === user?.id || item?.userId === user?.id;
 
@@ -154,7 +156,16 @@ const ContextMenu = ({
                 onClick={(e) => { e.stopPropagation(); setShowPlaylists(true); }}
               />
               <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
-              <ContextMenuItem icon={faListUl} label="Add to Queue" muted />
+              <ContextMenuItem 
+                icon={faListUl} 
+                label="Add to Queue" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToQueue(item);
+                  showToast('Added to Queue', 'success');
+                  onClose();
+                }} 
+              />
               <ContextMenuItem icon={faShareNodes} label="Share" muted />
             </>
           )}
