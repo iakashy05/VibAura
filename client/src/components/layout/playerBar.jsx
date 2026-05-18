@@ -22,6 +22,7 @@ import LikeButton from '../ui/LikeButton';
 import QueuePanel from './QueuePanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '../../store/uiStore';
+import useVibSyncStore from '../../store/useVibSyncStore';
 
 const PlayerBar = ({ onNavigate }) => {
   const audioRef = useRef(null);
@@ -53,6 +54,21 @@ const PlayerBar = ({ onNavigate }) => {
 
   const { user, updateUser, isAuthenticated, isSubscribed } = useAuthStore();
   const { isSidebarCollapsed: isCollapsed } = useUIStore();
+
+  // --- VibSync State ---
+  const { 
+    roomId, 
+    myRole, 
+    currentSong: syncSong, 
+    currentTime: syncTime, 
+    isPlaying: syncIsPlaying, 
+    scheduledStartTime, 
+    socket, 
+    getServerTime 
+  } = useVibSyncStore();
+
+  const isVibSyncActive = !!roomId;
+  const hasControl = myRole === 'HOST' || myRole === 'CONTROLLER';
 
   const handleFullscreen = (e) => {
     if (e) e.stopPropagation();
@@ -92,6 +108,83 @@ const PlayerBar = ({ onNavigate }) => {
     }
   }, [isPlaying, currentTrack]);
 
+  // --- VibSync Execution Engine ---
+  useEffect(() => {
+    if (!isVibSyncActive) return;
+    
+    // If the synced song is different from local track, update local track
+    if (syncSong && (!currentTrack || currentTrack.id !== syncSong.id)) {
+       usePlayerStore.setState({ currentTrack: syncSong });
+       if (audioRef.current) {
+           audioRef.current.pause();
+           audioRef.current.src = syncSong.url || ''; // Force native update immediately
+           audioRef.current.load();
+           audioRef.current.currentTime = syncTime || 0;
+       }
+    }
+
+    if (!syncIsPlaying) {
+       // Pause immediately
+       usePlayerStore.setState({ isPlaying: false });
+       if (audioRef.current) {
+          audioRef.current.pause();
+          // Keep it in sync
+          if (Math.abs(audioRef.current.currentTime - syncTime) > 0.5) {
+             audioRef.current.currentTime = syncTime;
+          }
+       }
+       return;
+    }
+
+    // It IS supposed to be playing.
+    const timeToStart = scheduledStartTime - getServerTime();
+
+    if (timeToStart > 0) {
+       // Wait for the scheduled time
+       usePlayerStore.setState({ isPlaying: false }); // Show paused in UI while waiting
+       if (audioRef.current) audioRef.current.currentTime = syncTime || 0;
+       
+       const timeoutId = setTimeout(() => {
+           usePlayerStore.setState({ isPlaying: true });
+           if (audioRef.current) {
+               // Calculate oversleep for precise alignment
+               const oversleep = getServerTime() - scheduledStartTime;
+               if (oversleep > 0) {
+                   audioRef.current.currentTime = (syncTime || 0) + (oversleep / 1000);
+               } else {
+                   audioRef.current.currentTime = syncTime || 0;
+               }
+               audioRef.current.play().catch(e => console.error('VibSync Play Error:', e));
+           }
+       }, timeToStart);
+       return () => clearTimeout(timeoutId);
+    } else {
+       // We are late! (or it's just a normal drift sync broadcast)
+       const elapsed = Math.abs(timeToStart) / 1000;
+       const expectedCurrentTime = (syncTime || 0) + elapsed;
+       
+       usePlayerStore.setState({ isPlaying: true });
+       
+       if (audioRef.current) {
+           const drift = Math.abs(audioRef.current.currentTime - expectedCurrentTime);
+           if (drift > 0.25) { // Large Drift > 250ms
+               audioRef.current.currentTime = expectedCurrentTime;
+           } else if (drift > 0.05) { // Small Drift > 50ms
+               // Aggressive playbackRate adjustment
+               if (audioRef.current.currentTime < expectedCurrentTime) {
+                   audioRef.current.playbackRate = 1.05; // Speed up
+               } else {
+                   audioRef.current.playbackRate = 0.95; // Slow down
+               }
+               // Reset after 2 seconds
+               setTimeout(() => {
+                   if (audioRef.current) audioRef.current.playbackRate = 1.0;
+               }, 2000);
+           }
+       }
+    }
+  }, [syncSong, syncIsPlaying, scheduledStartTime, syncTime, isVibSyncActive]);
+
   // Sync volume
   useEffect(() => {
     if (audioRef.current) {
@@ -129,11 +222,30 @@ const PlayerBar = ({ onNavigate }) => {
     setIsDragging(false);
     if (audioRef.current) {
       const seekTime = (e.target.value / 100) * audioRef.current.duration;
-      audioRef.current.currentTime = seekTime;
+      if (isVibSyncActive) {
+         if (!hasControl) return;
+         socket.emit('playback_action', {
+              roomId,
+              action: isPlaying ? 'PLAY' : 'PAUSE',
+              currentSong: currentTrack,
+              currentTime: seekTime,
+              scheduledStartTime: getServerTime() + 1500
+         });
+      } else {
+         audioRef.current.currentTime = seekTime;
+      }
     }
   };
 
   const handleEnded = () => {
+    if (isVibSyncActive) {
+       if (myRole === 'HOST') {
+          // Only the host progresses to the next track automatically
+          nextTrack();
+       }
+       return; // Controllers and Listeners wait for the Host's broadcast
+    }
+
     const { repeatMode: currentRepeatMode, hasRepeatedOnce, queue, currentIndex, nextTrack: storeNextTrack } = usePlayerStore.getState();
     
     // 'all' mode loops the current song infinitely natively.
@@ -190,7 +302,7 @@ const PlayerBar = ({ onNavigate }) => {
   };
 
   const trackId = currentTrack?.id || currentTrack?._id;
-  console.log('isLiked debug:', { trackId, currentTrack, likedSongs: user?.likedSongs }); const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
+  const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
 
   const handleLikeClick = async (e) => {
     if (e) e.stopPropagation();
@@ -220,8 +332,10 @@ const PlayerBar = ({ onNavigate }) => {
       className="fixed bottom-8 right-0 z-50 flex justify-center pointer-events-none select-none transition-all duration-500"
     >
       <audio
+        id="vibaura-audio-player"
         ref={audioRef}
         src={currentTrack?.url}
+        crossOrigin="anonymous"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
@@ -310,30 +424,34 @@ const PlayerBar = ({ onNavigate }) => {
           <div className="flex items-center gap-8 relative z-10 mb-1">
             <button
               onClick={toggleShuffle}
-              className={`transition-all active:scale-95 active:opacity-70 text-[12px] ${isShuffle ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+              className={`transition-all active:scale-95 active:opacity-70 text-[12px] ${isShuffle ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'} ${isVibSyncActive && !hasControl ? 'opacity-50 cursor-not-allowed' : ''}`}
               title="Shuffle"
+              disabled={isVibSyncActive && !hasControl}
             >
               <FontAwesomeIcon icon={faShuffle} />
             </button>
             <button
               onClick={prevTrack}
-              className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[14px] active:scale-95 active:opacity-70"
+              className={`transition-all text-[14px] active:scale-95 active:opacity-70 ${isVibSyncActive && !hasControl ? 'text-[#CCC] cursor-not-allowed' : 'text-[#1A1A1A] hover:text-vibaura-primary'}`}
               title="Previous"
+              disabled={isVibSyncActive && !hasControl}
             >
               <FontAwesomeIcon icon={faStepBackward} />
             </button>
 
             <button
               onClick={togglePlay}
-              className="w-12 h-12 rounded-full bg-white text-vibaura-primary shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-lg"
+              className={`w-12 h-12 rounded-full bg-white text-vibaura-primary shadow-lg transition-all duration-300 flex items-center justify-center text-lg ${isVibSyncActive && !hasControl ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
+              disabled={isVibSyncActive && !hasControl}
             >
               <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} className={!isPlaying ? "ml-0.5" : ""} />
             </button>
 
             <button
               onClick={nextTrack}
-              className="text-[#1A1A1A] hover:text-vibaura-primary transition-all text-[14px] active:scale-95 active:opacity-70"
+              className={`transition-all text-[14px] active:scale-95 active:opacity-70 ${isVibSyncActive && !hasControl ? 'text-[#CCC] cursor-not-allowed' : 'text-[#1A1A1A] hover:text-vibaura-primary'}`}
               title="Next"
+              disabled={isVibSyncActive && !hasControl}
             >
               <FontAwesomeIcon icon={faStepForward} />
             </button>

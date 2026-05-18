@@ -27,10 +27,9 @@ const Toast = () => {
 
   return (
     <div 
-      className="fixed top-8 z-[10000] animate-toast-fade pointer-events-none"
-      style={{ left: 'calc(var(--sidebar-width) / 2 + 50%)' }}
+      className="fixed top-8 left-1/2 -translate-x-1/2 z-[10000] animate-toast-fade pointer-events-none"
     >
-      <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-[#1A1A1A]/80 backdrop-blur-lg shadow-2xl border border-white/5">
+      <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black border border-white/10">
         <FontAwesomeIcon icon={icons[toast.type]} className={`text-sm ${colors[toast.type]}`} />
         <span className="font-bold tracking-wide whitespace-nowrap text-[11px] text-white">
           {toast.message}

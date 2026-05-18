@@ -22,6 +22,7 @@ import Button from '../ui/button';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import Dropdown from '../ui/Dropdown';
+import VibSyncMenu from './VibSyncMenu';
 
 const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, searchQuery, setSearchQuery }) => {
   const [localQuery, setLocalQuery] = useState(searchQuery);
@@ -168,6 +169,8 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
 
       {/* 3. Right Section: Theme & Profile */}
       <div className="flex-1 flex items-center justify-end gap-3">
+        <VibSyncMenu />
+        
         {!isSubscribed && (
           <button
             type="button"
