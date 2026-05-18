@@ -30,5 +30,9 @@ export const useUIStore = create((set) => ({
 
   // Global Menu Management
   activeMenuId: null,
-  setActiveMenuId: (id) => set({ activeMenuId: id })
+  setActiveMenuId: (id) => set({ activeMenuId: id }),
+
+  // Network State
+  isServerOffline: false,
+  setServerOffline: (offline) => set({ isServerOffline: offline })
 }));

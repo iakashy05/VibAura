@@ -20,30 +20,30 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Button from '../ui/button';
 import CreatePlaylistModal from '../library/CreatePlaylistModal';
-import {
-  getLibrary,
-  createPlaylist,
-  deletePlaylist,
-  toggleLibraryPlaylist,
-  togglePinPlaylist,
-  updatePlaylist
-} from '../../services/libraryService';
+import { updatePlaylist } from '../../services/libraryService';
+import { useLibraryStore } from '../../store/libraryStore';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { usePlayerStore } from '../../store/playerStore';
 import LikeButton from '../ui/LikeButton';
-import { toggleLikeSong } from '../../services/libraryService';
 import Dropdown from '../ui/Dropdown';
 import ContextMenu from '../ui/ContextMenu';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({ onNavigate, currentPage }) => {
-  const [playlists, setPlaylists] = useState([]);
-  const [artists, setArtists] = useState([]);
-  const [pinnedPlaylists, setPinnedPlaylists] = useState([]);
-  const [pinnedArtists, setPinnedArtists] = useState([]);
-  const [likedSongs, setLikedSongs] = useState([]);
-  const [recentlyPlayed, setRecentlyPlayed] = useState([]);
+  const {
+    playlists,
+    artists,
+    pinnedPlaylists,
+    pinnedArtists,
+    likedSongs,
+    recentlyPlayed,
+    createPlaylistOptimistic,
+    deletePlaylistOptimistic,
+    togglePinPlaylistOptimistic,
+    toggleLikeSongOptimistic
+  } = useLibraryStore();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -68,25 +68,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   // Player state for info island
   const { currentTrack, isPlaying, toggleFullscreen } = usePlayerStore();
 
-  const fetchLibrary = async () => {
-    try {
-      const data = await getLibrary();
-      setPlaylists(data.playlists);
-      setArtists(data.artists || []);
-      setPinnedPlaylists(data.pinnedPlaylists || []);
-      setPinnedArtists(data.pinnedArtists || []);
-      setLikedSongs(data.likedSongs);
-      setRecentlyPlayed(data.recentlyPlayed || []);
-    } catch (err) {
-      console.error('Sidebar failed to load playlists');
-    }
-  };
-
   useEffect(() => {
-    fetchLibrary();
-    const handleUpdate = () => fetchLibrary();
-    window.addEventListener('vibaura-library-updated', handleUpdate);
-
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setActiveMenu(null);
@@ -98,7 +80,6 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      window.removeEventListener('vibaura-library-updated', handleUpdate);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
@@ -106,12 +87,10 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const handleCreatePlaylist = async (title, description) => {
     try {
       setIsCreating(true);
-      await createPlaylist(title, description);
-      window.dispatchEvent(new Event('vibaura-library-updated'));
+      await createPlaylistOptimistic(title, description);
       setIsModalOpen(false);
-      showToast('Playlist created successfully!', 'success');
     } catch (err) {
-      showToast('Failed to create playlist', 'error');
+      // Errors handled by store
     } finally {
       setIsCreating(false);
     }
@@ -126,13 +105,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
         'Delete Playlist',
         `Are you sure you want to permanently delete "${playlist.title}"?`,
         async () => {
-          try {
-            await deletePlaylist(playlist.id);
-            window.dispatchEvent(new Event('vibaura-library-updated'));
-            showToast('Playlist deleted', 'success');
-          } catch (err) {
-            showToast('Failed to delete playlist', 'error');
-          }
+          await deletePlaylistOptimistic(playlist.id);
         }
       );
     } else {
@@ -140,13 +113,8 @@ const Sidebar = ({ onNavigate, currentPage }) => {
         'Remove from Library',
         `Remove "${playlist.title}" from your library?`,
         async () => {
-          try {
-            await toggleLibraryPlaylist(playlist.id);
-            window.dispatchEvent(new Event('vibaura-library-updated'));
-            showToast('Playlist removed', 'success');
-          } catch (err) {
-            showToast('Failed to remove playlist', 'error');
-          }
+          const { toggleLibraryPlaylistOptimistic } = useLibraryStore.getState();
+          await toggleLibraryPlaylistOptimistic(playlist);
         }
       );
     }
@@ -155,12 +123,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 
   const handleTogglePin = async (e, playlistId) => {
     e.stopPropagation();
-    try {
-      await togglePinPlaylist(playlistId);
-      window.dispatchEvent(new Event('vibaura-library-updated'));
-    } catch (err) {
-      showToast('Failed to pin playlist', 'error');
-    }
+    await togglePinPlaylistOptimistic(playlistId);
     setActiveMenu(null);
   };
 
@@ -168,7 +131,8 @@ const Sidebar = ({ onNavigate, currentPage }) => {
     try {
       setIsCreating(true);
       await updatePlaylist(editingPlaylist.id, { title, description });
-      window.dispatchEvent(new Event('vibaura-library-updated'));
+      const { updatePlaylistMetadataInStore } = useLibraryStore.getState();
+      updatePlaylistMetadataInStore(editingPlaylist.id, title, description);
       setEditingPlaylist(null);
       showToast('Playlist updated', 'success');
     } catch (err) {
@@ -179,24 +143,12 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   };
 
   const trackId = currentTrack?.id || currentTrack?._id;
-  const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
+  const isLiked = trackId && likedSongs.some(song => (song.id || song._id) === trackId);
 
   const handleLikeClick = async (e) => {
     if (e) e.stopPropagation();
     if (!isAuthenticated || !currentTrack) return;
-
-    try {
-      const res = await toggleLikeSong(currentTrack.id);
-
-      const newLikedSongs = res.liked
-        ? [...(user.likedSongs || []), currentTrack.id]
-        : (user.likedSongs || []).filter(song => (typeof song === 'string' ? song : (song._id || song.id)) !== currentTrack.id);
-
-      updateUser({ ...user, likedSongs: newLikedSongs });
-      window.dispatchEvent(new Event('vibaura-library-updated'));
-    } catch (err) {
-      console.error('Failed to toggle like:', err);
-    }
+    toggleLikeSongOptimistic(currentTrack);
   };
   const filteredPlaylists = playlists
     .filter(p => p.title?.toLowerCase().includes(searchQuery.toLowerCase()))

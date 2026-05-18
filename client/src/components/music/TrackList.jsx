@@ -4,7 +4,7 @@ import { faPlay, faPause, faClock, faEllipsisV, faHeart as faHeartSolid } from '
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { usePlayerStore } from '../../store/playerStore';
 import { useAuthStore } from '../../store/authStore';
-import { toggleLikeSong } from '../../services/libraryService';
+import { useLibraryStore } from '../../store/libraryStore';
 import { formatTime } from '../../utils/time';
 import LikeButton from '../ui/LikeButton';
 import ContextMenu from '../ui/ContextMenu';
@@ -30,7 +30,7 @@ const TrackList = ({ tracks, playlistId, isOwner }) => {
       {/* Track Rows */}
       <div className="space-y-0.5">
         {tracks.map((track, index) => (
-          <TrackRow key={track.id} track={track} index={index + 1} allTracks={tracks} playlistId={playlistId} isPlaylistOwner={isOwner} />
+          <TrackRow key={track.id || track._id || index} track={track} index={index + 1} allTracks={tracks} playlistId={playlistId} isPlaylistOwner={isOwner} />
         ))}
       </div>
     </div>
@@ -39,17 +39,13 @@ const TrackList = ({ tracks, playlistId, isOwner }) => {
 
 const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner }) => {
   const { currentTrack, isPlaying, setTrack, togglePlay } = usePlayerStore();
-  const { user, updateUser, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const isSelected = currentTrack?.id === track.id;
 
   const trackId = track?.id || track?._id;
-  const isLiked = trackId && user?.likedSongs?.some(song => typeof song === 'string' ? song === trackId : (song?._id === trackId || song?.id === trackId));
-  const [localLiked, setLocalLiked] = useState(isLiked);
-
-  // Keep local state perfectly in sync with global store changes
-  useEffect(() => {
-    setLocalLiked(isLiked);
-  }, [isLiked]);
+  const likedSongs = useLibraryStore(state => state.likedSongs);
+  const { toggleLikeSongOptimistic } = useLibraryStore();
+  const isLiked = trackId && likedSongs.some(song => (song.id || song._id) === trackId);
 
   const { activeMenuId, setActiveMenuId, showConfirm } = useUIStore();
   const isMenuOpen = activeMenuId === `track-${track.id}`;
@@ -68,24 +64,11 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
     if (e && e.stopPropagation) e.stopPropagation();
     if (!isAuthenticated) return;
 
-    const isUnliking = localLiked;
+    const isUnliking = isLiked;
     const isLikedPage = playlistId === 'liked-songs';
 
-    const performToggle = async () => {
-      try {
-        setLocalLiked(!localLiked);
-        const res = await toggleLikeSong(track.id);
-
-        // Update global user state
-        const newLikedSongs = res.liked
-          ? [...(user.likedSongs || []), track.id]
-          : (user.likedSongs || []).filter(song => (typeof song === 'string' ? song : (song._id || song.id)) !== track.id);
-
-        updateUser({ ...user, likedSongs: newLikedSongs });
-        window.dispatchEvent(new Event('vibaura-library-updated'));
-      } catch (err) {
-        setLocalLiked(localLiked); // Revert on error
-      }
+    const performToggle = () => {
+      toggleLikeSongOptimistic(track);
     };
 
     if (isUnliking && isLikedPage) {
@@ -103,7 +86,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
   return (
     <div
       onClick={handlePlayClick}
-      className={`group grid grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer ${isSelected ? 'bg-vibaura-primary/10 ring-1 ring-vibaura-primary/20' : 'hover:bg-black/5'}`}
+      className="group grid grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer hover:bg-black/5"
     >
       {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">
@@ -155,7 +138,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
       {/* Like Button */}
       <div className="flex justify-center">
         <LikeButton
-          isLiked={localLiked}
+          isLiked={isLiked}
           onClick={handleLikeClick}
           className="scale-75 origin-center"
         />
@@ -185,7 +168,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
           onClose={() => setIsMenuOpen(false)}
           item={track}
           type="track"
-          isLiked={localLiked}
+          isLiked={isLiked}
           onLikeToggle={handleLikeClick}
           playlistId={playlistId}
           isPlaylistOwner={isPlaylistOwner}

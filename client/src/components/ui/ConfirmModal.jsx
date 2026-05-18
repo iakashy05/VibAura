@@ -15,7 +15,6 @@ const ConfirmModal = () => {
   return (
     <div 
       className="fixed inset-0 z-[10000] flex items-center justify-center p-4 transition-all duration-300"
-      style={{ paddingLeft: 'var(--sidebar-width)' }}
     >
       <div className="absolute inset-0 bg-[#0A0A0A]/10 backdrop-blur-[1px] animate-fade-in" onClick={hideConfirm}></div>
       

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { usePlayerStore } from './playerStore';
+import { useLibraryStore } from './libraryStore';
 
 export const useAuthStore = create(
   persist(
@@ -18,6 +20,13 @@ export const useAuthStore = create(
       
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false, isSubscribed: false });
+        // Clean reset of player and library states on logout
+        try {
+          usePlayerStore.getState().stop();
+          useLibraryStore.getState().reset();
+        } catch (err) {
+          console.error('Error resetting stores during logout:', err);
+        }
       },
 
       updateUser: (user) => set({ user, isSubscribed: user?.isSubscribed ?? false }),

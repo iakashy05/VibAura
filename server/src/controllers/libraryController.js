@@ -12,8 +12,20 @@ class LibraryController {
    */
   getLibrary = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id)
-      .populate('libraryPlaylists')
-      .populate('pinnedPlaylists')
+      .populate({
+        path: 'libraryPlaylists',
+        populate: {
+          path: 'songs',
+          populate: { path: 'artists', model: 'Artist' }
+        }
+      })
+      .populate({
+        path: 'pinnedPlaylists',
+        populate: {
+          path: 'songs',
+          populate: { path: 'artists', model: 'Artist' }
+        }
+      })
       .populate('pinnedArtists')
       .populate({
         path: 'likedSongs',

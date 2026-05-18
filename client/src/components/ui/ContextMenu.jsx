@@ -27,6 +27,7 @@ import {
 import { useUIStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { usePlayerStore } from '../../store/playerStore';
+import { useLibraryStore } from '../../store/libraryStore';
 import Dropdown from './Dropdown';
 
 /**
@@ -64,10 +65,10 @@ const ContextMenu = ({
     }
   }, [isOpen, type]);
 
-  const fetchPlaylists = async () => {
+  const fetchPlaylists = () => {
     try {
-      const data = await getLibrary();
-      setPlaylists(data.playlists.filter(p => p.creator === user?.id));
+      const { playlists } = useLibraryStore.getState();
+      setPlaylists(playlists.filter(p => p.creator === user?.id));
     } catch (err) {
       console.error('Failed to fetch playlists', err);
     }
@@ -77,8 +78,10 @@ const ContextMenu = ({
     if (e) e.stopPropagation();
     try {
       await addSongToPlaylist(playlistId, item.id);
+      // Immediately reflect in central Zustand store
+      const { addSongToPlaylistInStore } = useLibraryStore.getState();
+      addSongToPlaylistInStore(playlistId, item);
       showToast(`Added to ${playlistTitle}`, 'success');
-      window.dispatchEvent(new Event('vibaura-library-updated'));
       onClose();
     } catch (err) {
       const isDuplicate = err.response?.status === 400 || 
@@ -96,14 +99,13 @@ const ContextMenu = ({
   const handleLibraryToggle = async (e) => {
     if (e) e.stopPropagation();
     try {
-      let res;
       if (type === 'playlist') {
-        res = await toggleLibraryPlaylist(item.id);
+        const { toggleLibraryPlaylistOptimistic } = useLibraryStore.getState();
+        await toggleLibraryPlaylistOptimistic(item);
       } else if (type === 'artist') {
-        res = await toggleLibraryArtist(item.id);
+        const { toggleLibraryArtistOptimistic } = useLibraryStore.getState();
+        await toggleLibraryArtistOptimistic(item);
       }
-      showToast(res?.message || 'Library updated', 'success');
-      window.dispatchEvent(new Event('vibaura-library-updated'));
       onClose();
     } catch (err) {
       showToast('Failed to update library', 'error');
@@ -118,13 +120,12 @@ const ContextMenu = ({
         `Are you sure you want to permanently delete "${item.title}"?`,
         async () => {
           try {
-            await deletePlaylist(item.id);
-            window.dispatchEvent(new Event('vibaura-library-updated'));
-            showToast('Playlist deleted', 'success');
+            const { deletePlaylistOptimistic } = useLibraryStore.getState();
+            await deletePlaylistOptimistic(item.id);
             if (onNavigate) onNavigate('home');
             onClose();
           } catch (err) {
-            showToast('Failed to delete playlist', 'error');
+            // Error is already toasted inside the store delete action
           }
         },
         'Yes, Delete it'
@@ -138,11 +139,12 @@ const ContextMenu = ({
     e.stopPropagation();
     try {
       if (type === 'playlist') {
-        await togglePinPlaylist(item.id);
+        const { togglePinPlaylistOptimistic } = useLibraryStore.getState();
+        await togglePinPlaylistOptimistic(item.id);
       } else if (type === 'artist') {
-        await togglePinArtist(item.id);
+        const { togglePinArtistOptimistic } = useLibraryStore.getState();
+        await togglePinArtistOptimistic(item.id);
       }
-      window.dispatchEvent(new Event('vibaura-library-updated'));
       onClose();
     } catch (err) {
       showToast('Failed to pin item', 'error');
@@ -185,8 +187,10 @@ const ContextMenu = ({
                       e.stopPropagation();
                       try {
                         await removeSongFromPlaylist(playlistId, item.id);
+                        // Immediately reflect in central Zustand store
+                        const { removeSongFromPlaylistInStore } = useLibraryStore.getState();
+                        removeSongFromPlaylistInStore(playlistId, item.id);
                         showToast('Removed from playlist', 'success');
-                        window.dispatchEvent(new Event('vibaura-library-updated'));
                         onClose();
                       } catch (err) {
                         const errorMsg = err.response?.data?.message || 'Failed to remove song';

@@ -326,5 +326,16 @@ export const usePlayerStore = create((set, get) => ({
   toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
 
   // Stop / Clear
-  stop: () => set({ currentTrack: null, isPlaying: false, queue: [], userQueue: [], currentIndex: -1 })
+  stop: () => {
+    const { heartbeatInterval } = get();
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    set({ 
+      currentTrack: null, 
+      isPlaying: false, 
+      queue: [], 
+      userQueue: [], 
+      currentIndex: -1,
+      heartbeatInterval: null
+    });
+  }
 }));

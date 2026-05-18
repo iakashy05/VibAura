@@ -36,6 +36,9 @@ const playlistSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+playlistSchema.index({ creator: 1 });
+playlistSchema.index({ isPublic: 1 });
+
 const Playlist = mongoose.model('Playlist', playlistSchema);
 
 export default Playlist;

@@ -47,6 +47,9 @@ songSchema.virtual('artistNameString').get(function() {
   return '';
 });
 
+songSchema.index({ isFeatured: 1 });
+songSchema.index({ artists: 1 });
+
 const Song = mongoose.model('Song', songSchema);
 
 export default Song;
