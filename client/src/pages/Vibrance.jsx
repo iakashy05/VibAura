@@ -34,7 +34,7 @@ const Vibrance = () => {
   return (
     <div className="max-w-4xl mx-auto px-8 py-16 pb-40 md:pb-32 space-y-16 animate-page-in">
       {/* Header */}
-      <header className="border-b border-black/5 pb-8">
+      <header className="border-b border-black/5 dark:border-white/5 pb-8">
         <h1 className="text-4xl font-black text-text-primary tracking-tighter mb-2">
           Your Monthly <span className="text-vibaura-primary">Vibrance</span>
         </h1>
@@ -52,7 +52,7 @@ const Vibrance = () => {
             <FontAwesomeIcon icon={faMusic} />
             <span>Top Resonance</span>
           </div>
-          <ul className="divide-y divide-black/5">
+          <ul className="divide-y divide-black/5 dark:divide-white/5">
             {data.topSongs.map((song, i) => (
               <li key={song._id} className="py-4 flex justify-between items-center">
                 <div className="flex items-center gap-4">
@@ -74,7 +74,7 @@ const Vibrance = () => {
             <FontAwesomeIcon icon={faMicrophone} />
             <span>Top Artists</span>
           </div>
-          <ul className="divide-y divide-black/5">
+          <ul className="divide-y divide-black/5 dark:divide-white/5">
             {data.topArtists.map((artist, i) => (
               <li key={artist._id} className="py-4 flex justify-between items-center">
                 <div className="flex items-center gap-4">
@@ -93,7 +93,7 @@ const Vibrance = () => {
             <FontAwesomeIcon icon={faLayerGroup} />
             <span>Top Playlists</span>
           </div>
-          <ul className="divide-y divide-black/5">
+          <ul className="divide-y divide-black/5 dark:divide-white/5">
             {data.topPlaylists.map((playlist, i) => (
               <li key={playlist._id} className="py-4 flex justify-between items-center">
                 <div className="flex items-center gap-4">
@@ -112,7 +112,7 @@ const Vibrance = () => {
             <FontAwesomeIcon icon={faClock} />
             <span>Listening Time</span>
           </div>
-          <div className="bg-vibaura-primary/5 p-8 rounded-3xl border border-vibaura-primary/10">
+          <div className="bg-vibaura-primary/5 dark:bg-vibaura-primary/10 p-8 rounded-3xl border border-vibaura-primary/10 dark:border-vibaura-primary/20">
             <div className="text-6xl font-black text-vibaura-primary tracking-tighter">
               {data.totalMinutes} <span className="text-2xl">min</span>
             </div>

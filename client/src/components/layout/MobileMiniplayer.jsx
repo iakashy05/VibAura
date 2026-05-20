@@ -33,7 +33,7 @@ const MobileMiniplayer = () => {
   return (
     <div 
       onClick={handleContainerClick}
-      className="fixed bottom-16 left-4 right-4 h-16 z-40 bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl flex items-center justify-between px-4 shadow-[0_12px_40px_rgba(0,0,0,0.12)] cursor-pointer select-none"
+      className="fixed bottom-16 left-4 right-4 h-16 z-40 bg-white/80 dark:bg-[#121223]/85 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-2xl flex items-center justify-between px-4 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] cursor-pointer select-none transition-all duration-300"
     >
       {/* 1. Track Info Section */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -48,7 +48,7 @@ const MobileMiniplayer = () => {
 
         {/* Title and Artist */}
         <div className="flex flex-col min-w-0 flex-1 pr-2">
-          <span className="text-xs font-black text-[#1A1A1A] tracking-tight truncate leading-tight">
+          <span className="text-xs font-black text-[#1A1A1A] dark:text-text-primary tracking-tight truncate leading-tight">
             {currentTrack.title}
           </span>
           <span className="text-[10px] text-vibaura-primary font-medium truncate mt-0.5">
@@ -79,7 +79,7 @@ const MobileMiniplayer = () => {
         {/* Next Button */}
         <button
           onClick={handleNextTrack}
-          className="w-9 h-9 rounded-full bg-vibaura-view-bg border border-black/5 text-[#999] hover:text-[#1A1A1A] flex items-center justify-center active:opacity-80 active:bg-black/[0.05] transition-all duration-75"
+          className="w-9 h-9 rounded-full bg-vibaura-view-bg dark:bg-vibaura-bg-muted/30 border border-black/5 dark:border-white/5 text-[#999] dark:text-text-secondary hover:text-[#1A1A1A] dark:hover:text-white flex items-center justify-center active:opacity-80 active:bg-black/[0.05] dark:active:bg-white/[0.05] transition-all duration-75"
           aria-label="Next Track"
         >
           <FontAwesomeIcon icon={faStepForward} className="text-xs" />

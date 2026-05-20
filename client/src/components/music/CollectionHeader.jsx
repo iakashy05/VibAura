@@ -50,13 +50,13 @@ const CollectionHeader = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-end gap-5 md:gap-10 px-4 md:px-8 py-5 pt-12 md:py-8 bg-gradient-to-b from-vibaura-tint/30 to-transparent border-b border-black/[0.02] relative">
+    <div className="flex flex-col md:flex-row items-start md:items-end gap-5 md:gap-10 px-4 md:px-8 py-5 pt-12 md:py-8 bg-transparent border-b border-black/[0.02] dark:border-white/5 relative">
       
       {/* Mobile Back Button */}
       {onNavigate && (
         <button 
           onClick={() => onNavigate('home')}
-          className="md:hidden absolute top-4 left-4 w-10 h-10 flex items-center justify-center bg-white/70 backdrop-blur-xl rounded-full text-text-primary shadow-sm border border-black/5 active:scale-90 transition-transform z-20"
+          className="md:hidden absolute top-4 left-4 w-10 h-10 flex items-center justify-center bg-white/70 dark:bg-vibaura-surface/80 backdrop-blur-xl rounded-full text-text-primary shadow-sm border border-black/5 dark:border-white/5 active:scale-90 transition-transform z-20"
         >
           <svg className="w-5 h-5 pr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path>
@@ -86,20 +86,9 @@ const CollectionHeader = ({
             <span className="text-[8px] uppercase tracking-[0.2em] font-extrabold text-vibaura-primary leading-none">
               {isUserPlaylist ? 'User Playlist' : 'Public Playlist'}
             </span>
-            {isInLibrary && (
-              <span className="text-[8px] uppercase tracking-[0.15em] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/50 px-2 py-0.5 rounded-full leading-none">
-                In Library
-              </span>
-            )}
           </div>
         )}
-        {isArtist && isInLibrary && (
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="text-[8px] uppercase tracking-[0.15em] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/50 px-2 py-0.5 rounded-full leading-none">
-              Following
-            </span>
-          </div>
-        )}
+
         
         <h1 className={`font-black text-text-primary tracking-tight leading-none mb-1.5 truncate
           ${isArtist ? 'text-lg md:text-6xl' : 'text-xl md:text-7xl'}
@@ -108,12 +97,12 @@ const CollectionHeader = ({
         </h1>
 
         {description && (
-          <p className="text-[#666] text-[10px] md:text-lg max-w-3xl mb-2 md:mb-6 font-medium leading-relaxed tracking-tight line-clamp-2 md:line-clamp-none">
+          <p className="text-text-secondary dark:text-text-muted text-[10px] md:text-lg max-w-3xl mb-2 md:mb-6 font-medium leading-relaxed tracking-tight line-clamp-2 md:line-clamp-none">
             {description}
           </p>
         )}
 
-        <div className="flex items-center justify-start flex-wrap gap-1.5 text-[#888] font-bold text-[9px] md:text-base leading-none">
+        <div className="flex items-center justify-start flex-wrap gap-1.5 text-text-muted font-bold text-[9px] md:text-base leading-none">
           {meta.map((item, idx) => (
             <React.Fragment key={idx}>
               {idx > 0 && <span className="w-1 h-1 rounded-full bg-text-muted/40 mx-1 shrink-0" />}

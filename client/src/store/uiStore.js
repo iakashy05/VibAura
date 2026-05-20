@@ -34,5 +34,18 @@ export const useUIStore = create((set) => ({
 
   // Network State
   isServerOffline: false,
-  setServerOffline: (offline) => set({ isServerOffline: offline })
+  setServerOffline: (offline) => set({ isServerOffline: offline }),
+
+  // Theme Management
+  theme: localStorage.getItem('vibaura-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+  toggleTheme: () => set((state) => {
+    const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('vibaura-theme', nextTheme);
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    return { theme: nextTheme };
+  })
 }));

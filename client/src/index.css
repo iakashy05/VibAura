@@ -7,17 +7,41 @@
 :root {
   font-family: 'Jost', sans-serif;
 
-  /* --- VibAura Core Theme --- */
+  /* --- VibAura Core Theme (Light) --- */
   --vibaura-primary: #6367FF;
   --vibaura-primary-light: #C9BEFF;
   --vibaura-primary-hover: #8494FF;
-  --vibaura-surface: #FFFFFE;
-  --vibaura-view-bg: #F9F5F6;
-  --vibaura-action-bar: #FDFDFD;
+  --vibaura-surface: #FFFFFE;      /* Outer layout, sidebars, headers, and player stay white */
+  --vibaura-view-bg: #edecf4;      /* Only the main content view pod gets the lavender color */
+  --vibaura-bg-muted: #E4E4E9;     /* Control backgrounds on white surfaces */
+  --vibaura-border: #C9BEFF;       /* Premium lavender borders */
+  --vibaura-action-bar: #edecf4;   /* Matches the home pod background */
+  --vibaura-tint: rgba(99, 103, 255, 0); /* Zero tinting to follow user's request */
+
+  --text-primary: #2d3748;         /* High readability dark grey text */
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
 
   /* --- Layout Variables --- */
   --sidebar-width: 360px;
   --card-size: 180px;
+}
+
+.dark {
+  /* --- VibAura Core Theme (Dark - Premium Deep Indigo/Charcoal) --- */
+  --vibaura-primary: #8285FF;
+  --vibaura-primary-light: #B4A8FF;
+  --vibaura-primary-hover: #9A9DFF;
+  --vibaura-surface: #1A1A2E;      /* Outer layouts, sidebars, headers, and player stay deep indigo */
+  --vibaura-view-bg: #2a2a43;      /* Only the main content view pod gets #2a2a43 background */
+  --vibaura-bg-muted: #262640;     /* Medium dark deep control bg */
+  --vibaura-border: #30305A;       /* Border between surfaces */
+  --vibaura-action-bar: #2a2a43;   /* Matches the main view pod background */
+  --vibaura-tint: rgba(130, 133, 255, 0); /* Zero tinting to follow user's request */
+
+  --text-primary: #FFFFFF;         /* Pure white — maximum contrast */
+  --text-secondary: #B8C4D4;       /* Noticeably grey — clear visual step below white */
+  --text-muted: #7A8BA0;           /* Deeper grey — clearly subdued metadata */
 }
 
 @media (max-width: 1440px) {
@@ -83,6 +107,20 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* --- Text Color Utilities (explicit override to fix Tailwind namespace conflict) --- */
+  .text-text-primary  { color: var(--text-primary)   !important; }
+  .text-text-secondary { color: var(--text-secondary) !important; }
+  .text-text-muted    { color: var(--text-muted)      !important; }
+
+  /* --- Sticky Action Bar Scroll Darkening --- */
+  .bg-vibaura-surface-sticky {
+    background-color: color-mix(in srgb, var(--vibaura-view-bg) 90%, black) !important;
+  }
+
+  /* group-hover variants */
+  .group:hover .group-hover\:text-text-primary  { color: var(--text-primary)   !important; }
+  .group:hover .group-hover\:text-text-secondary { color: var(--text-secondary) !important; }
 
   /* --- Custom Volume Slider --- */
   .volume-slider {
@@ -294,3 +332,19 @@
   animation: page-transition-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
+
+/* --- Premium GPU-Accelerated Vinyl Rotation Animation --- */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+  will-change: transform;
+}
+

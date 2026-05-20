@@ -29,7 +29,7 @@ const MobileNavbar = ({ currentPage, onNavigate }) => {
   };
 
   return (
-    <nav className="h-16 fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-black/[0.05] px-6 flex items-center justify-between pb-safe">
+    <nav className="h-16 fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#121223]/95 backdrop-blur-md border-t border-black/[0.05] dark:border-white/5 px-6 flex items-center justify-between pb-safe transition-all duration-300">
       
       {tabs.map((tab) => {
         const active = isTabActive(tab.id);
@@ -43,8 +43,8 @@ const MobileNavbar = ({ currentPage, onNavigate }) => {
             {/* Icon Wrapper */}
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 relative
               ${active 
-                ? 'text-vibaura-primary bg-vibaura-primary/5 scale-110' 
-                : 'text-[#999] group-hover:text-vibaura-primary/60 hover:scale-105'}`}
+                ? 'text-vibaura-primary bg-vibaura-primary/5 dark:bg-vibaura-primary/10 scale-110' 
+                : 'text-[#999] dark:text-text-muted group-hover:text-vibaura-primary/60 hover:scale-105'}`}
             >
               <FontAwesomeIcon 
                 icon={tab.icon} 

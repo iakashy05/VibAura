@@ -92,9 +92,9 @@ const VibSync = () => {
       </div>
 
       {/* 2. Main Action Card */}
-      <div className="p-4 md:p-6 bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg flex-1 flex flex-col justify-between min-h-[340px] md:min-h-[380px]">
+      <div className="p-4 md:p-6 bg-vibaura-surface backdrop-blur-xl border border-white/50 dark:border-white/5 rounded-3xl shadow-lg flex-1 flex flex-col justify-between min-h-[340px] md:min-h-[380px] transition-all duration-300">
         {(errorMsg || connectionError) && (
-          <div className="mb-4 p-3 bg-red-50 text-red-500 text-[11px] font-black rounded-2xl text-center border border-red-100 uppercase tracking-wider">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 text-red-500 text-[11px] font-black rounded-2xl text-center border border-red-100 dark:border-red-950/30 uppercase tracking-wider">
             {errorMsg || connectionError}
           </div>
         )}
@@ -115,25 +115,25 @@ const VibSync = () => {
                 <button 
                   onClick={handleCreateRoom}
                   disabled={isLoading}
-                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-vibaura-view-bg border border-black/5 hover:border-vibaura-primary transition-all active:scale-95 group"
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-vibaura-view-bg dark:bg-vibaura-bg-muted/30 border border-black/5 dark:border-white/5 hover:border-vibaura-primary dark:hover:border-vibaura-primary transition-all active:scale-95 group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-vibaura-primary text-white flex items-center justify-center shadow-md">
                       <FontAwesomeIcon icon={faPlay} className="text-sm" />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-black text-[#1A1A1A]">Start a Session</p>
+                      <p className="text-sm font-black text-text-primary">Start a Session</p>
                       <p className="text-[10px] text-text-muted font-bold">You will be the Host</p>
                     </div>
                   </div>
                   <FontAwesomeIcon icon={faChevronRight} className="text-text-muted/40 group-hover:text-vibaura-primary transition-colors" />
                 </button>
               ) : (
-                <div className="p-4 bg-amber-50/50 border border-amber-200 rounded-2xl flex gap-3">
+                <div className="p-4 bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-800/30 rounded-2xl flex gap-3">
                   <FontAwesomeIcon icon={faCrown} className="text-[#F5B041] mt-0.5" />
                   <div>
-                    <p className="text-xs font-black text-amber-800">Pro Feature</p>
-                    <p className="text-[10px] text-amber-700/80 font-bold mt-1 leading-relaxed">Upgrade to Pro to host your own VibSync sessions.</p>
+                    <p className="text-xs font-black text-amber-800 dark:text-amber-400">Pro Feature</p>
+                    <p className="text-[10px] text-amber-700/80 dark:text-amber-500/80 font-bold mt-1 leading-relaxed">Upgrade to Pro to host your own VibSync sessions.</p>
                   </div>
                 </div>
               )}
@@ -171,7 +171,7 @@ const VibSync = () => {
           <div className="flex-1 flex flex-col justify-between">
             <div className="space-y-6">
               {/* Room Code Card */}
-              <div className="text-center bg-vibaura-view-bg p-4 rounded-2xl border border-black/5 relative shadow-inner">
+              <div className="text-center bg-vibaura-view-bg dark:bg-vibaura-bg-muted/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 relative shadow-inner">
                 <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5">Room Code</p>
                 <p className="text-3xl font-mono font-black tracking-[0.4em] text-vibaura-primary pl-2">{roomCode}</p>
               </div>
@@ -183,21 +183,21 @@ const VibSync = () => {
                 </div>
                 <div className="overflow-y-auto space-y-2 max-h-48 pr-1 no-scrollbar">
                   {participants.map(p => (
-                    <div key={p.userId} className="flex items-center justify-between p-3 rounded-2xl bg-vibaura-view-bg border border-black/[0.02]">
+                    <div key={p.userId} className="flex items-center justify-between p-3 rounded-2xl bg-vibaura-view-bg dark:bg-vibaura-bg-muted/20 border border-black/[0.02] dark:border-white/5">
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-400 to-indigo-500 flex items-center justify-center text-white text-[11px] font-black shrink-0 shadow-md">
                           {p.userId === user?._id ? 'Me' : p.name ? p.name.substring(0, 2).toUpperCase() : 'AU'}
                         </div>
-                        <span className="text-xs font-black text-[#1A1A1A] truncate">
+                        <span className="text-xs font-black text-text-primary truncate">
                           {p.userId === user?._id ? 'You (Me)' : p.name || 'Anonymous Aura'}
                         </span>
                       </div>
                       
                       <div className="flex items-center gap-2">
                         <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-full border shadow-sm
-                          ${p.role === 'HOST' ? 'bg-[#FFFBF0] text-[#F5B041] border-[#FFE082]' : 
-                            p.role === 'CONTROLLER' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' : 
-                            'bg-gray-50 text-gray-500 border-gray-200'}`}
+                          ${p.role === 'HOST' ? 'bg-[#FFFBF0] dark:bg-amber-950/20 text-[#F5B041] border-[#FFE082] dark:border-amber-700/30' : 
+                            p.role === 'CONTROLLER' ? 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800/30' : 
+                            'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-text-muted border-gray-200 dark:border-white/5'}`}
                         >
                           {p.role}
                         </span>
@@ -219,10 +219,10 @@ const VibSync = () => {
             </div>
 
             {/* Leave Room Button */}
-            <div className="pt-4 border-t border-black/5 mt-4">
+            <div className="pt-4 border-t border-black/5 dark:border-white/5 mt-4">
               <button 
                 onClick={leaveRoom}
-                className="w-full py-3.5 rounded-2xl border border-red-100 text-red-500 text-xs font-black hover:bg-red-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-3.5 rounded-2xl border border-red-100 dark:border-red-950/30 text-red-500 text-xs font-black hover:bg-red-50 dark:hover:bg-red-950/10 transition-all flex items-center justify-center gap-2 shadow-sm"
               >
                 <FontAwesomeIcon icon={myRole === 'HOST' ? faStop : faSignOutAlt} />
                 <span>{myRole === 'HOST' ? 'End VibSync Session' : 'Leave Session'}</span>

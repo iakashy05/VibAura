@@ -13,16 +13,16 @@ export default {
           'primary-light': 'var(--vibaura-primary-light)',
           'primary-hover': 'var(--vibaura-primary-hover)',
           surface: 'var(--vibaura-surface)',
-          tint: 'rgba(99, 103, 255, 0.05)',
-          'bg-muted': '#E4E4E9',
+          tint: 'var(--vibaura-tint)',
+          'bg-muted': 'var(--vibaura-bg-muted)',
           'view-bg': 'var(--vibaura-view-bg)',
-          border: '#C9BEFF',
+          border: 'var(--vibaura-border)',
           'action-bar': 'var(--vibaura-action-bar)',
         },
         text: {
-          primary: '#2d3748',
-          secondary: '#4a5568',
-          muted: '#718096',
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
         }
       },
       fontFamily: {

@@ -14,7 +14,7 @@ const TrackList = ({ tracks, playlistId, isOwner }) => {
   return (
     <div className="w-full">
       {/* Table Header */}
-      <div className="grid grid-cols-[32px_1fr_48px_32px] md:grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-2 border-b border-[#F0F0F0] text-[#999] text-[10px] uppercase tracking-widest font-black mb-2">
+      <div className="grid grid-cols-[32px_1fr_48px_32px] md:grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-2 border-b border-[#F0F0F0] dark:border-white/5 text-[#999] dark:text-text-muted text-[10px] uppercase tracking-widest font-black mb-2">
         <div className="flex justify-center">#</div>
         <div>Title</div>
         <div className="hidden md:block">Artists</div>
@@ -100,7 +100,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
         e.stopPropagation();
         setIsMenuOpen(true);
       }}
-      className="group grid grid-cols-[32px_1fr_48px_32px] md:grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-2 md:px-4 py-3 rounded-2xl transition-colors duration-200 items-center cursor-pointer hover:bg-black/5 select-none"
+      className="group grid grid-cols-[32px_1fr_48px_32px] md:grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-2 md:px-4 py-3 rounded-2xl transition-colors duration-200 items-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 select-none"
     >
       {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">
@@ -132,10 +132,10 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
           <img src={track.image} alt={track.title} loading="lazy" className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col truncate">
-          <span className={`font-semibold md:font-black truncate transition-colors text-sm tracking-tight ${isSelected ? 'text-vibaura-primary' : 'text-[#1A1A1A] group-hover:text-vibaura-primary'}`}>
+          <span className={`font-semibold md:font-black truncate transition-colors text-sm tracking-tight ${isSelected ? 'text-vibaura-primary' : 'text-[#1A1A1A] dark:text-text-primary group-hover:text-vibaura-primary'}`}>
             {track.title}
           </span>
-          <span className="block md:hidden text-[10px] text-[#777] font-medium tracking-tight truncate mt-0.5">
+          <span className="block md:hidden text-[10px] text-[#777] dark:text-text-muted font-medium tracking-tight truncate mt-0.5">
             {Array.isArray(track.artists)
               ? track.artists.map(a => a.name).join(', ')
               : (track.artist || 'VibAura Artist')}
@@ -144,7 +144,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
       </div>
 
       {/* Artists Column (Desktop Only) */}
-      <div className="hidden md:block font-medium text-[#666] tracking-tight text-[11px] truncate">
+      <div className="hidden md:block font-medium text-[#666] dark:text-text-secondary tracking-tight text-[11px] truncate">
         {Array.isArray(track.artists)
           ? track.artists.map(a => a.name).join(', ')
           : (track.artist || 'VibAura Artist')}
@@ -160,7 +160,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
       </div>
 
       {/* Duration (Desktop Only) */}
-      <div className="hidden md:flex justify-end items-center text-[#999] text-xs pr-4 tabular-nums font-medium">
+      <div className="hidden md:flex justify-end items-center text-[#999] dark:text-text-muted text-xs pr-4 tabular-nums font-medium">
         {formatTime(track.duration)}
       </div>
 
@@ -173,7 +173,7 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
             e.stopPropagation();
             setIsMenuOpen(!isMenuOpen);
           }}
-          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${isMenuOpen ? 'bg-vibaura-primary text-white' : 'text-text-muted hover:text-text-primary hover:bg-gray-100'}`}
+          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${isMenuOpen ? 'bg-vibaura-primary text-white' : 'text-text-muted hover:text-text-primary hover:bg-gray-100 dark:hover:bg-white/5'}`}
         >
           <FontAwesomeIcon icon={faEllipsisV} size="sm" />
         </button>

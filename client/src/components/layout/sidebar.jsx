@@ -193,20 +193,20 @@ const Sidebar = ({ onNavigate, currentPage }) => {
       initial={false}
       animate={{ 
         width: isCollapsed ? 88 : 360,
-        padding: isCollapsed ? '16px 8px' : '24px'
+        padding: isCollapsed ? '0px 8px' : '0px 8px 0px 24px'
       }}
       transition={{ type: 'spring', stiffness: 400, damping: 40 }}
       className="flex flex-col h-full bg-vibaura-surface z-[60] relative transition-colors duration-500"
     >
-      <div className={`bg-white/90 backdrop-blur-md rounded-[32px] flex-1 flex flex-col min-h-0 border border-black/5 ${isCollapsed ? 'items-center p-2' : 'p-4'}`}>
+      <div className={`bg-vibaura-view-bg rounded-[40px] flex-1 flex flex-col min-h-0 border border-black/5 dark:border-white/5 ${isCollapsed ? 'items-center p-2' : 'p-4'}`}>
         <div className={`flex items-center justify-between mb-6 px-2 w-full ${isCollapsed ? 'flex-col gap-4' : ''}`}>
-          <div className="flex items-center gap-3 text-[#999]">
+          <div className="flex items-center gap-3 text-text-muted">
             <FontAwesomeIcon icon={faBookOpen} size="sm" />
             {!isCollapsed && (
               <motion.h3 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="font-black text-[11px] tracking-[0.2em]"
+                className="font-black text-[11px] tracking-[0.2em] text-text-muted"
               >
                 Your Library
               </motion.h3>
@@ -221,7 +221,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
               }
               setIsModalOpen(true);
             }}
-            className={`transition-colors ${!isSubscribed && playlists.length >= 5 ? 'text-vibaura-primary animate-pulse' : 'text-[#999] hover:text-[#1A1A1A]'}`}
+            className={`transition-colors ${!isSubscribed && playlists.length >= 5 ? 'text-vibaura-primary animate-pulse' : 'text-text-muted hover:text-text-primary dark:hover:text-white'}`}
             title={!isSubscribed && playlists.length >= 5 ? 'Upgrade to Pro for more playlists' : 'Create Playlist'}
           >
             <FontAwesomeIcon icon={faPlus} size="sm" />
@@ -241,7 +241,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
                 placeholder="Search library..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-4 py-2 text-[10px] text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
+                className="w-full bg-vibaura-view-bg border border-black/5 dark:border-white/5 rounded-2xl px-4 py-2 text-[10px] text-text-primary dark:text-white placeholder-text-secondary dark:placeholder-white/50 focus:outline-none focus:bg-vibaura-view-bg focus:border-vibaura-primary dark:focus:border-vibaura-primary transition-all font-bold"
               />
             </div>
 
@@ -251,7 +251,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
                 onClick={() => {
                   setIsSortMenuOpen(!isSortMenuOpen);
                 }}
-                className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-[#999] hover:text-[#1A1A1A]'}`}
+                className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isSortMenuOpen ? 'text-vibaura-primary' : 'text-text-muted hover:text-text-primary dark:hover:text-white'}`}
                 title="Sort Library"
               >
                 <FontAwesomeIcon icon={faBarsStaggered} className="text-xs" />
@@ -263,7 +263,7 @@ const Sidebar = ({ onNavigate, currentPage }) => {
                 positionClass="right-0 top-10"
                 minWidth="160px"
               >
-                <p className="text-[9px] font-black text-[#CCC] tracking-tighter px-3 py-2">Sort by</p>
+                <p className="text-[9px] font-black text-[#CCC] dark:text-text-muted tracking-tighter px-3 py-2">Sort by</p>
                 <SortOption
                   active={sortOrder === 'recent'}
                   onClick={() => { setSortOrder('recent'); setIsSortMenuOpen(false); }}
@@ -293,19 +293,19 @@ const Sidebar = ({ onNavigate, currentPage }) => {
               {/* Liked Songs synthetic playlist */}
               <div
                 onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
-                className={`group flex items-center transition-all cursor-pointer mb-2 ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 mx-auto' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5'}`}
+                className={`group flex items-center transition-all cursor-pointer mb-2 ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 mx-auto' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 dark:hover:bg-white/5'}`}
                 title="Liked Songs"
               >
                 <div className={`flex items-center ${isCollapsed ? '' : 'gap-4'}`}>
-                  <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary flex-shrink-0 bg-black/5 rounded-lg">
+                  <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary flex-shrink-0 bg-black/5 dark:bg-white/5 rounded-lg">
                     <FontAwesomeIcon icon={faHeart} size="lg" />
                   </div>
                   {!isCollapsed && (
                     <div className="flex flex-col overflow-hidden">
-                      <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight truncate">
+                      <span className="font-bold text-[#1A1A1A] dark:text-text-primary group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight truncate">
                         Liked Songs
                       </span>
-                      <span className="text-[10px] text-[#777] font-bold truncate">
+                      <span className="text-[10px] text-text-muted font-bold truncate">
                         Playlist • {likedSongs.length} songs
                       </span>
                     </div>
@@ -353,11 +353,11 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, onDelete, activeMenu, setActiveMenu, menuRef, user, isCollapsed, setIsSortMenuOpen }) => (
   <div
     onClick={() => onNavigate(type, item)}
-    className={`group relative flex items-center transition-all cursor-pointer ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 mx-auto mb-1' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 mb-1'}`}
+    className={`group relative flex items-center transition-all cursor-pointer ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 mx-auto mb-1' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5 dark:hover:bg-white/5 mb-1'}`}
     title={item.title}
   >
     <div className={`flex items-center min-w-0 ${isCollapsed ? 'justify-center' : 'gap-4 flex-1'}`}>
-      <div className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden bg-black/5 ${type === 'artist' ? 'rounded-full' : 'rounded-lg'}`}>
+      <div className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden bg-black/5 dark:bg-white/5 ${type === 'artist' ? 'rounded-full' : 'rounded-lg'}`}>
         {(item.image || item.artwork || item.albumArt) ? (
           <img 
             src={item.image || item.artwork || item.albumArt} 
@@ -371,14 +371,14 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
       {!isCollapsed && (
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors truncate text-[13px] tracking-tight">
+            <span className="font-bold text-[#1A1A1A] dark:text-text-primary group-hover:text-vibaura-primary transition-colors truncate text-[13px] tracking-tight">
               {item.title}
             </span>
             {isPinned && (
               <FontAwesomeIcon icon={faThumbtack} className="text-[9px] text-vibaura-primary rotate-[30deg]" />
             )}
           </div>
-          <span className="text-[10px] text-[#777] font-bold">
+          <span className="text-[10px] text-text-muted font-bold">
             {type === 'artist' ? 'Artist' : `Playlist • ${item.songs?.length || 0} songs`}
           </span>
         </div>
@@ -394,7 +394,7 @@ const LibraryItem = ({ item, type, onNavigate, isPinned, onTogglePin, onEdit, on
             const stringId = String(item.id);
             setActiveMenu(activeMenu === stringId ? null : stringId);
           }}
-          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded-full transition-all text-[#CCC]"
+          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-vibaura-surface/50 dark:hover:bg-white/5 rounded-full transition-all text-[#CCC]"
         >
           <FontAwesomeIcon icon={faEllipsisV} size="xs" />
         </button>
@@ -421,22 +421,22 @@ const PlaylistMenuItem = ({ icon, label, onClick, muted = false }) => (
     onClick={onClick}
     disabled={muted}
     className={`w-full px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-tighter rounded-xl flex items-center justify-between transition-colors
-      ${muted ? 'opacity-30 cursor-not-allowed' : 'text-[#666] hover:bg-gray-50 hover:text-[#1A1A1A]'}`}
+      ${muted ? 'opacity-30 cursor-not-allowed' : 'text-[#666] dark:text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#1A1A1A] dark:hover:text-white'}`}
   >
     <div className="flex items-center gap-3">
-      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${muted ? 'bg-gray-100' : 'bg-[#F5F5F7]'}`}>
+      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${muted ? 'bg-gray-100 dark:bg-vibaura-bg-muted/20' : 'bg-[#F5F5F7] dark:bg-vibaura-bg-muted/10'}`}>
         <FontAwesomeIcon icon={icon} />
       </div>
       <span>{label}</span>
     </div>
-    {muted && <span className="text-[7px] bg-gray-100 px-1.5 py-0.5 rounded-full">Soon</span>}
+    {muted && <span className="text-[7px] bg-gray-100 dark:bg-vibaura-bg-muted/20 px-1.5 py-0.5 rounded-full">Soon</span>}
   </button>
 );
 
 const SortOption = ({ active, onClick, label }) => (
   <button
     onClick={onClick}
-    className={`w-full px-3 py-2 text-left text-[11px] font-bold rounded-xl flex items-center justify-between transition-colors ${active ? 'bg-vibaura-primary/5 text-vibaura-primary' : 'text-[#666] hover:bg-gray-50 hover:text-[#1A1A1A]'}`}
+    className={`w-full px-3 py-2 text-left text-[11px] font-bold rounded-xl flex items-center justify-between transition-colors ${active ? 'bg-vibaura-primary/5 dark:bg-vibaura-primary/10 text-vibaura-primary' : 'text-[#666] dark:text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#1A1A1A] dark:hover:text-white'}`}
   >
     <span>{label}</span>
     {active && <FontAwesomeIcon icon={faCheck} className="text-[8px]" />}
@@ -453,15 +453,15 @@ const LibrarySkeleton = ({ isCollapsed }) => {
           className={`flex items-center ${isCollapsed ? 'justify-center w-12 h-12 mx-auto mb-1' : 'px-4 py-3 rounded-[24px] gap-4 mb-1'}`}
         >
           {/* Image/Icon Placeholder */}
-          <div className={`w-10 h-10 bg-black/5 shrink-0 ${i % 3 === 0 ? 'rounded-full' : 'rounded-lg'}`} />
+          <div className={`w-10 h-10 bg-black/5 dark:bg-white/5 shrink-0 ${i % 3 === 0 ? 'rounded-full' : 'rounded-lg'}`} />
           
           {/* Text Placeholders (only visible when expanded) */}
           {!isCollapsed && (
             <div className="flex flex-col flex-1 min-w-0 gap-1.5">
               {/* Title Line */}
-              <div className="h-3 bg-black/5 rounded-full w-[65%]" />
+              <div className="h-3 bg-black/5 dark:bg-white/5 rounded-full w-[65%]" />
               {/* Subtitle Line */}
-              <div className="h-2 bg-black/5 rounded-full w-[35%]" />
+              <div className="h-2 bg-black/5 dark:bg-white/5 rounded-full w-[35%]" />
             </div>
           )}
         </div>

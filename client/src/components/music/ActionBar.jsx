@@ -62,8 +62,8 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNaviga
       <div className={`
         md:sticky md:top-0 z-40 px-4 md:px-8 transition-all duration-300
         ${isSticky
-          ? 'md:bg-white/90 md:backdrop-blur-md md:border-b md:border-black/5 md:shadow-[0_4px_30px_rgba(0,0,0,0.03)]'
-          : 'bg-transparent border-b border-transparent'}
+          ? 'bg-vibaura-surface-sticky md:backdrop-blur-md md:shadow-[0_4px_30px_rgba(0,0,0,0.03)]'
+          : 'bg-vibaura-view-bg'}
         flex items-center gap-6 py-4 md:py-6
       `}>
         {/* A. DESKTOP ACTION BAR BUTTONS */}
@@ -84,7 +84,7 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNaviga
               rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold transition-all active:scale-95 border-2
               ${isShuffle
                 ? 'bg-vibaura-primary text-white border-vibaura-primary shadow-lg shadow-vibaura-primary/20'
-                : 'border-vibaura-primary/20 text-text-primary hover:bg-white/40 hover:border-vibaura-primary/40'}
+                : 'border-vibaura-primary/20 text-text-primary hover:bg-vibaura-bg-muted/30 hover:border-vibaura-primary/40'}
             `}
           >
             <FontAwesomeIcon icon={faShuffle} className={isShuffle ? 'text-white' : 'text-vibaura-primary'} />
@@ -110,7 +110,7 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNaviga
                 w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 border
                 ${isShuffle
                   ? 'bg-vibaura-primary border-vibaura-primary text-white shadow-md shadow-vibaura-primary/15'
-                  : 'border-black/5 bg-white/60 text-text-muted hover:text-text-primary'}
+                  : 'border-black/5 dark:border-white/5 bg-vibaura-bg-muted/10 dark:bg-vibaura-bg-muted/20 text-text-muted hover:text-text-primary'}
               `}
             >
               <FontAwesomeIcon icon={faShuffle} className="text-sm" />
@@ -124,7 +124,7 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNaviga
                 onClick={handleMenuToggle}
                 className={`
                   w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 border
-                  ${isMenuOpen ? 'bg-vibaura-primary border-vibaura-primary text-white shadow-md' : 'border-black/5 bg-white/60 text-text-muted hover:text-vibaura-primary'}
+                  ${isMenuOpen ? 'bg-vibaura-primary border-vibaura-primary text-white shadow-md' : 'border-black/5 dark:border-white/5 bg-vibaura-bg-muted/10 dark:bg-vibaura-bg-muted/20 text-text-muted hover:text-vibaura-primary'}
                 `}
               >
                 <FontAwesomeIcon icon={faEllipsisH} className="text-sm" />

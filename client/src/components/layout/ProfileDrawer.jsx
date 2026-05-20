@@ -2,8 +2,9 @@ import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faTimes, faUserCircle, faWaveSquare, faBell, faCog, faSignOutAlt, faCrown
+  faTimes, faUserCircle, faWaveSquare, faBell, faCog, faSignOutAlt, faCrown, faSun, faMoon
 } from '@fortawesome/free-solid-svg-icons';
+import { useUIStore } from '../../store/uiStore';
 
 /**
  * ProfileDrawer Component
@@ -11,6 +12,7 @@ import {
  */
 const ProfileDrawer = ({ isOpen, onClose, user, isSubscribed, onNavigate, onLogout }) => {
   const drawerRef = useRef(null);
+  const { theme, toggleTheme } = useUIStore();
 
   // Close drawer on clicking outside the drawer pane
   useEffect(() => {
@@ -51,7 +53,7 @@ const ProfileDrawer = ({ isOpen, onClose, user, isSubscribed, onNavigate, onLogo
             animate="visible"
             exit="hidden"
             onClick={onClose}
-            className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px]"
           />
 
           {/* Sliding Panel */}
@@ -61,31 +63,31 @@ const ProfileDrawer = ({ isOpen, onClose, user, isSubscribed, onNavigate, onLogo
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="fixed top-0 right-0 bottom-0 w-[270px] z-[101] bg-white flex flex-col shadow-2xl border-l border-black/5"
+            className="fixed top-0 right-0 bottom-0 w-[270px] z-[101] bg-vibaura-surface flex flex-col shadow-2xl border-l border-black/5 dark:border-white/5 transition-all duration-300"
           >
             {/* Header with close option */}
-            <div className="flex items-center justify-between p-4 border-b border-black/[0.04]">
+            <div className="flex items-center justify-between p-4 border-b border-black/[0.04] dark:border-white/5">
               <span className="text-[10px] font-black uppercase tracking-wider text-text-primary pl-1">Settings</span>
               <button 
                 onClick={onClose} 
-                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-black/5 text-[#999] hover:text-[#1A1A1A] transition-all"
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-[#999] hover:text-[#1A1A1A] dark:hover:text-white transition-all"
               >
                 <FontAwesomeIcon icon={faTimes} className="text-xs" />
               </button>
             </div>
 
             {/* Premium Compact Horizontal User Details */}
-            <div className="flex items-center gap-3.5 p-4 border-b border-black/[0.03] bg-vibaura-view-bg/50">
+            <div className="flex items-center gap-3.5 p-4 border-b border-black/[0.03] dark:border-white/5 bg-vibaura-view-bg/50 dark:bg-vibaura-bg-muted/15">
               <div className="relative shrink-0 p-0.5">
                 {isSubscribed && (
                   <div className="absolute inset-0 rounded-[12px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></div>
                 )}
-                <div className={`relative w-11 h-11 rounded-[10px] bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shadow-sm z-10 ${isSubscribed ? 'border-2 border-vibaura-view-bg' : ''}`}>
+                <div className={`relative w-11 h-11 rounded-[10px] bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shadow-sm z-10 ${isSubscribed ? 'border-2 border-vibaura-view-bg dark:border-[#242542]' : ''}`}>
                   {avatarLetter}
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-xs font-black text-[#1A1A1A] tracking-tight truncate leading-tight">{displayName}</h3>
+                <h3 className="text-xs font-black text-text-primary tracking-tight truncate leading-tight">{displayName}</h3>
                 <p className="text-[8px] text-vibaura-primary font-black tracking-widest uppercase mt-0.5">
                   {isSubscribed ? '👑 Pro Member' : (user?.role || 'Basic Aura')}
                 </p>
@@ -113,34 +115,38 @@ const ProfileDrawer = ({ isOpen, onClose, user, isSubscribed, onNavigate, onLogo
               {/* Vibrance Link */}
               <button
                 onClick={() => { onNavigate('vibrance'); onClose(); }}
-                className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-black/5 transition-all text-left group"
+                className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-left group"
               >
-                <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-vibaura-primary group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 group-hover:bg-vibaura-primary dark:group-hover:bg-vibaura-primary group-hover:text-white dark:group-hover:text-white flex items-center justify-center transition-colors shrink-0">
                   <FontAwesomeIcon icon={faWaveSquare} className="text-xs animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-[#1A1A1A] leading-none tracking-tight">Vibrance Reports</h4>
-                  <p className="text-[9px] text-[#999] font-bold tracking-tight mt-1">Check your monthly sound profile</p>
+                  <h4 className="text-xs font-black text-text-primary leading-none tracking-tight">Vibrance Reports</h4>
+                  <p className="text-[9px] text-text-muted font-bold tracking-tight mt-1">Check your monthly sound profile</p>
                 </div>
               </button>
 
-              <hr className="border-black/[0.05] my-2" />
+              <hr className="border-black/[0.05] dark:border-white/5 my-2" />
 
-              <MenuItem icon={faUserCircle} label="My Profile" sublabel="Your general profile metadata" onClick={onClose} />
-              <MenuItem icon={faBell} label="Notifications" sublabel="Coming soon" onClick={onClose} muted />
-              <MenuItem icon={faCog} label="Settings" sublabel="App parameters" onClick={onClose} muted />
+              <MenuItem icon={faUserCircle} label="My Profile" sublabel="Your general profile metadata" onClick={() => { onNavigate('profile'); onClose(); }} />
+              <MenuItem 
+                icon={theme === 'dark' ? faSun : faMoon} 
+                label={theme === 'dark' ? 'Light Theme' : 'Dark Theme'} 
+                sublabel={theme === 'dark' ? 'Go bright and clear' : 'Go dark and immersive'} 
+                onClick={() => { toggleTheme(); onClose(); }} 
+              />
             </div>
 
             {/* Logout Action */}
-            <div className="p-4 border-t border-black/[0.05]">
+            <div className="p-4 border-t border-black/[0.05] dark:border-white/5">
               <button
                 onClick={() => { onLogout(); onClose(); }}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-50 active:scale-[0.98] transition-all group text-left"
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 active:scale-[0.98] transition-all group text-left"
               >
-                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-100 transition-colors shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center text-red-500 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors shrink-0">
                   <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
                 </div>
-                <span className="text-xs font-black tracking-tight">Log Out of VibAura</span>
+                <span className="text-xs font-black tracking-tight text-red-500">Log Out of VibAura</span>
               </button>
             </div>
           </motion.div>
@@ -155,19 +161,21 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
     onClick={onClick}
     disabled={muted}
     className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all text-left group
-      ${muted ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black/5'}`}
+      ${muted ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
   >
     <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors
-      ${muted ? 'bg-gray-100 text-[#CCC]' : 'bg-vibaura-view-bg text-[#999] group-hover:text-vibaura-primary'}`}
+      ${muted 
+        ? 'bg-gray-100 dark:bg-vibaura-bg-muted/20 text-[#CCC] dark:text-[#555]' 
+        : 'bg-vibaura-view-bg dark:bg-vibaura-bg-muted/10 text-[#999] dark:text-text-secondary group-hover:text-vibaura-primary'}`}
     >
       <FontAwesomeIcon icon={icon} className="text-xs" />
     </div>
     <div className="min-w-0">
-      <p className="text-xs font-black text-[#1A1A1A] leading-none tracking-tight">{label}</p>
-      <p className="text-[9px] text-[#999] font-bold tracking-tight mt-1 truncate">{sublabel}</p>
+      <p className="text-xs font-black text-text-primary leading-none tracking-tight">{label}</p>
+      <p className="text-[9px] text-text-muted font-bold tracking-tight mt-1 truncate">{sublabel}</p>
     </div>
     {muted && (
-      <span className="ml-auto text-[7px] font-black uppercase text-[#CCC] bg-gray-50 px-2 py-0.5 rounded-full shrink-0">
+      <span className="ml-auto text-[7px] font-black uppercase text-[#CCC] bg-gray-50 dark:bg-vibaura-bg-muted/20 px-2 py-0.5 rounded-full shrink-0">
         Soon
       </span>
     )}

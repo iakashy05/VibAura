@@ -75,13 +75,13 @@ const Library = ({ onNavigate }) => {
             placeholder="Search playlists..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl px-10 py-2.5 text-xs text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white transition-all font-bold"
+            className="w-full bg-vibaura-bg-muted/40 dark:bg-vibaura-bg-muted/30 border border-transparent dark:border-white/5 rounded-2xl px-10 py-2.5 text-xs text-text-primary placeholder-text-muted focus:outline-none focus:bg-vibaura-surface dark:focus:bg-vibaura-surface focus:border-vibaura-primary/30 transition-all font-bold"
           />
-          <FontAwesomeIcon icon={faSearch} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999] text-xs" />
+          <FontAwesomeIcon icon={faSearch} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted text-xs" />
         </div>
         <button
           onClick={() => setSortOrder(sortOrder === 'recent' ? 'alphabetical' : 'recent')}
-          className="h-9 px-4 flex items-center gap-2 rounded-2xl bg-[#E4E4E9]/50 border border-transparent text-[10px] font-black uppercase text-[#666] transition-all hover:bg-black/5"
+          className="h-9 px-4 flex items-center gap-2 rounded-2xl bg-vibaura-bg-muted/40 dark:bg-vibaura-bg-muted/30 border border-transparent dark:border-white/5 text-[10px] font-black uppercase text-text-secondary transition-all hover:bg-black/5 dark:hover:bg-white/5"
         >
           <FontAwesomeIcon icon={faBarsStaggered} />
           {sortOrder === 'recent' ? 'Recent' : 'A-Z'}
@@ -122,9 +122,9 @@ const Library = ({ onNavigate }) => {
 
       {/* Playlists Listings (Dynamic List format for easy scrolling) */}
       <div className="space-y-3 px-1">
-        <h3 className="text-xs font-black uppercase text-[#999] tracking-wider mb-1">Playlists</h3>
+        <h3 className="text-xs font-black uppercase text-text-muted tracking-wider mb-1">Playlists</h3>
         {filteredPlaylists.length === 0 ? (
-          <div className="text-center py-10 bg-vibaura-bg-muted/10 rounded-[32px] border border-black/[0.02]">
+          <div className="text-center py-10 bg-vibaura-bg-muted/10 rounded-[32px] border border-black/[0.02] dark:border-white/5">
             <p className="text-xs text-text-muted font-black tracking-widest uppercase">No playlists found</p>
           </div>
         ) : (
@@ -137,18 +137,18 @@ const Library = ({ onNavigate }) => {
               <div
                 key={playlist.id}
                 onClick={() => onNavigate('playlist', playlist)}
-                className="flex items-center gap-4 p-3 rounded-2xl bg-white border border-black/[0.03] active:scale-[0.99] hover:bg-black/[0.01] transition-all cursor-pointer"
+                className="flex items-center gap-4 p-3 rounded-2xl bg-vibaura-surface/40 dark:bg-vibaura-surface/40 border border-black/[0.03] dark:border-white/5 active:scale-[0.99] hover:bg-vibaura-bg-muted/20 dark:hover:bg-vibaura-bg-muted/20 transition-all cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-vibaura-bg-muted flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                   {playlist.image ? (
                     <img src={playlist.image} alt={playlist.title} className="w-full h-full object-cover" />
                   ) : (
-                    <FontAwesomeIcon icon={faMusic} className="text-[#999] text-base" />
+                    <FontAwesomeIcon icon={faMusic} className="text-text-muted text-base" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-bold text-[#1A1A1A] truncate text-sm leading-tight">{playlist.title}</h4>
-                  <p className="text-[9px] text-[#999] font-black uppercase tracking-wider mt-1 truncate">
+                  <h4 className="font-bold text-text-primary truncate text-sm leading-tight">{playlist.title}</h4>
+                  <p className="text-[9px] text-text-muted font-black uppercase tracking-wider mt-1 truncate">
                     {isPlaylistOwner ? 'Owned' : 'Public'} • {songCount} songs
                   </p>
                 </div>

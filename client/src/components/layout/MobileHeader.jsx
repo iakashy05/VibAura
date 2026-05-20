@@ -55,13 +55,13 @@ const MobileHeader = ({
   const avatarLetter = displayName[0].toUpperCase();
 
   // Premium glassmorphic solid header for all pages
-  const headerClass = 'h-14 fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-black/[0.05] select-none shadow-[0_2px_12px_rgba(0,0,0,0.02)]';
+  const headerClass = 'h-14 fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#121223]/95 backdrop-blur-md border-b border-black/[0.05] dark:border-white/5 select-none shadow-[0_2px_12px_rgba(0,0,0,0.02)]';
 
   // Beautiful consistent back button class
-  const backButtonClass = 'w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 border border-black/5 bg-vibaura-view-bg text-[#555] hover:text-vibaura-primary shrink-0';
+  const backButtonClass = 'w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 border border-black/5 dark:border-white/5 bg-vibaura-view-bg dark:bg-[#151528] text-[#555] dark:text-text-secondary hover:text-vibaura-primary dark:hover:text-vibaura-primary shrink-0';
 
   // Title displays immediately on all pages without waiting for scroll
-  const titleClass = 'font-black text-[13px] text-[#1A1A1A] tracking-tight truncate max-w-[200px] opacity-100 translate-x-0';
+  const titleClass = 'font-black text-[13px] text-[#1A1A1A] dark:text-text-primary tracking-tight truncate max-w-[200px] opacity-100 translate-x-0';
 
   return (
     <header className={headerClass}>
@@ -72,7 +72,7 @@ const MobileHeader = ({
             {canGoBack && (
               <button
                 onClick={goBack}
-                className="w-9 h-9 flex items-center justify-center rounded-full border border-black/5 bg-vibaura-view-bg text-[#555] active:scale-95 transition-all shrink-0"
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-black/5 dark:border-white/5 bg-vibaura-view-bg dark:bg-[#151528] text-[#555] dark:text-text-secondary active:scale-95 transition-all shrink-0"
                 aria-label="Go Back"
               >
                 <FontAwesomeIcon icon={faChevronLeft} className="text-xs mr-0.5" />
@@ -84,7 +84,7 @@ const MobileHeader = ({
                 placeholder="Search songs, artists, playlists..."
                 value={searchQuery || ''}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#E4E4E9]/50 border border-transparent rounded-2xl pl-10 pr-9 py-2.5 text-xs text-[#1A1A1A] placeholder-[#888] focus:outline-none focus:bg-white focus:border-vibaura-primary/20 transition-all font-bold"
+                className="w-full bg-[#E4E4E9]/50 dark:bg-vibaura-bg-muted/30 border border-transparent dark:border-white/5 rounded-2xl pl-10 pr-9 py-2.5 text-xs text-[#1A1A1A] dark:text-text-primary placeholder-[#888] dark:placeholder-[#64748B] focus:outline-none focus:bg-white dark:focus:bg-[#151528] focus:border-vibaura-primary/20 dark:focus:border-vibaura-primary/30 transition-all font-bold"
               />
               <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#999]">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +110,7 @@ const MobileHeader = ({
                 <button
                   onClick={onAvatarClick}
                   className={`relative w-8 h-8 rounded-[9px] bg-vibaura-primary flex items-center justify-center text-white font-black text-xs active:scale-95 transition-all z-10
-                    ${isSubscribed ? 'border border-white' : ''}`}
+                    ${isSubscribed ? 'border border-white dark:border-[#121223]' : ''}`}
                   aria-label="Open profile settings"
                 >
                   {avatarLetter}
@@ -146,12 +146,12 @@ const MobileHeader = ({
                   <div className="w-8 h-8">
                     <img src="/logo.webp" alt="VibAura Logo" className="w-full h-full object-contain" />
                   </div>
-                  <span className="font-black text-lg text-[#1A1A1A] tracking-tight leading-none">
+                  <span className="font-black text-lg text-[#1A1A1A] dark:text-text-primary tracking-tight leading-none">
                     VibAura
                   </span>
                 </div>
               ) : (
-                <span className="font-black text-lg text-[#1A1A1A] tracking-tight leading-none animate-fade-in">
+                <span className="font-black text-lg text-[#1A1A1A] dark:text-text-primary tracking-tight leading-none animate-fade-in">
                   {getHeaderTitle()}
                 </span>
               )}
@@ -167,7 +167,7 @@ const MobileHeader = ({
                   <button
                     onClick={onAvatarClick}
                     className={`relative w-8 h-8 rounded-[9px] bg-vibaura-primary flex items-center justify-center text-white font-black text-xs active:scale-95 transition-all z-10
-                      ${isSubscribed ? 'border border-white' : ''}`}
+                      ${isSubscribed ? 'border border-white dark:border-[#121223]' : ''}`}
                     aria-label="Open profile settings"
                   >
                     {avatarLetter}

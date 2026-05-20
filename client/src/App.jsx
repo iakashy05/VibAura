@@ -19,11 +19,13 @@ import MobileNavbar from './components/layout/MobileNavbar';
 import MobileMiniplayer from './components/layout/MobileMiniplayer';
 import MobileHeader from './components/layout/MobileHeader';
 import MusicLoader from './components/ui/MusicLoader';
+import ProfileDrawer from './components/layout/ProfileDrawer';
 
 const AuthPage = React.lazy(() => import('./pages/AuthPage'));
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false);
   
   // Persistent root-level VibSync Socket connection
   useVibSyncSocketManager();
@@ -133,7 +135,7 @@ function App() {
           canGoBack={canGoBack}
           user={user}
           isSubscribed={isSubscribed}
-          onAvatarClick={() => navigateTo('profile')}
+          onAvatarClick={() => setIsProfileDrawerOpen(true)}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
@@ -175,6 +177,14 @@ function App() {
       <ConfirmModal />
       <FullscreenPlayer />
       <MobileFullscreenPlayer />
+      <ProfileDrawer
+        isOpen={isProfileDrawerOpen}
+        onClose={() => setIsProfileDrawerOpen(false)}
+        user={user}
+        isSubscribed={isSubscribed}
+        onNavigate={(page) => { navigateTo(page); setIsProfileDrawerOpen(false); }}
+        onLogout={() => { logout(); setIsProfileDrawerOpen(false); }}
+      />
     </div>
   );
 }

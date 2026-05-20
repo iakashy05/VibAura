@@ -121,16 +121,16 @@ const MobileFullscreenPlayer = () => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="block md:hidden fixed inset-0 z-[100] bg-[#F8F9FD] text-[#1A1A1A] overflow-hidden font-jost transition-all duration-500 selection:bg-transparent select-none overscroll-behavior-none"
+      className="block md:hidden fixed inset-0 z-[100] bg-[#F8F9FD] dark:bg-[#0E0E1B] text-[#1A1A1A] dark:text-text-primary overflow-hidden font-jost transition-all duration-500 selection:bg-transparent select-none overscroll-behavior-none"
     >
       {/* 1. Immersive Full-Bleed Aura Glow Background (Light theme matching FullscreenPlayer.jsx) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#F8F9FD]">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#F8F9FD] dark:bg-[#0E0E1B]">
         <img
           src={currentTrack.albumArt || currentTrack.image}
           alt=""
-          className="absolute inset-[-20%] w-[140%] h-[140%] object-cover blur-[130px] opacity-45 saturate-[250%] animate-pulse-slow"
+          className="absolute inset-[-20%] w-[140%] h-[140%] object-cover blur-[130px] opacity-45 dark:opacity-35 saturate-[250%] dark:saturate-[200%] animate-pulse-slow"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FD] via-[#F8F9FD]/70 to-[#F8F9FD]/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FD] via-[#F8F9FD]/70 to-[#F8F9FD]/30 dark:from-[#0E0E1B] dark:via-[#0E0E1B]/70 dark:to-[#0E0E1B]/30" />
       </div>
 
       {/* 2. Main Player Frame */}
@@ -140,18 +140,18 @@ const MobileFullscreenPlayer = () => {
         <div className="flex items-center justify-between transition-all">
           <button
             onClick={toggleFullscreen}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-black/60 active:scale-90 transition-transform"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-vibaura-surface shadow-sm border border-black/5 dark:border-white/5 text-black/60 dark:text-white/60 active:scale-90 transition-transform"
           >
             <FontAwesomeIcon icon={faChevronDown} />
           </button>
           
           <div className="text-center flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-black/40">Now Playing</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-black/40 dark:text-text-muted">Now Playing</span>
           </div>
 
           <button
             onClick={() => setShowQueue(true)}
-            className={`w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform ${showQueue ? 'bg-vibaura-primary text-white shadow-md' : 'bg-white shadow-sm border border-black/5 text-black/60'}`}
+            className={`w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform ${showQueue ? 'bg-vibaura-primary text-white shadow-md' : 'bg-white dark:bg-vibaura-surface shadow-sm border border-black/5 dark:border-white/5 text-black/60 dark:text-white/60'}`}
           >
             <FontAwesomeIcon icon={faListUl} />
           </button>
@@ -159,7 +159,7 @@ const MobileFullscreenPlayer = () => {
 
         {/* ARTWORK AREA (Removed swipes to prevent false skipping clicks) */}
         <div className="flex-1 flex items-center justify-center my-6 min-h-0">
-          <div className="relative w-full aspect-square max-h-[42vh] rounded-[32px] overflow-hidden shadow-[0_20px_45px_rgba(0,0,0,0.08)] border-2 border-white active:scale-[0.99] transition-transform duration-300">
+          <div className="relative w-full aspect-square max-h-[42vh] rounded-[32px] overflow-hidden shadow-[0_20px_45px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_45px_rgba(0,0,0,0.3)] border-2 border-white dark:border-vibaura-border active:scale-[0.99] transition-transform duration-300">
             <img
               src={currentTrack.albumArt || currentTrack.image}
               alt={currentTrack.title}
@@ -172,7 +172,7 @@ const MobileFullscreenPlayer = () => {
         {/* METADATA ROW */}
         <div className="w-full flex items-center justify-between mb-4 px-1">
           <div className="flex-1 min-w-0 pr-4">
-            <h1 className="text-2xl font-black tracking-tight truncate leading-tight text-black/90">
+            <h1 className="text-2xl font-black tracking-tight truncate leading-tight text-black/90 dark:text-white">
               {currentTrack.title}
             </h1>
             <p className="text-sm font-semibold text-vibaura-primary mt-1 truncate">
@@ -186,7 +186,7 @@ const MobileFullscreenPlayer = () => {
           <LikeButton
             isLiked={isLiked}
             onClick={handleLikeClick}
-            className="w-12 h-12 rounded-full bg-white shadow-sm border border-black/5 flex items-center justify-center"
+            className="w-12 h-12 rounded-full bg-white dark:bg-vibaura-surface shadow-sm border border-black/5 dark:border-white/5 flex items-center justify-center"
           />
         </div>
 
@@ -205,7 +205,7 @@ const MobileFullscreenPlayer = () => {
               className="absolute inset-0 w-full opacity-0 cursor-pointer z-20"
             />
             {/* Custom Track */}
-            <div className="w-full h-1 bg-black/5 rounded-full relative overflow-hidden">
+            <div className="w-full h-1 bg-black/5 dark:bg-white/10 rounded-full relative overflow-hidden">
               <div
                 className="h-full bg-vibaura-primary rounded-full"
                 style={{ width: `${progress}%` }}
@@ -213,24 +213,24 @@ const MobileFullscreenPlayer = () => {
             </div>
             {/* Dynamic Thumb */}
             <div
-              className="absolute w-3.5 h-3.5 bg-white rounded-full shadow-md border-2 border-vibaura-primary pointer-events-none scale-100"
+              className="absolute w-3.5 h-3.5 bg-white dark:bg-vibaura-surface rounded-full shadow-md border-2 border-vibaura-primary pointer-events-none scale-100"
               style={{ left: `calc(${progress}% - 7px)` }}
             />
           </div>
-          <div className="flex justify-between items-center text-[10px] font-bold text-black/40 tracking-wider tabular-nums px-0.5">
+          <div className="flex justify-between items-center text-[10px] font-bold text-black/40 dark:text-text-muted tracking-wider tabular-nums px-0.5">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </div>
 
         {/* CONTROLS BLOCK (Matching desktop PlayerBar color scheme) */}
-        <div className="bg-white/85 backdrop-blur-2xl border border-white rounded-[32px] px-6 py-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] w-full">
+        <div className="bg-white/85 dark:bg-[#121223]/85 backdrop-blur-2xl border border-white dark:border-white/5 rounded-[32px] px-6 py-5 shadow-[0_15px_35px_rgba(0,0,0,0.06)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.3)] w-full">
           <div className="flex items-center justify-between px-2">
             
             {/* Shuffle */}
             <button
               onClick={toggleShuffle}
-              className={`w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-all ${isShuffle ? 'text-vibaura-primary font-black scale-105' : 'text-black/25'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-all ${isShuffle ? 'text-vibaura-primary font-black scale-105' : 'text-black/25 dark:text-text-muted'}`}
             >
               <FontAwesomeIcon icon={faShuffle} className="text-base" />
             </button>
@@ -238,7 +238,7 @@ const MobileFullscreenPlayer = () => {
             {/* Prev */}
             <button
               onClick={prevTrack}
-              className="w-12 h-12 flex items-center justify-center rounded-full text-black/60 hover:text-black active:scale-90 transition-transform"
+              className="w-12 h-12 flex items-center justify-center rounded-full text-black/60 dark:text-text-secondary hover:text-black dark:hover:text-white active:scale-90 transition-transform"
             >
               <FontAwesomeIcon icon={faStepBackward} className="text-xl" />
             </button>
@@ -254,7 +254,7 @@ const MobileFullscreenPlayer = () => {
             {/* Next */}
             <button
               onClick={nextTrack}
-              className="w-12 h-12 flex items-center justify-center rounded-full text-black/60 hover:text-black active:scale-90 transition-transform"
+              className="w-12 h-12 flex items-center justify-center rounded-full text-black/60 dark:text-text-secondary hover:text-black dark:hover:text-white active:scale-90 transition-transform"
             >
               <FontAwesomeIcon icon={faStepForward} className="text-xl" />
             </button>
@@ -262,7 +262,7 @@ const MobileFullscreenPlayer = () => {
             {/* Repeat */}
             <button
               onClick={toggleRepeat}
-              className={`w-10 h-10 flex items-center justify-center rounded-full relative active:scale-95 transition-all ${repeatMode !== 'off' ? 'text-vibaura-primary font-black scale-105' : 'text-black/25'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-full relative active:scale-95 transition-all ${repeatMode !== 'off' ? 'text-vibaura-primary font-black scale-105' : 'text-black/25 dark:text-text-muted'}`}
             >
               <FontAwesomeIcon icon={repeatMode === 'all' ? faInfinity : faRepeat} className={repeatMode === 'all' ? "text-lg" : "text-base"} />
               {repeatMode === 'once' && (

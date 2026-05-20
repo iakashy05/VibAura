@@ -6,6 +6,7 @@ import {
   faHome,
   faSearch,
   faSun,
+  faMoon,
   faMusic,
   faTimes,
   faSignOutAlt,
@@ -29,7 +30,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
   const inputRef = useRef(null);
   const menuRef = useRef(null);
   const { user, logout, isAuthenticated, isSubscribed } = useAuthStore();
-  const { activeMenuId, setActiveMenuId } = useUIStore();
+  const { activeMenuId, setActiveMenuId, theme, toggleTheme } = useUIStore();
   const menuOpen = activeMenuId === 'header-profile';
   const setMenuOpen = (open) => setActiveMenuId(open ? 'header-profile' : null);
 
@@ -128,7 +129,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           />
           <IconButton
             icon={faHome}
-            className="ml-2 !bg-vibaura-primary !text-white shadow-lg !border-none"
+            className="ml-2"
             onClick={() => onNavigate('home')}
           />
         </div>
@@ -140,8 +141,8 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           <Input
             ref={inputRef}
             placeholder="Search for magic..."
-            icon={<FontAwesomeIcon icon={faSearch} size="sm" className="text-[#999] group-focus-within/search:text-vibaura-primary transition-colors" />}
-            inputClassName="!py-3.5 !rounded-[24px] !bg-white !border-black/5 !text-sm !pl-14 !shadow-none focus:!bg-white focus:!border-vibaura-primary/30 focus:!shadow-none transition-all"
+            icon={<FontAwesomeIcon icon={faSearch} size="sm" className="text-[#999] dark:text-white/60 group-focus-within/search:text-vibaura-primary transition-colors" />}
+            inputClassName="!py-3.5 !rounded-[24px] !bg-vibaura-view-bg !border-black/5 dark:!border-white/5 !text-sm !pl-14 !shadow-none focus:!bg-vibaura-view-bg focus:!border-vibaura-primary dark:focus:!border-vibaura-primary focus:!shadow-none transition-all text-text-primary dark:!text-white dark:!placeholder-white/50"
             value={localQuery}
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
@@ -149,9 +150,9 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
 
           {/* Keyboard Hint */}
           {!localQuery && (
-            <div className="absolute right-8 top-1/2 -translate-y-1/2 flex gap-1 items-center pointer-events-none opacity-20 hidden md:flex">
-              <span className="px-1.5 py-0.5 rounded bg-vibaura-bg-muted text-[10px] font-bold border border-vibaura-border">Ctrl</span>
-              <span className="px-1.5 py-0.5 rounded bg-vibaura-bg-muted text-[10px] font-bold border border-vibaura-border">K</span>
+            <div className="absolute right-8 top-1/2 -translate-y-1/2 flex gap-1 items-center pointer-events-none opacity-40 hidden md:flex">
+              <span className="px-1.5 py-0.5 rounded bg-vibaura-surface/60 dark:bg-vibaura-surface/30 text-text-secondary dark:text-white/70 text-[10px] font-bold border border-black/10 dark:border-white/10">Ctrl</span>
+              <span className="px-1.5 py-0.5 rounded bg-vibaura-surface/60 dark:bg-vibaura-surface/30 text-text-secondary dark:text-white/70 text-[10px] font-bold border border-black/10 dark:border-white/10">K</span>
             </div>
           )}
 
@@ -182,10 +183,6 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
           </button>
         )}
 
-        <Button variant="ghost" size="icon" className="w-11 h-11 text-text-secondary !bg-vibaura-bg-muted !rounded-[14px] border border-black/5 hover:!bg-white hover:text-vibaura-primary transition-all">
-          <FontAwesomeIcon icon={faSun} />
-        </Button>
-
         <div className="h-6 w-[1px] bg-vibaura-border mx-1" />
 
         {/* Avatar + Dropdown */}
@@ -202,11 +199,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
               aria-label="User menu"
             >
               {avatarLetter}
-              {isSubscribed && (
-                <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center z-20">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                </div>
-              )}
+
             </button>
           </div>
 
@@ -217,18 +210,18 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
             className="w-64"
           >
             {/* User Info Header */}
-            <div className="px-6 py-5 bg-[#F8F9FA] border-b border-[#F0F0F0] rounded-t-[20px]">
+            <div className="px-6 py-5 bg-[#F8F9FA] dark:bg-[#242542] border-b border-[#F0F0F0] dark:border-white/5 rounded-t-[20px]">
               <div className="flex items-center gap-4">
                 <div className="relative">
                   {isSubscribed && (
                     <div className="absolute -inset-[3px] rounded-[18px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></div>
                   )}
-                  <div className={`w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0 relative z-10 ${isSubscribed ? 'border-2 border-[#F8F9FA]' : ''}`}>
+                  <div className={`w-11 h-11 rounded-2xl bg-vibaura-primary flex items-center justify-center text-white font-black text-lg shrink-0 relative z-10 ${isSubscribed ? 'border-2 border-[#F8F9FA] dark:border-[#242542]' : ''}`}>
                     {avatarLetter}
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-black text-[#1A1A1A] truncate tracking-tighter leading-none">{displayName}</p>
+                  <p className="text-sm font-black text-[#1A1A1A] dark:text-text-primary truncate tracking-tighter leading-none">{displayName}</p>
                   <p className="text-[10px] text-vibaura-primary font-black tracking-tighter mt-1">{isSubscribed ? 'Pro Member' : (user?.role || 'Member')}</p>
                 </div>
               </div>
@@ -236,7 +229,7 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
 
             {/* Menu Items */}
             <div className="p-3 space-y-1">
-              <MenuItem icon={faUserCircle} label="My Profile" sublabel="View and edit your profile" onClick={() => { setMenuOpen(false); }} />
+              <MenuItem icon={faUserCircle} label="My Profile" sublabel="View and edit your profile" onClick={() => { onNavigate('profile'); setMenuOpen(false); }} />
               <MenuItem 
                 icon={faWaveSquare} 
                 label="Vibrance" 
@@ -244,17 +237,21 @@ const Header = ({ onNavigate, goBack, goForward, canGoBack, canGoForward, search
                 onClick={() => { onNavigate('vibrance'); setMenuOpen(false); }} 
                 active={!isSubscribed}
               />
-              <MenuItem icon={faBell} label="Notifications" sublabel="Coming soon" onClick={() => { setMenuOpen(false); }} muted />
-              <MenuItem icon={faCog} label="Settings" sublabel="App preferences" onClick={() => { setMenuOpen(false); }} muted />
+              <MenuItem 
+                icon={theme === 'dark' ? faSun : faMoon} 
+                label={theme === 'dark' ? 'Light Theme' : 'Dark Theme'} 
+                sublabel={theme === 'dark' ? 'Go bright and clear' : 'Go dark and immersive'} 
+                onClick={() => { toggleTheme(); setMenuOpen(false); }} 
+              />
             </div>
 
             {/* Divider + Logout */}
-            <div className="p-3 border-t border-[#F0F0F0]">
+            <div className="p-3 border-t border-[#F0F0F0] dark:border-white/5">
               <button
                 onClick={() => { logout(); setMenuOpen(false); }}
-                className="w-full flex items-center gap-4 px-4 py-3 rounded-[20px] text-red-500 hover:bg-red-50 transition-all group"
+                className="w-full flex items-center gap-4 px-4 py-3 rounded-[20px] text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 transition-all group"
               >
-                <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transition-colors">
+                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center text-red-500 transition-colors">
                   <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
                 </div>
                 <span className="text-xs font-black tracking-tighter">Log Out</span>
@@ -275,17 +272,17 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
     className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all group text-left
       ${muted
         ? 'opacity-40 cursor-not-allowed'
-        : 'hover:bg-gray-50'
+        : 'hover:bg-gray-50 dark:hover:bg-vibaura-bg-muted/10'
       }`}
   >
     <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0
-      ${muted ? 'bg-gray-100 text-[#CCC]' : 'bg-[#F5F5F7] text-[#999] group-hover:text-vibaura-primary'}`}
+      ${muted ? 'bg-gray-100 dark:bg-vibaura-bg-muted/20 text-[#CCC] dark:text-[#555]' : 'bg-[#F5F5F7] dark:bg-vibaura-bg-muted/10 text-[#999] dark:text-text-secondary group-hover:text-vibaura-primary'}`}
     >
       <FontAwesomeIcon icon={icon} className="text-xs" />
     </div>
     <div className="min-w-0">
-      <p className="text-xs font-black text-[#1A1A1A] leading-none tracking-tighter">{label}</p>
-      <p className="text-[9px] text-[#999] font-black tracking-tighter mt-1 truncate">{sublabel}</p>
+      <p className="text-xs font-black text-[#1A1A1A] dark:text-text-primary leading-none tracking-tighter">{label}</p>
+      <p className="text-[9px] text-[#999] dark:text-text-muted font-black tracking-tighter mt-1 truncate">{sublabel}</p>
     </div>
     {muted && (
       <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-[#CCC] bg-gray-50 px-2 py-1 rounded-full shrink-0">
@@ -298,7 +295,7 @@ const MenuItem = ({ icon, label, sublabel, onClick, muted = false }) => (
 const IconButton = ({ icon, className = '', onClick }) => (
   <button
     onClick={onClick}
-    className={`w-11 h-11 flex items-center justify-center rounded-[14px] bg-[#F5F5F7] border border-black/5 text-[#999] hover:text-vibaura-primary hover:bg-white hover:border-vibaura-primary/30 transition-all duration-300 group shadow-sm ${className}`}
+    className={`w-11 h-11 flex items-center justify-center rounded-[14px] bg-vibaura-view-bg border border-black/5 dark:border-white/5 text-text-secondary dark:text-white hover:text-vibaura-primary hover:bg-vibaura-surface/40 hover:border-vibaura-primary/30 transition-all duration-300 group shadow-sm ${className}`}
   >
     <FontAwesomeIcon icon={icon} className="text-sm group-hover:scale-110 transition-transform" />
   </button>

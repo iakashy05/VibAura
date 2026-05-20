@@ -14,7 +14,7 @@ const TrackInfoPod = ({ currentTrack, isLiked, isCollapsed, handleLikeClick, han
         borderRadius: isCollapsed ? '32px' : '28px'
       }}
       transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-      className="pointer-events-auto flex items-center bg-white/80 backdrop-blur-xl border border-white/50 h-[64px] transition-all duration-500 cursor-pointer group/info shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden justify-center"
+      className="pointer-events-auto flex items-center bg-white/80 dark:bg-[#121223]/80 backdrop-blur-xl border border-white/50 dark:border-white/5 h-[64px] transition-all duration-500 cursor-pointer group/info shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden justify-center"
     >
       <style>
         {`
@@ -33,7 +33,7 @@ const TrackInfoPod = ({ currentTrack, isLiked, isCollapsed, handleLikeClick, han
           }
         `}
       </style>
-      <div className={`rounded-[20px] bg-vibaura-bg-muted overflow-hidden relative flex-shrink-0 border border-black/5 transition-all duration-500 ${isCollapsed ? 'w-14 h-14' : 'w-11 h-11 ml-0.5'}`}>
+      <div className={`rounded-[20px] bg-vibaura-bg-muted dark:bg-[#242542] overflow-hidden relative flex-shrink-0 border border-black/5 dark:border-white/5 transition-all duration-500 ${isCollapsed ? 'w-14 h-14' : 'w-11 h-11 ml-0.5'}`}>
         <img
           src={currentTrack?.albumArt || currentTrack?.image || "https://placehold.co/100x100/6367FF/FFFFFF?text=Aura"}
           alt="Album"
@@ -50,11 +50,11 @@ const TrackInfoPod = ({ currentTrack, isLiked, isCollapsed, handleLikeClick, han
             className="flex items-center flex-1 min-w-0"
           >
             <div className="flex flex-col min-w-0 flex-1 overflow-hidden ml-3">
-              <span className="font-bold text-[#1A1A1A] truncate text-[13px] tracking-tight leading-tight mb-0.5">
+              <span className="font-bold text-[#1A1A1A] dark:text-text-primary truncate text-[13px] tracking-tight leading-tight mb-0.5">
                 {currentTrack?.title || "Select a Song"}
               </span>
               <div className="relative overflow-hidden w-full h-4 flex items-center">
-                <div className={`${(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) ? 'animate-marquee' : 'truncate'} text-[10px] font-black text-[#666] tracking-tighter leading-none`}>
+                <div className={`${(currentTrack?.artists?.length > 1 || (currentTrack?.artist?.length > 15)) ? 'animate-marquee' : 'truncate'} text-[10px] font-black text-[#666] dark:text-text-secondary tracking-tighter leading-none`}>
                   <span className="pr-8">
                     {Array.isArray(currentTrack?.artists)
                       ? currentTrack.artists.map(a => a.name).join(', ')

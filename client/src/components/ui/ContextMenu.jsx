@@ -198,20 +198,20 @@ const ContextMenu = ({
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="relative w-full max-h-[80vh] bg-white rounded-t-[32px] shadow-2xl p-5 pb-8 flex flex-col border-t border-black/[0.04] overflow-y-auto no-scrollbar"
+              className="relative w-full max-h-[80vh] bg-white dark:bg-vibaura-surface rounded-t-[32px] shadow-2xl p-5 pb-8 flex flex-col border-t border-black/[0.04] dark:border-white/5 overflow-y-auto no-scrollbar"
             >
               {/* Drag Handle */}
-              <div className="w-12 h-1 bg-[#E4E4E9] rounded-full mx-auto mb-4 shrink-0" />
+              <div className="w-12 h-1 bg-[#E4E4E9] dark:bg-vibaura-bg-muted rounded-full mx-auto mb-4 shrink-0" />
               
               {/* Header Info */}
               {item && (
-                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-[#F0F0F0] shrink-0">
-                  <div className="w-12 h-12 rounded-xl bg-vibaura-bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-[#F0F0F0] dark:border-white/5 shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-vibaura-bg-muted dark:bg-[#242542] overflow-hidden flex-shrink-0 shadow-sm">
                     <img src={item.image || "https://placehold.co/100x100?text=VibAura"} alt={item.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-black text-[#1A1A1A] truncate tracking-tight">{item.title}</h4>
-                    <p className="text-[10px] text-[#777] truncate mt-0.5 uppercase tracking-wider font-bold opacity-75">
+                    <h4 className="text-sm font-black text-[#1A1A1A] dark:text-text-primary truncate tracking-tight">{item.title}</h4>
+                    <p className="text-[10px] text-[#777] dark:text-text-muted truncate mt-0.5 uppercase tracking-wider font-bold opacity-75">
                       {type === 'track' 
                         ? (Array.isArray(item.artists) ? item.artists.map(a => a.name).join(', ') : (item.artist || 'VibAura Artist'))
                         : `${type} collection`
@@ -247,7 +247,7 @@ const ContextMenu = ({
                         <ContextMenuItem icon={faShareNodes} label="Share" muted />
                         {playlistId && isPlaylistOwner && (
                           <>
-                            <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                            <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1.5 mx-2" />
                             <ContextMenuItem 
                               icon={faTrash} 
                               label="Remove from Playlist" 
@@ -290,7 +290,7 @@ const ContextMenu = ({
                               />
                             )}
                             <ContextMenuItem icon={faShareNodes} label="Share" muted />
-                            <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                            <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1.5 mx-2" />
                             <ContextMenuItem 
                               icon={faTrash} 
                               label="Delete Playlist" 
@@ -320,7 +320,7 @@ const ContextMenu = ({
                                   />
                                 )}
                                 <ContextMenuItem icon={faShareNodes} label="Share" muted />
-                                <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                                <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1.5 mx-2" />
                                 <ContextMenuItem 
                                   icon={faMinusCircle} 
                                   label="Remove Playlist" 
@@ -353,7 +353,7 @@ const ContextMenu = ({
                               />
                             )}
                             <ContextMenuItem icon={faShareNodes} label="Share" muted />
-                            <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                            <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1.5 mx-2" />
                             <ContextMenuItem 
                               icon={faMinusCircle} 
                               label="Remove Artist" 
@@ -368,10 +368,10 @@ const ContextMenu = ({
                 ) : (
                   /* Mobile Submenu: Add to Playlist */
                   <div className="animate-slide-in-right">
-                    <div className="px-1 py-2 border-b border-[#F0F0F0] mb-2 flex items-center gap-3">
+                    <div className="px-1 py-2 border-b border-[#F0F0F0] dark:border-white/5 mb-2 flex items-center gap-3">
                        <button 
                         onClick={(e) => { e.stopPropagation(); setShowPlaylists(false); }} 
-                        className="text-[#999] hover:text-[#1A1A1A] transition-colors p-1"
+                        className="text-[#999] hover:text-[#1A1A1A] dark:hover:text-white transition-colors p-1"
                        >
                           <FontAwesomeIcon icon={faChevronRight} className="rotate-180 text-xs" />
                        </button>
@@ -390,7 +390,7 @@ const ContextMenu = ({
                               }
                               handlePlaylistSelect(e, p.id, p.title);
                             }}
-                            className="w-full px-4 py-3.5 text-left text-xs font-bold text-[#444] hover:bg-vibaura-primary/5 hover:text-vibaura-primary rounded-xl transition-colors flex items-center justify-between border border-[#F0F0F0]"
+                            className="w-full px-4 py-3.5 text-left text-xs font-bold text-[#444] dark:text-text-secondary hover:bg-vibaura-primary/5 dark:hover:bg-vibaura-primary/10 hover:text-vibaura-primary rounded-xl transition-colors flex items-center justify-between border border-[#F0F0F0] dark:border-white/5"
                           >
                             <span className="truncate">{p.title}</span>
                             {p.songs?.some(s => s.id === item.id) && (
@@ -442,7 +442,7 @@ const ContextMenu = ({
               <ContextMenuItem icon={faShareNodes} label="Share" muted />
               {playlistId && isPlaylistOwner && (
                 <>
-                  <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
+                  <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1 mx-2" />
                   <ContextMenuItem 
                     icon={faTrash} 
                     label="Remove from Playlist" 
@@ -486,7 +486,7 @@ const ContextMenu = ({
                     />
                   )}
                   <ContextMenuItem icon={faShareNodes} label="Share" muted />
-                  <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
+                  <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1 mx-2" />
                   <ContextMenuItem 
                     icon={faTrash} 
                     label="Delete Playlist" 
@@ -516,7 +516,7 @@ const ContextMenu = ({
                         />
                       )}
                       <ContextMenuItem icon={faShareNodes} label="Share" muted />
-                      <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
+                      <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1 mx-2" />
                       <ContextMenuItem 
                         icon={faMinusCircle} 
                         label="Remove Playlist" 
@@ -549,7 +549,7 @@ const ContextMenu = ({
                     />
                   )}
                   <ContextMenuItem icon={faShareNodes} label="Share" muted />
-                  <div className="h-[1px] bg-[#F0F0F0] my-1 mx-2" />
+                  <div className="h-[1px] bg-[#F0F0F0] dark:bg-white/5 my-1 mx-2" />
                   <ContextMenuItem 
                     icon={faMinusCircle} 
                     label="Remove Artist" 
@@ -564,14 +564,14 @@ const ContextMenu = ({
       ) : (
         /* SUBMENU: ADD TO PLAYLIST */
         <div className="animate-slide-in-right">
-          <div className="px-3 py-2 border-b border-[#F0F0F0] mb-1 flex items-center gap-2">
+          <div className="px-3 py-2 border-b border-[#F0F0F0] dark:border-white/5 mb-1 flex items-center gap-2">
              <button 
               onClick={(e) => { e.stopPropagation(); setShowPlaylists(false); }} 
-              className="text-[#999] hover:text-[#1A1A1A] transition-colors"
+              className="text-[#999] hover:text-[#1A1A1A] dark:hover:text-white transition-colors"
              >
                 <FontAwesomeIcon icon={faChevronRight} className="rotate-180 text-[10px]" />
              </button>
-             <span className="text-[9px] font-black text-[#CCC] tracking-tighter">Choose Playlist</span>
+             <span className="text-[9px] font-black text-[#CCC] dark:text-text-muted tracking-tighter">Choose Playlist</span>
           </div>
           <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
             {playlists.length > 0 ? (
@@ -586,7 +586,7 @@ const ContextMenu = ({
                     }
                     handlePlaylistSelect(e, p.id, p.title);
                   }}
-                  className="w-full px-3 py-2 text-left text-[10px] font-bold tracking-tight text-[#666] hover:bg-vibaura-primary/5 hover:text-vibaura-primary rounded-lg transition-colors flex items-center justify-between"
+                  className="w-full px-3 py-2 text-left text-[10px] font-bold tracking-tight text-[#666] dark:text-text-secondary hover:bg-vibaura-primary/5 dark:hover:bg-vibaura-primary/10 hover:text-vibaura-primary rounded-lg transition-colors flex items-center justify-between"
                 >
                   <span className="truncate">{p.title}</span>
                   {p.songs?.some(s => s.id === item.id) && (
@@ -625,17 +625,17 @@ const ContextMenuItem = ({ icon, label, onClick, muted = false, danger = false, 
     disabled={muted}
     className={`w-full px-3 py-2.5 text-left text-[10px] font-black tracking-tighter rounded-xl flex items-center justify-between transition-colors
       ${muted ? 'opacity-30 cursor-not-allowed' : ''}
-      ${danger ? 'text-red-500 hover:bg-red-50' : 'text-[#666] hover:bg-gray-50 hover:text-[#1A1A1A]'}
+      ${danger ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-[#666] dark:text-text-secondary hover:bg-gray-50 dark:hover:bg-vibaura-bg-muted/10 hover:text-[#1A1A1A] dark:hover:text-white'}
     `}
   >
     <div className="flex items-center gap-3">
-      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${danger ? 'bg-red-50' : 'bg-[#F5F5F7]'} ${iconClass}`}>
+      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${danger ? 'bg-red-50 dark:bg-red-950/30' : 'bg-[#F5F5F7] dark:bg-vibaura-bg-muted/10'} ${iconClass}`}>
         <FontAwesomeIcon icon={icon} />
       </div>
       <span>{label}</span>
     </div>
     {hasSubmenu && <FontAwesomeIcon icon={faChevronRight} className="text-[8px] opacity-30" />}
-    {muted && <span className="text-[7px] bg-gray-100 px-1.5 py-0.5 rounded-full">Soon</span>}
+    {muted && <span className="text-[7px] bg-gray-100 dark:bg-vibaura-bg-muted/20 px-1.5 py-0.5 rounded-full">Soon</span>}
   </button>
 );
 

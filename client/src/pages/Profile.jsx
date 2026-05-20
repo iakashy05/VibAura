@@ -1,7 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faUserCircle, faWaveSquare, faBell, faCog, faSignOutAlt, faCrown, faArrowRight
+  faUserCircle, faWaveSquare, faSignOutAlt, faCrown, faArrowRight, faSun, faMoon
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuthStore } from '../store/authStore';
 import { useUIStore } from '../store/uiStore';
@@ -9,10 +9,11 @@ import { useUIStore } from '../store/uiStore';
 /**
  * Profile Component
  * A beautiful, full-screen dedicated account settings page.
+ * Adapts beautifully to Dark and Light modes.
  */
 const Profile = ({ onNavigate }) => {
   const { user, isSubscribed, logout } = useAuthStore();
-  const { showToast } = useUIStore();
+  const { theme, toggleTheme, showToast } = useUIStore();
 
   const handleLogout = () => {
     logout();
@@ -31,25 +32,25 @@ const Profile = ({ onNavigate }) => {
       </div>
 
       {/* User Details Spotlight Card */}
-      <div className="relative overflow-hidden rounded-[32px] p-6 bg-gradient-to-br from-white to-[#F9F5F6] border border-black/[0.03] shadow-md flex items-center gap-4">
+      <div className="relative overflow-hidden rounded-[32px] p-6 bg-vibaura-surface border border-black/[0.03] dark:border-white/5 shadow-md flex items-center gap-4 transition-all duration-300">
         {/* Pro member background highlights */}
         {isSubscribed && (
-          <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 via-purple-500/5 to-pink-500/5 opacity-50 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 via-purple-500/5 to-pink-500/5 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-pink-500/10 opacity-50 pointer-events-none" />
         )}
         
         <div className="relative shrink-0 p-0.5">
           {isSubscribed && (
             <div className="absolute inset-0 rounded-[18px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></div>
           )}
-          <div className={`relative w-16 h-16 rounded-[16px] bg-vibaura-primary flex items-center justify-center text-white font-black text-2xl shadow-sm z-10 ${isSubscribed ? 'border-2 border-white' : ''}`}>
+          <div className={`relative w-16 h-16 rounded-[16px] bg-vibaura-primary flex items-center justify-center text-white font-black text-2xl shadow-sm z-10 ${isSubscribed ? 'border-2 border-white dark:border-vibaura-surface' : ''}`}>
             {avatarLetter}
           </div>
         </div>
 
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-black text-[#1A1A1A] tracking-tight truncate leading-tight">{displayName}</h2>
-          <p className="text-[9px] text-[#888] font-bold truncate mt-0.5">{user?.email || 'No email registered'}</p>
-          <span className="inline-block px-2.5 py-0.5 mt-2 rounded-full text-[8px] font-black uppercase tracking-wider bg-vibaura-primary/5 text-vibaura-primary">
+          <h2 className="text-lg font-black text-text-primary tracking-tight truncate leading-tight">{displayName}</h2>
+          <p className="text-[9px] text-text-muted font-bold truncate mt-0.5">{user?.email || 'No email registered'}</p>
+          <span className="inline-block px-2.5 py-0.5 mt-2 rounded-full text-[8px] font-black uppercase tracking-wider bg-vibaura-primary/5 dark:bg-vibaura-primary/15 text-vibaura-primary dark:text-vibaura-primary-light">
             {isSubscribed ? '👑 Pro Member' : (user?.role || 'Basic Aura')}
           </span>
         </div>
@@ -77,34 +78,62 @@ const Profile = ({ onNavigate }) => {
 
       {/* Main Settings Menu options */}
       <div className="space-y-3 px-1">
-        <h3 className="text-xs font-black uppercase text-[#999] tracking-wider mb-2">Options</h3>
+        <h3 className="text-xs font-black uppercase text-text-muted tracking-wider mb-2">Options</h3>
         
-        {/* Vibrance Report Option */}
+        {/* My Profile Option */}
         <button
-          onClick={() => onNavigate('vibrance')}
-          className="w-full flex items-center gap-4 p-3 rounded-2xl bg-white border border-black/[0.03] active:scale-[0.99] hover:bg-black/[0.01] transition-all text-left group"
+          onClick={() => onNavigate('profile')}
+          className="w-full flex items-center gap-4 p-3.5 rounded-2xl bg-vibaura-surface border border-black/[0.03] dark:border-white/5 active:scale-[0.99] hover:bg-black/[0.01] dark:hover:bg-white/5 transition-all text-left group"
         >
-          <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-vibaura-primary group-hover:text-white flex items-center justify-center transition-colors shrink-0">
-            <FontAwesomeIcon icon={faWaveSquare} className="text-xs animate-pulse" />
+          <div className="w-9 h-9 rounded-xl bg-vibaura-view-bg dark:bg-vibaura-bg-muted/10 text-[#999] dark:text-text-secondary group-hover:bg-vibaura-primary dark:group-hover:bg-vibaura-primary group-hover:text-white dark:group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <FontAwesomeIcon icon={faUserCircle} className="text-xs" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-xs font-black text-[#1A1A1A] leading-none tracking-tight">Vibrance Monthly Report</h4>
-            <p className="text-[9px] text-[#999] font-bold tracking-tight mt-1 truncate">Analyze your personal sound profile</p>
+            <h4 className="text-xs font-black text-text-primary leading-none tracking-tight">My Profile</h4>
+            <p className="text-[9px] text-text-muted font-bold tracking-tight mt-1 truncate">Your general profile metadata</p>
           </div>
         </button>
 
-        <MenuItem icon={faUserCircle} label="My Profile" sublabel="View your username, email, and preferences" />
-        <MenuItem icon={faBell} label="Notifications" sublabel="Aura push and message notifications" muted />
-        <MenuItem icon={faCog} label="Settings" sublabel="Application parameters and audio quality" muted />
+        {/* Vibrance Report Option */}
+        <button
+          onClick={() => onNavigate('vibrance')}
+          className="w-full flex items-center gap-4 p-3.5 rounded-2xl bg-vibaura-surface border border-black/[0.03] dark:border-white/5 active:scale-[0.99] hover:bg-black/[0.01] dark:hover:bg-white/5 transition-all text-left group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 group-hover:bg-vibaura-primary dark:group-hover:bg-vibaura-primary group-hover:text-white dark:group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <FontAwesomeIcon icon={faWaveSquare} className="text-xs animate-pulse" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-xs font-black text-text-primary leading-none tracking-tight">Vibrance Reports</h4>
+            <p className="text-[9px] text-text-muted font-bold tracking-tight mt-1 truncate">Analyze your personal monthly sound profile</p>
+          </div>
+        </button>
+
+        {/* Theme Toggle Option */}
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-4 p-3.5 rounded-2xl bg-vibaura-surface border border-black/[0.03] dark:border-white/5 active:scale-[0.99] hover:bg-black/[0.01] dark:hover:bg-white/5 transition-all text-left group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 group-hover:bg-vibaura-primary dark:group-hover:bg-vibaura-primary group-hover:text-white dark:group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+            <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} className="text-xs" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-xs font-black text-text-primary leading-none tracking-tight">
+              {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
+            </h4>
+            <p className="text-[9px] text-text-muted font-bold tracking-tight mt-1 truncate">
+              {theme === 'dark' ? 'Go bright and clear' : 'Go dark and immersive'}
+            </p>
+          </div>
+        </button>
       </div>
 
       {/* Log Out Action */}
       <div className="pt-4 px-1">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-4 p-3 rounded-2xl bg-red-50 text-red-500 border border-red-500/5 active:scale-[0.98] transition-all group text-left"
+          className="w-full flex items-center gap-4 p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/10 text-red-500 border border-red-500/5 dark:border-red-950/20 active:scale-[0.98] hover:bg-red-100/20 dark:hover:bg-red-950/20 transition-all group text-left"
         >
-          <div className="w-9 h-9 rounded-xl bg-red-100/50 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-red-100/50 dark:bg-red-950/30 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all shrink-0">
             <FontAwesomeIcon icon={faSignOutAlt} className="text-xs" />
           </div>
           <div className="flex-1">
@@ -116,27 +145,5 @@ const Profile = ({ onNavigate }) => {
     </div>
   );
 };
-
-const MenuItem = ({ icon, label, sublabel, muted = false }) => (
-  <div
-    className={`w-full flex items-center gap-4 p-3 rounded-2xl bg-white border border-black/[0.03] transition-all text-left relative
-      ${muted ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black/[0.01]'}`}
-  >
-    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors
-      ${muted ? 'bg-gray-100 text-[#CCC]' : 'bg-vibaura-view-bg text-[#999] group-hover:text-vibaura-primary'}`}
-    >
-      <FontAwesomeIcon icon={icon} className="text-xs" />
-    </div>
-    <div className="min-w-0 flex-1">
-      <p className="text-xs font-black text-[#1A1A1A] leading-none tracking-tight">{label}</p>
-      <p className="text-[9px] text-[#999] font-bold tracking-tight mt-1 truncate">{sublabel}</p>
-    </div>
-    {muted && (
-      <span className="ml-auto text-[7px] font-black uppercase text-[#CCC] bg-gray-50 px-2 py-0.5 rounded-full shrink-0">
-        Soon
-      </span>
-    )}
-  </div>
-);
 
 export default Profile;
