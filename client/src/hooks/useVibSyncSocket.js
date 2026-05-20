@@ -8,13 +8,17 @@ import { useUIStore } from '../store/uiStore';
 // Assuming Vite setup, might need to adjust for VibAura's specific env variables
 const SERVER_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:4000`; 
 
-export const useVibSyncSocket = () => {
-  const { token, user } = useAuthStore();
+/**
+ * useVibSyncSocketManager is mounted at the root level (App.jsx)
+ * to handle the socket connection lifecycle and real-time playback updates.
+ * This guarantees that navigation away from VibSync page (e.g. on mobile unmounts)
+ * does NOT kill the socket connection.
+ */
+export const useVibSyncSocketManager = () => {
+  const { token } = useAuthStore();
   const {
-    socket,
     setSocket,
     setConnectionStatus,
-    setRoomData,
     setSyncOffset,
     updatePlaybackState,
     resetRoom,
@@ -130,6 +134,15 @@ export const useVibSyncSocket = () => {
       setSocket(null);
     };
   }, [token, setSocket, setConnectionStatus, setSyncOffset, updatePlaybackState, resetRoom]);
+};
+
+/**
+ * useVibSyncSocket provides functional actions for the active VibSync room,
+ * bound to the globally managed socket instance.
+ */
+export const useVibSyncSocket = () => {
+  const { socket } = useVibSyncStore();
+  const { setRoomData, resetRoom } = useVibSyncStore();
 
   // --- Exposed Actions ---
   const createRoom = useCallback((onSuccess, onError) => {
@@ -141,7 +154,7 @@ export const useVibSyncSocket = () => {
       }
       setRoomData(response.room);
       useVibSyncStore.getState().setMyRole('HOST');
-      useUIStore.getState().showToast('VibSync Session Created!', 'success');
+      useUIStore.getState().showToast('VibSync Session Started', 'success');
       onSuccess?.(response.room);
     });
   }, [socket, setRoomData]);

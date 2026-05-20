@@ -14,14 +14,14 @@ const TrackList = ({ tracks, playlistId, isOwner }) => {
   return (
     <div className="w-full">
       {/* Table Header */}
-      <div className="grid grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-2 border-b border-[#F0F0F0] text-[#999] text-[10px] uppercase tracking-widest font-black mb-2">
+      <div className="grid grid-cols-[32px_1fr_48px_32px] md:grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-2 border-b border-[#F0F0F0] text-[#999] text-[10px] uppercase tracking-widest font-black mb-2">
         <div className="flex justify-center">#</div>
         <div>Title</div>
         <div className="hidden md:block">Artists</div>
         <div className="flex justify-center">
           <FontAwesomeIcon icon={faHeartSolid} size="xs" />
         </div>
-        <div className="flex justify-end pr-4">
+        <div className="hidden md:flex justify-end pr-4">
           <FontAwesomeIcon icon={faClock} size="sm" />
         </div>
         <div className="w-8" /> {/* Spacer for context menu */}
@@ -38,18 +38,27 @@ const TrackList = ({ tracks, playlistId, isOwner }) => {
 };
 
 const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner }) => {
-  const { currentTrack, isPlaying, setTrack, togglePlay } = usePlayerStore();
-  const { user, isAuthenticated } = useAuthStore();
-  const isSelected = currentTrack?.id === track.id;
+  const currentTrack = usePlayerStore(state => state.currentTrack);
+  const isPlaying = usePlayerStore(state => state.isPlaying);
+  const setTrack = usePlayerStore(state => state.setTrack);
+  const togglePlay = usePlayerStore(state => state.togglePlay);
 
+  const user = useAuthStore(state => state.user);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  
+  const isSelected = currentTrack && ((currentTrack.id || currentTrack._id) === (track.id || track._id));
   const trackId = track?.id || track?._id;
+  
   const likedSongs = useLibraryStore(state => state.likedSongs);
-  const { toggleLikeSongOptimistic } = useLibraryStore();
+  const toggleLikeSongOptimistic = useLibraryStore(state => state.toggleLikeSongOptimistic);
   const isLiked = trackId && likedSongs.some(song => (song.id || song._id) === trackId);
 
-  const { activeMenuId, setActiveMenuId, showConfirm } = useUIStore();
-  const isMenuOpen = activeMenuId === `track-${track.id}`;
-  const setIsMenuOpen = (open) => setActiveMenuId(open ? `track-${track.id}` : null);
+  const activeMenuId = useUIStore(state => state.activeMenuId);
+  const setActiveMenuId = useUIStore(state => state.setActiveMenuId);
+  const showConfirm = useUIStore(state => state.showConfirm);
+  
+  const isMenuOpen = activeMenuId === `track-${trackId}`;
+  const setIsMenuOpen = (open) => setActiveMenuId(open ? `track-${trackId}` : null);
 
   const handlePlayClick = (e) => {
     e.stopPropagation();
@@ -86,18 +95,19 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
   return (
     <div
       onClick={handlePlayClick}
-      className="group grid grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-4 py-3 rounded-2xl transition-all items-center cursor-pointer hover:bg-black/5"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsMenuOpen(true);
+      }}
+      className="group grid grid-cols-[32px_1fr_48px_32px] md:grid-cols-[32px_4fr_3fr_48px_minmax(80px,1fr)_32px] gap-4 px-2 md:px-4 py-3 rounded-2xl transition-colors duration-200 items-center cursor-pointer hover:bg-black/5 select-none"
     >
       {/* Index / Play / Playing Animation */}
       <div className="flex justify-center items-center text-text-muted text-sm relative">
         {!isSelected && <span className="group-hover:opacity-0 transition-opacity underline-offset-4 font-black tracking-tighter text-[10px]">{index}</span>}
 
         {isSelected && isPlaying && (
-          <div className="flex gap-0.5 items-end h-3 mb-0.5">
-            <div className="w-0.5 bg-vibaura-primary animate-[music-bar_0.8s_ease-in-out_infinite] h-full" />
-            <div className="w-0.5 bg-vibaura-primary animate-[music-bar_1.2s_ease-in-out_infinite] h-2" />
-            <div className="w-0.5 bg-vibaura-primary animate-[music-bar_0.5s_ease-in-out_infinite] h-3" />
-          </div>
+          <FontAwesomeIcon icon={faPause} className="text-vibaura-primary text-[10px]" />
         )}
 
         {isSelected && !isPlaying && (
@@ -122,14 +132,19 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
           <img src={track.image} alt={track.title} className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col truncate">
-          <span className={`font-black truncate transition-colors text-sm tracking-tighter ${isSelected ? 'text-vibaura-primary' : 'text-[#1A1A1A] group-hover:text-vibaura-primary'}`}>
+          <span className={`font-semibold md:font-black truncate transition-colors text-sm tracking-tight ${isSelected ? 'text-vibaura-primary' : 'text-[#1A1A1A] group-hover:text-vibaura-primary'}`}>
             {track.title}
+          </span>
+          <span className="block md:hidden text-[10px] text-[#777] font-medium tracking-tight truncate mt-0.5">
+            {Array.isArray(track.artists)
+              ? track.artists.map(a => a.name).join(', ')
+              : (track.artist || 'VibAura Artist')}
           </span>
         </div>
       </div>
 
-      {/* Artists Column */}
-      <div className="hidden md:block font-black text-[#666] tracking-tighter text-[11px] truncate uppercase">
+      {/* Artists Column (Desktop Only) */}
+      <div className="hidden md:block font-medium text-[#666] tracking-tight text-[11px] truncate">
         {Array.isArray(track.artists)
           ? track.artists.map(a => a.name).join(', ')
           : (track.artist || 'VibAura Artist')}
@@ -144,8 +159,8 @@ const TrackRow = memo(({ track, index, allTracks, playlistId, isPlaylistOwner })
         />
       </div>
 
-      {/* Duration */}
-      <div className="flex justify-end items-center text-[#999] text-xs pr-4 tabular-nums font-medium">
+      {/* Duration (Desktop Only) */}
+      <div className="hidden md:flex justify-end items-center text-[#999] text-xs pr-4 tabular-nums font-medium">
         {formatTime(track.duration)}
       </div>
 

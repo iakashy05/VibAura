@@ -115,8 +115,18 @@ const FullscreenPlayer = () => {
     }
   };
 
+  const handleSeek = (e) => {
+    const val = parseFloat(e.target.value);
+    setProgress(val);
+    const audioEl = document.getElementById('vibaura-audio-player');
+    if (audioEl && duration) {
+      const seekTime = (val / 100) * duration;
+      audioEl.currentTime = seekTime;
+    }
+  };
+
   return (
-    <div className={`fixed inset-0 z-[100] bg-[#F8F9FD] text-[#1A1A1A] overflow-hidden no-scrollbar font-jost transition-all duration-700 ${!showControls ? 'cursor-none' : ''}`}>
+    <div className={`hidden md:block fixed inset-0 z-[100] bg-[#F8F9FD] text-[#1A1A1A] overflow-hidden no-scrollbar font-jost transition-all duration-700 ${!showControls ? 'cursor-none' : ''}`}>
 
       {/* 1. Immersive Aura Glow Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#F8F9FD]">
@@ -133,32 +143,29 @@ const FullscreenPlayer = () => {
       </div>
 
       {/* 2. Content Layout */}
-      <div className="relative z-10 h-full flex flex-col px-8 md:px-16 py-8 max-w-[1500px] mx-auto overflow-hidden">
+      <div className="relative z-10 h-full flex flex-col px-16 py-8 max-w-[1500px] mx-auto overflow-hidden justify-between">
 
         {/* TOP HEADER */}
         <div className={`flex items-center justify-between w-full mb-8 transition-all duration-700 ${!showControls ? 'opacity-0 -translate-y-4' : 'opacity-100'}`}>
           <button
             onClick={toggleFullscreen}
-            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:shadow-md transition-all active:scale-95 group"
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:shadow-md transition-all active:scale-95 group"
           >
             <FontAwesomeIcon icon={faChevronDown} className="text-black/60 group-hover:text-black transition-colors" />
           </button>
-
-          <div className="flex-1" />
-
-          <div className="w-10 md:w-12" />
+          <div className="w-12" />
         </div>
 
-        {/* MIDDLE SECTION: Asymmetric Layout */}
-        <div className="flex-1 flex items-center w-full min-h-0 gap-12">
+        {/* MIDDLE SECTION: Asymmetric Desktop Layout */}
+        <div className="flex-1 flex flex-row items-center w-full min-h-0 gap-12 px-4 justify-between">
 
-          {/* Left Side: Metadata */}
-          <div className="w-[35%] flex flex-col justify-center space-y-6 animate-in fade-in slide-in-from-left-8 duration-1000 pl-4">
+          {/* Left Side: Title & Artist Details */}
+          <div className="w-[35%] flex flex-col justify-center text-left space-y-6 pl-4 animate-in fade-in slide-in-from-left-8 duration-1000">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight text-black/90 truncate max-w-full pb-1">
+              <h1 className="text-6xl font-black tracking-tight leading-tight text-black/90 truncate max-w-full pb-1">
                 {currentTrack.title}
               </h1>
-              <p className="text-lg md:text-2xl font-medium text-black/60">
+              <p className="text-2xl font-bold text-black/60 normal-case tracking-normal truncate">
                 {Array.isArray(currentTrack.artists)
                   ? currentTrack.artists.map(a => a.name).join(', ')
                   : (currentTrack.artist || 'VibAura Artist')}
@@ -166,10 +173,11 @@ const FullscreenPlayer = () => {
             </div>
           </div>
 
-          {/* Right Side: Artwork with Vinyl */}
+          {/* Right Side: Artwork + Spinning Vinyl Record */}
           <div className="flex-1 flex items-center justify-center relative min-h-0 pr-20">
-            <div className="relative h-full flex items-center justify-center max-h-[55vh] aspect-square">
+            <div className="relative w-full h-full flex items-center justify-center max-h-[55vh] aspect-square">
 
+              {/* Spinning Vinyl Record */}
               <div className={`absolute left-1/2 -translate-x-1/2 w-[94%] aspect-square rounded-full transition-all duration-[1500ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 overflow-hidden
                   ${isPlaying ? 'translate-x-[18%] rotate-[360deg]' : 'translate-x-0 rotate-0'}
                 `}
@@ -200,7 +208,8 @@ const FullscreenPlayer = () => {
                 </div>
               </div>
 
-              <div className="relative z-10 h-full aspect-square rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.15)] border-4 border-white">
+              {/* Cover Artwork */}
+              <div className="relative z-10 w-full h-full aspect-square rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.12)] border-4 border-white">
                 <img
                   src={currentTrack.albumArt || currentTrack.image}
                   alt={currentTrack.title}
@@ -209,11 +218,12 @@ const FullscreenPlayer = () => {
               </div>
             </div>
           </div>
+
         </div>
 
-        {/* BOTTOM PLAYER BAR - Floating Pill */}
+        {/* BOTTOM PLAYER BAR - Desktop Floating Pill Layout */}
         <div className={`w-full max-w-[1300px] mx-auto mb-4 transition-all duration-1000 ${!showControls ? 'opacity-0 translate-y-12' : 'opacity-100 translate-y-0'}`}>
-          <div className="bg-white/80 backdrop-blur-2xl border border-white rounded-[40px] px-8 py-5 shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex items-center gap-10">
+          <div className="flex bg-white/80 backdrop-blur-2xl border border-white rounded-[40px] px-8 py-5 shadow-[0_20px_50px_rgba(0,0,0,0.05)] items-center gap-10">
 
             {/* 1. Left: Controls */}
             <div className="flex items-center gap-6">
@@ -242,7 +252,7 @@ const FullscreenPlayer = () => {
               </button>
             </div>
 
-            {/* 2. Center: Progress Bar (Unified Styling) */}
+            {/* 2. Center: Progress Bar */}
             <div className="flex-1 flex items-center gap-4 group/progress">
               <span className="text-[9px] text-[#777] font-black uppercase tracking-widest w-10 text-center tabular-nums">
                 {formatTime(currentTime)}
@@ -250,7 +260,7 @@ const FullscreenPlayer = () => {
               <div className="flex-1 relative flex items-center h-4">
                 <input
                   type="range" min="0" max="100" value={progress}
-                  onChange={(e) => setProgress(parseFloat(e.target.value))}
+                  onChange={handleSeek}
                   className="absolute inset-0 w-full opacity-0 cursor-pointer z-10"
                 />
                 <div className="w-full h-1.5 bg-black/5 rounded-full relative overflow-hidden transition-all duration-300 group-hover/progress:h-2">
@@ -290,7 +300,7 @@ const FullscreenPlayer = () => {
                   </div>
                   {/* Volume Thumb */}
                   <div
-                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover/vol:opacity-100 transition-all duration-300 shadow-lg pointer-events-none scale-0 group-hover/vol:scale-100"
+                     className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-vibaura-primary rounded-full opacity-0 group-hover/vol:opacity-100 transition-all duration-300 shadow-lg pointer-events-none scale-0 group-hover/vol:scale-100"
                     style={{ left: `calc(${volume * 100}% - 8px)` }}
                   />
                 </div>
@@ -300,18 +310,21 @@ const FullscreenPlayer = () => {
               </button>
             </div>
           </div>
+
         </div>
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
+          will-change: transform;
+          transform: translate3d(0, 0, 0);
         }
-      `}</style>
+      ` }} />
     </div>
   );
 };

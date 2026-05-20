@@ -5,9 +5,11 @@ import TrackList from '../components/music/TrackList';
 import { calculateTotalDuration } from '../utils/time';
 import { usePlayerStore } from '../store/playerStore';
 import { getArtistDetails } from '../services/discoveryService';
+import MusicLoader from '../components/ui/MusicLoader';
 
 const Artist = ({ artist }) => {
-  const { setTrack, shufflePlay } = usePlayerStore();
+  const setTrack = usePlayerStore(state => state.setTrack);
+  const shufflePlay = usePlayerStore(state => state.shufflePlay);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,11 +30,7 @@ const Artist = ({ artist }) => {
     loadArtist();
   }, [artist?.id]);
 
-  if (loading) return (
-    <div className="flex h-96 items-center justify-center text-text-muted animate-pulse">
-      <span className="text-xl font-medium tracking-widest uppercase">Syncing with Aura...</span>
-    </div>
-  );
+  if (loading) return <MusicLoader text="Tuning Artist..." />;
 
   if (error || !data) return (
     <div className="flex h-96 items-center justify-center text-vibaura-primary">
@@ -55,7 +53,7 @@ const Artist = ({ artist }) => {
   };
 
   return (
-    <div className="flex flex-col relative w-full">
+    <div className="flex flex-col relative w-full animate-page-in">
       <CollectionHeader 
         title={data.title}
         image={data.image}
@@ -75,7 +73,7 @@ const Artist = ({ artist }) => {
         item={data}
       />
 
-      <div className="px-8 py-8 pb-12">
+      <div className="px-1 md:px-8 py-4 md:py-8 pb-12">
         <section>
           <h2 className="text-2xl font-bold text-text-primary uppercase tracking-tighter mb-6">All Songs</h2>
           <TrackList tracks={data.songs || []} />

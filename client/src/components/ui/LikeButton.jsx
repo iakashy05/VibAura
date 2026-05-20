@@ -46,7 +46,7 @@ const LikeButton = ({ isLiked, onClick, className = "" }) => {
 
       <button 
         onClick={handleClick}
-        className={`relative z-10 transition-all p-2 hover:scale-105 active:scale-95
+        className={`relative z-10 transition-all flex items-center justify-center p-2 hover:scale-105 active:scale-95
           ${isLiked ? 'text-vibaura-primary' : 'text-[#777] hover:text-vibaura-primary'}
           ${isAnimating ? 'animate-heart-sparkle' : ''}`}
       >

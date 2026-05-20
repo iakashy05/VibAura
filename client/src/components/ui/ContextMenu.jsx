@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlus, 
@@ -51,10 +53,21 @@ const ContextMenu = ({
   const [showPlaylists, setShowPlaylists] = useState(false);
   const [playlists, setPlaylists] = useState([]);
   const { showToast, showConfirm } = useUIStore();
-  const { user } = useAuthStore();
-  const { addToQueue } = usePlayerStore();
+  const user = useAuthStore(state => state.user);
+  const addToQueue = usePlayerStore(state => state.addToQueue);
 
   const isOwner = item?.creator === user?.id || item?.userId === user?.id;
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (isOpen && type === 'track') {
@@ -150,6 +163,257 @@ const ContextMenu = ({
       showToast('Failed to pin item', 'error');
     }
   };
+
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.15 } }
+  };
+
+  const sheetVariants = {
+    hidden: { y: '100%' },
+    visible: { 
+      y: 0,
+      transition: { type: 'tween', duration: 0.22, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
+  if (isMobile) {
+    return createPortal(
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[200] pointer-events-auto flex items-end justify-center">
+            {/* Backdrop */}
+            <motion.div
+              variants={backdropVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              onClick={onClose}
+              className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
+            />
+            
+            {/* Slide up sheet */}
+            <motion.div
+              variants={sheetVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="relative w-full max-h-[80vh] bg-white rounded-t-[32px] shadow-2xl p-5 pb-8 flex flex-col border-t border-black/[0.04] overflow-y-auto no-scrollbar"
+            >
+              {/* Drag Handle */}
+              <div className="w-12 h-1 bg-[#E4E4E9] rounded-full mx-auto mb-4 shrink-0" />
+              
+              {/* Header Info */}
+              {item && (
+                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-[#F0F0F0] shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-vibaura-bg-muted overflow-hidden flex-shrink-0 shadow-sm">
+                    <img src={item.image || "https://placehold.co/100x100?text=VibAura"} alt={item.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-sm font-black text-[#1A1A1A] truncate tracking-tight">{item.title}</h4>
+                    <p className="text-[10px] text-[#777] truncate mt-0.5 uppercase tracking-wider font-bold opacity-75">
+                      {type === 'track' 
+                        ? (Array.isArray(item.artists) ? item.artists.map(a => a.name).join(', ') : (item.artist || 'VibAura Artist'))
+                        : `${type} collection`
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Menu Actions */}
+              <div className="flex flex-col">
+                {!showPlaylists ? (
+                  <div className="flex flex-col">
+                    {/* Track Actions */}
+                    {type === 'track' && (
+                      <>
+                        <ContextMenuItem
+                          icon={faPlus}
+                          label="Add to Playlist"
+                          hasSubmenu
+                          onClick={(e) => { e.stopPropagation(); setShowPlaylists(true); }}
+                        />
+                        <ContextMenuItem 
+                          icon={faListUl} 
+                          label="Add to Queue" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToQueue(item);
+                            showToast('Added to Queue', 'success');
+                            onClose();
+                          }} 
+                        />
+                        <ContextMenuItem icon={faShareNodes} label="Share" muted />
+                        {playlistId && isPlaylistOwner && (
+                          <>
+                            <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                            <ContextMenuItem 
+                              icon={faTrash} 
+                              label="Remove from Playlist" 
+                              danger
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await removeSongFromPlaylist(playlistId, item.id);
+                                  const { removeSongFromPlaylistInStore } = useLibraryStore.getState();
+                                  removeSongFromPlaylistInStore(playlistId, item.id);
+                                  showToast('Removed from playlist', 'success');
+                                  onClose();
+                                } catch (err) {
+                                  const errorMsg = err.response?.data?.message || 'Failed to remove song';
+                                  showToast(errorMsg, 'error');
+                                }
+                              }}
+                            />
+                          </>
+                        )}
+                      </>
+                    )}
+
+                    {/* Playlist Actions */}
+                    {type === 'playlist' && (
+                      <>
+                        {isOwner ? (
+                          <>
+                            <ContextMenuItem 
+                              icon={faPen} 
+                              label="Edit Details" 
+                              onClick={(e) => { e.stopPropagation(); onEdit ? onEdit(item) : null; onClose(); }} 
+                            />
+                            {isInLibrary && (
+                              <ContextMenuItem 
+                                icon={faThumbtack} 
+                                label={isPinned ? "Unpin from Top" : "Pin to Top"} 
+                                iconClass={isPinned ? 'text-vibaura-primary' : ''}
+                                onClick={handleTogglePin} 
+                              />
+                            )}
+                            <ContextMenuItem icon={faShareNodes} label="Share" muted />
+                            <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                            <ContextMenuItem 
+                              icon={faTrash} 
+                              label="Delete Playlist" 
+                              danger
+                              onClick={handleDeletePlaylist}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            {!isInLibrary ? (
+                              <>
+                                <ContextMenuItem 
+                                  icon={faPlus} 
+                                  label="Add to Library" 
+                                  onClick={handleLibraryToggle}
+                                />
+                                <ContextMenuItem icon={faShareNodes} label="Share" muted />
+                              </>
+                            ) : (
+                              <>
+                                {isInLibrary && (
+                                  <ContextMenuItem 
+                                    icon={faThumbtack} 
+                                    label={isPinned ? "Unpin from Top" : "Pin to Top"} 
+                                    iconClass={isPinned ? 'text-vibaura-primary' : ''}
+                                    onClick={handleTogglePin} 
+                                  />
+                                )}
+                                <ContextMenuItem icon={faShareNodes} label="Share" muted />
+                                <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                                <ContextMenuItem 
+                                  icon={faMinusCircle} 
+                                  label="Remove Playlist" 
+                                  danger
+                                  onClick={handleLibraryToggle}
+                                />
+                              </>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+
+                    {/* Artist Actions */}
+                    {type === 'artist' && (
+                      <>
+                        {!isInLibrary ? (
+                          <>
+                            <ContextMenuItem icon={faPlus} label="Add to Library" onClick={handleLibraryToggle} />
+                            <ContextMenuItem icon={faShareNodes} label="Share" muted />
+                          </>
+                        ) : (
+                          <>
+                            {isInLibrary && (
+                              <ContextMenuItem 
+                                icon={faThumbtack} 
+                                label={isPinned ? "Unpin from Top" : "Pin to Top"} 
+                                iconClass={isPinned ? 'text-vibaura-primary' : ''}
+                                onClick={handleTogglePin} 
+                              />
+                            )}
+                            <ContextMenuItem icon={faShareNodes} label="Share" muted />
+                            <div className="h-[1px] bg-[#F0F0F0] my-1.5 mx-2" />
+                            <ContextMenuItem 
+                              icon={faMinusCircle} 
+                              label="Remove Artist" 
+                              danger
+                              onClick={handleLibraryToggle}
+                            />
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  /* Mobile Submenu: Add to Playlist */
+                  <div className="animate-slide-in-right">
+                    <div className="px-1 py-2 border-b border-[#F0F0F0] mb-2 flex items-center gap-3">
+                       <button 
+                        onClick={(e) => { e.stopPropagation(); setShowPlaylists(false); }} 
+                        className="text-[#999] hover:text-[#1A1A1A] transition-colors p-1"
+                       >
+                          <FontAwesomeIcon icon={faChevronRight} className="rotate-180 text-xs" />
+                       </button>
+                       <span className="text-xs font-black text-text-primary uppercase tracking-wider">Choose Playlist</span>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col gap-1.5 py-1">
+                      {playlists.length > 0 ? (
+                        playlists.map(p => (
+                          <button
+                            type="button"
+                            key={p.id}
+                            onClick={(e) => {
+                              if (e) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                              }
+                              handlePlaylistSelect(e, p.id, p.title);
+                            }}
+                            className="w-full px-4 py-3.5 text-left text-xs font-bold text-[#444] hover:bg-vibaura-primary/5 hover:text-vibaura-primary rounded-xl transition-colors flex items-center justify-between border border-[#F0F0F0]"
+                          >
+                            <span className="truncate">{p.title}</span>
+                            {p.songs?.some(s => s.id === item.id) && (
+                              <FontAwesomeIcon icon={faCheck} className="text-vibaura-primary text-xs" />
+                            )}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-6 text-center">
+                          <p className="text-xs text-[#AAA] font-bold italic">No custom playlists found</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>,
+      document.body
+    );
+  }
 
   return (
     <Dropdown isOpen={isOpen} onClose={onClose} positionClass={positionClass}>

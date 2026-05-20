@@ -5,26 +5,34 @@ import { faTimes, faGripVertical, faMusic } from '@fortawesome/free-solid-svg-ic
 import { usePlayerStore } from '../../store/playerStore';
 
 const QueuePanel = ({ isOpen, onClose, queueRef }) => {
-  const {
-    currentTrack,
-    userQueue,
-    queue,
-    currentIndex,
-    reorderQueue,
-    removeFromQueue,
-    playFromUserQueue,
-    playFromContextQueue,
-  } = usePlayerStore();
+  const currentTrack = usePlayerStore(state => state.currentTrack);
+  const userQueue = usePlayerStore(state => state.userQueue);
+  const queue = usePlayerStore(state => state.queue);
+  const currentIndex = usePlayerStore(state => state.currentIndex);
+  const reorderQueue = usePlayerStore(state => state.reorderQueue);
+  const removeFromQueue = usePlayerStore(state => state.removeFromQueue);
+  const playFromUserQueue = usePlayerStore(state => state.playFromUserQueue);
+  const playFromContextQueue = usePlayerStore(state => state.playFromContextQueue);
 
   if (!isOpen) return null;
 
   const nextFromContext = queue.slice(currentIndex + 1);
 
   return (
-    <div 
-      ref={queueRef}
-      className="absolute bottom-[90px] right-0 w-[320px] max-h-[60vh] bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] flex flex-col pointer-events-auto z-50 overflow-hidden"
-    >
+    <>
+      {/* Mobile Backdrop Dim Overlay */}
+      <div 
+        onClick={onClose}
+        className="block md:hidden fixed inset-0 z-40 bg-black/25 backdrop-blur-sm transition-all duration-300 pointer-events-auto"
+      />
+
+      <div 
+        ref={queueRef}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        className="fixed bottom-0 left-0 right-0 w-full h-[50vh] max-h-[50vh] rounded-t-[32px] border-t border-black/5 bg-white/95 backdrop-blur-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.06)] md:absolute md:bottom-[90px] md:right-0 md:left-auto md:w-[320px] md:h-auto md:max-h-[60vh] md:rounded-[28px] md:border md:border-white/50 md:bg-white/80 md:backdrop-blur-xl md:shadow-[0_12px_40px_rgba(0,0,0,0.12)] flex flex-col pointer-events-auto z-50 overflow-hidden transition-all duration-500 ease-out overscroll-behavior-none"
+      >
       <div className="px-5 py-4 border-b border-black/5 flex justify-between items-center bg-white/50">
         <h3 className="font-black text-sm tracking-widest text-[#1A1A1A]">Queue</h3>
         <button 
@@ -41,15 +49,8 @@ const QueuePanel = ({ isOpen, onClose, queueRef }) => {
           <div className="mb-4">
             <h4 className="px-3 text-[10px] font-black text-vibaura-primary uppercase tracking-widest mb-2">Now Playing</h4>
             <div className="px-3 py-2 flex items-center gap-3 bg-vibaura-primary/5 rounded-xl border border-vibaura-primary/10">
-              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 shadow-sm relative">
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
                 <img src={currentTrack.image || currentTrack.albumArt} alt={currentTrack.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                   <div className="flex gap-0.5 items-end h-3">
-                    <div className="w-0.5 bg-white animate-[music-bar_0.8s_ease-in-out_infinite] h-full" />
-                    <div className="w-0.5 bg-white animate-[music-bar_1.2s_ease-in-out_infinite] h-2" />
-                    <div className="w-0.5 bg-white animate-[music-bar_0.5s_ease-in-out_infinite] h-3" />
-                  </div>
-                </div>
               </div>
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="font-bold text-[13px] text-vibaura-primary truncate leading-tight">
@@ -77,7 +78,7 @@ const QueuePanel = ({ isOpen, onClose, queueRef }) => {
             >
               {userQueue.map((track, index) => (
                 <Reorder.Item 
-                  key={`${track.id}-${index}`} 
+                  key={`${track.id || track._id || index}-${index}`} 
                   value={track}
                   onClick={() => playFromUserQueue(index)}
                   className="group flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors cursor-pointer"
@@ -123,7 +124,7 @@ const QueuePanel = ({ isOpen, onClose, queueRef }) => {
             <div className="space-y-1">
               {nextFromContext.map((track, index) => (
                 <div 
-                  key={`${track.id}-${index}`} 
+                  key={`${track.id || track._id || index}-${index}`} 
                   onClick={() => playFromContextQueue(currentIndex + 1 + index)}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl opacity-60 hover:opacity-100 hover:bg-black/5 transition-all cursor-pointer"
                 >
@@ -158,6 +159,7 @@ const QueuePanel = ({ isOpen, onClose, queueRef }) => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

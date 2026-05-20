@@ -55,7 +55,7 @@ const LoginForm = ({ onForgotClick, successMsg }) => {
     <div className="space-y-6">
       <div>
         <h3 className="text-2xl font-black text-text-primary tracking-tight">
-          Welcome Back
+          Welcome Back to VibAura
         </h3>
         <p className="text-text-muted text-sm font-medium mt-1">
           Enter your credentials to access your personal aura.

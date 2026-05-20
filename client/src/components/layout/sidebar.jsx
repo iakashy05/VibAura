@@ -65,8 +65,10 @@ const Sidebar = ({ onNavigate, currentPage }) => {
   const activeMenu = activeMenuId?.startsWith('sidebar-item-') ? activeMenuId.replace('sidebar-item-', '') : null;
   const setActiveMenu = (id) => setActiveMenuId(id ? `sidebar-item-${id}` : null);
 
-  // Player state for info island
-  const { currentTrack, isPlaying, toggleFullscreen } = usePlayerStore();
+  // Player state for info island (optimized atomic selectors to prevent playback re-renders)
+  const currentTrack = usePlayerStore(state => state.currentTrack);
+  const isPlaying = usePlayerStore(state => state.isPlaying);
+  const toggleFullscreen = usePlayerStore(state => state.toggleFullscreen);
 
   useEffect(() => {
     const handleClickOutside = (e) => {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getVibrance } from '../services/libraryService';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faMusic, faMicrophone, faLayerGroup, faClock } from '@fortawesome/free-solid-svg-icons';
+import MusicLoader from '../components/ui/MusicLoader';
 
 const Vibrance = () => {
   const [data, setData] = useState(null);
@@ -22,11 +23,7 @@ const Vibrance = () => {
     loadData();
   }, []);
 
-  if (loading) return (
-    <div className="flex h-96 items-center justify-center text-text-muted">
-      <span className="text-xl font-medium tracking-widest uppercase">Loading Stats...</span>
-    </div>
-  );
+  if (loading) return <MusicLoader text="Tuning Vibrance..." />;
 
   if (error || !data) return (
     <div className="flex h-96 items-center justify-center text-vibaura-primary">
@@ -35,7 +32,7 @@ const Vibrance = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-8 py-16 space-y-16">
+    <div className="max-w-4xl mx-auto px-8 py-16 space-y-16 animate-page-in">
       {/* Header */}
       <header className="border-b border-black/5 pb-8">
         <h1 className="text-4xl font-black text-text-primary tracking-tighter mb-2">

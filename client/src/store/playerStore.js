@@ -82,8 +82,9 @@ export const usePlayerStore = create((set, get) => ({
 
     if (handleVibSyncIntent('CHANGE_SONG', { song: nextItem }, get)) return;
 
-    if (nextItem?.id) {
-      logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+    const trackId = nextItem?.id || nextItem?._id;
+    if (trackId) {
+      logPlayHistory(trackId, currentPlaylistId).catch(() => {});
     }
 
     set({ 
@@ -102,8 +103,9 @@ export const usePlayerStore = create((set, get) => ({
 
     if (handleVibSyncIntent('CHANGE_SONG', { song: nextItem, currentIndex: targetIndex }, get)) return;
 
-    if (nextItem?.id) {
-      logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+    const trackId = nextItem?.id || nextItem?._id;
+    if (trackId) {
+      logPlayHistory(trackId, currentPlaylistId).catch(() => {});
     }
 
     set({ 
@@ -117,7 +119,7 @@ export const usePlayerStore = create((set, get) => ({
   // Set a single track and start playing
   setTrack: (track, newQueue = [], playlistId = null) => {
     const computedQueue = newQueue.length > 0 ? newQueue : [track];
-    const computedIndex = newQueue.length > 0 ? newQueue.findIndex(t => t.id === track.id) : 0;
+    const computedIndex = newQueue.length > 0 ? newQueue.findIndex(t => (t.id || t._id) === (track?.id || track?._id)) : 0;
     
     if (handleVibSyncIntent('CHANGE_SONG', { 
         song: track, 
@@ -126,8 +128,9 @@ export const usePlayerStore = create((set, get) => ({
     }, get)) return;
 
     // Fire and forget history log
-    if (track?.id) {
-      logPlayHistory(track.id, playlistId || get().currentPlaylistId).catch(() => {});
+    const trackId = track?.id || track?._id;
+    if (trackId) {
+      logPlayHistory(trackId, playlistId || get().currentPlaylistId).catch(() => {});
     }
 
     set({ 
@@ -150,7 +153,7 @@ export const usePlayerStore = create((set, get) => ({
     const newInterval = setInterval(() => {
       const state = get();
       if (state.isPlaying && state.currentTrack) {
-        logHeartbeat(state.currentTrack.id);
+        logHeartbeat(state.currentTrack.id || state.currentTrack._id);
       }
     }, 10000); // Every 10 seconds
 
@@ -165,7 +168,7 @@ export const usePlayerStore = create((set, get) => ({
     if (newState) {
       // Turning ON shuffle: shuffle the current queue
       const shuffled = [...queue].sort(() => Math.random() - 0.5);
-      const newIndex = shuffled.findIndex(t => t.id === currentTrack?.id);
+      const newIndex = shuffled.findIndex(t => (t.id || t._id) === (currentTrack?.id || currentTrack?._id));
       set({ 
         isShuffle: true, 
         queue: shuffled, 
@@ -173,7 +176,7 @@ export const usePlayerStore = create((set, get) => ({
       });
     } else {
       // Turning OFF shuffle: restore the original queue order
-      const newIndex = originalQueue.findIndex(t => t.id === currentTrack?.id);
+      const newIndex = originalQueue.findIndex(t => (t.id || t._id) === (currentTrack?.id || currentTrack?._id));
       set({ 
         isShuffle: false, 
         queue: [...originalQueue], 
@@ -202,8 +205,9 @@ export const usePlayerStore = create((set, get) => ({
         currentIndex: 0 
     }, get)) return;
 
-    if (firstTrack?.id) {
-      logPlayHistory(firstTrack.id, playlistId).catch(() => {});
+    const trackId = firstTrack?.id || firstTrack?._id;
+    if (trackId) {
+      logPlayHistory(trackId, playlistId).catch(() => {});
     }
 
     set({
@@ -244,8 +248,9 @@ export const usePlayerStore = create((set, get) => ({
 
       if (handleVibSyncIntent('CHANGE_SONG', { song: nextItem }, get)) return;
 
-      if (nextItem?.id) {
-        logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+      const trackId = nextItem?.id || nextItem?._id;
+      if (trackId) {
+        logPlayHistory(trackId, currentPlaylistId).catch(() => {});
       }
 
       set({ 
@@ -265,8 +270,9 @@ export const usePlayerStore = create((set, get) => ({
 
     if (handleVibSyncIntent('CHANGE_SONG', { song: nextItem, currentIndex: nextIndex }, get)) return;
 
-    if (nextItem?.id) {
-      logPlayHistory(nextItem.id, currentPlaylistId).catch(() => {});
+    const trackId = nextItem?.id || nextItem?._id;
+    if (trackId) {
+      logPlayHistory(trackId, currentPlaylistId).catch(() => {});
     }
 
     set({ 
@@ -287,8 +293,9 @@ export const usePlayerStore = create((set, get) => ({
 
     if (handleVibSyncIntent('CHANGE_SONG', { song: prevItem, currentIndex: prevIndex }, get)) return;
 
-    if (prevItem?.id) {
-      logPlayHistory(prevItem.id, currentPlaylistId).catch(() => {});
+    const trackId = prevItem?.id || prevItem?._id;
+    if (trackId) {
+      logPlayHistory(trackId, currentPlaylistId).catch(() => {});
     }
 
     set({ 

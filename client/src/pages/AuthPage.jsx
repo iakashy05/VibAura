@@ -77,18 +77,11 @@ const AuthPage = () => {
       </div>
 
       {/* ─── RIGHT PANEL: AUTH CARD ─── */}
-      <div className="md:w-1/2 flex items-center justify-center p-6 bg-vibaura-view-bg md:bg-[#f8f8ff] relative">
-
-        {/* Mobile logo */}
-        <div className="absolute top-6 left-6 md:hidden flex items-center gap-2">
-          <div className="w-10 h-10">
-            <img src="/logo.webp" alt="VibAura Logo" className="w-full h-full object-contain" />
-          </div>
-          <span className="text-xl font-black tracking-tighter text-text-primary">VibAura</span>
-        </div>
+      <div className="flex-1 md:w-1/2 flex items-center justify-center p-6 bg-vibaura-view-bg md:bg-[#f8f8ff] relative">
 
         {/* THE CARD */}
-        <div className="w-full max-w-md bg-white rounded-[32px] shadow-[0_20px_50px_rgba(99,103,255,0.08)] border border-vibaura-border/30 overflow-hidden animate-scale-in">
+        <div className="w-full max-w-md bg-white rounded-[32px] shadow-[0_20px_50px_rgba(99,103,255,0.08)] border border-vibaura-border/30 overflow-hidden animate-scale-in relative z-10">
+
 
           {/* Card Header Tabs - Hide when on Forgot Password Flow */}
           {!isForgot && (

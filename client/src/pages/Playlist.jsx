@@ -12,10 +12,12 @@ import { getPlaylistDetails } from '../services/discoveryService';
 import { updatePlaylist } from '../services/libraryService';
 import CreatePlaylistModal from '../components/library/CreatePlaylistModal';
 import { useUIStore } from '../store/uiStore';
+import MusicLoader from '../components/ui/MusicLoader';
 
 const Playlist = ({ playlist, onNavigate }) => {
-  const { user } = useAuthStore();
-  const { setTrack, shufflePlay } = usePlayerStore();
+  const user = useAuthStore(state => state.user);
+  const setTrack = usePlayerStore(state => state.setTrack);
+  const shufflePlay = usePlayerStore(state => state.shufflePlay);
   const likedSongs = useLibraryStore(state => state.likedSongs);
   const storePlaylists = useLibraryStore(state => state.playlists);
 
@@ -62,11 +64,7 @@ const Playlist = ({ playlist, onNavigate }) => {
     loadPlaylist();
   }, [playlist?.id]);
 
-  if (loading) return (
-    <div className="flex h-96 items-center justify-center text-text-muted animate-pulse">
-      <span className="text-xl font-medium tracking-widest uppercase">Syncing with Aura...</span>
-    </div>
-  );
+  if (loading) return <MusicLoader text="Tuning Playlist..." />;
 
   if (error || !data) return (
     <div className="flex h-96 items-center justify-center text-vibaura-primary">
@@ -135,7 +133,7 @@ const Playlist = ({ playlist, onNavigate }) => {
   const isOwner = matchingStorePlaylist?.creator === user?.id || data?.creator === user?.id;
 
   return (
-    <div className="flex flex-col relative w-full">
+    <div className="flex flex-col relative w-full animate-page-in">
       <CollectionHeader 
         title={displayTitle}
         image={data.image}
@@ -161,7 +159,7 @@ const Playlist = ({ playlist, onNavigate }) => {
         onNavigate={onNavigate}
       />
 
-      <div className="px-8 py-8 pb-12">
+      <div className="px-1 md:px-8 py-4 md:py-8 pb-12">
         <TrackList tracks={displaySongs || []} playlistId={data.id} isOwner={isOwner} />
       </div>
 

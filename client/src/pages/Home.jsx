@@ -2,26 +2,20 @@ import React, { useEffect, useState, useRef } from 'react';
 import Card from '../components/music/card';
 import MusicSection from '../components/music/MusicSection';
 import { getDiscoveryData } from '../services/discoveryService';
-import { getLibrary } from '../services/libraryService';
+import MusicLoader from '../components/ui/MusicLoader';
 import { usePlayerStore } from '../store/playerStore';
 
 const Home = ({ onNavigate }) => {
   const [sections, setSections] = useState([]);
-  const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { setTrack } = usePlayerStore();
 
   useEffect(() => {
     const loadHome = async (isBackground = false) => {
       try {
         if (!isBackground) setLoading(true);
-        const [discoveryData, libraryData] = await Promise.all([
-          getDiscoveryData(),
-          getLibrary()
-        ]);
+        const discoveryData = await getDiscoveryData();
         setSections(discoveryData);
-        setRecentlyPlayed(libraryData.recentlyPlayed || []);
       } catch (err) {
         if (!isBackground) setError('Failed to load music selections.');
       } finally {
@@ -29,25 +23,19 @@ const Home = ({ onNavigate }) => {
       }
     };
     loadHome();
-
-    const handleUpdate = () => loadHome(true);
-    window.addEventListener('vibaura-library-updated', handleUpdate);
-    return () => window.removeEventListener('vibaura-library-updated', handleUpdate);
   }, []);
 
+  const setTrack = usePlayerStore(state => state.setTrack);
+
   const handleCardClick = (type, item, allItems) => {
-    if (type === 'song') {
-      setTrack(item, allItems);
-    } else {
+    if (type === 'artist' || type === 'playlist') {
       onNavigate(type, item);
+    } else {
+      setTrack(item, allItems);
     }
   };
 
-  if (loading) return (
-    <div className="flex h-96 items-center justify-center text-text-muted animate-pulse">
-      <span className="text-xl font-medium tracking-widest uppercase">Syncing with Aura...</span>
-    </div>
-  );
+  if (loading) return <MusicLoader text="Tuning Home..." />;
 
   if (error) return (
     <div className="flex h-96 items-center justify-center text-vibaura-primary">
@@ -56,16 +44,7 @@ const Home = ({ onNavigate }) => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 space-y-10 pb-12">
-      {recentlyPlayed.length > 0 && (
-        <MusicSection 
-          title="Recently Played" 
-          items={recentlyPlayed} 
-          type="song"
-          onCardClick={(item) => handleCardClick('song', item, recentlyPlayed)}
-        />
-      )}
-      
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-10 space-y-6 md:space-y-10 pb-12 animate-page-in">
       {sections.map(section => (
         <MusicSection 
           key={section.id || section.title} 

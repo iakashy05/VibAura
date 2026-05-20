@@ -24,7 +24,7 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNaviga
   const isMenuOpen = activeMenuId === menuKey;
   const setIsMenuOpen = (open) => setActiveMenuId(open ? menuKey : null);
 
-  const { isShuffle } = usePlayerStore();
+  const isShuffle = usePlayerStore(state => state.isShuffle);
 
   useEffect(() => {
     const scrollArea = document.querySelector('.page-scroll-area');
@@ -60,37 +60,90 @@ const ActionBar = ({ onPlay, onShuffle, itemId, itemType, item, onEdit, onNaviga
       <div ref={sentinelRef} className="h-px w-full pointer-events-none" />
 
       <div className={`
-        sticky top-0 z-40 px-8 transition-all duration-300
+        md:sticky md:top-0 z-40 px-4 md:px-8 transition-all duration-300
         ${isSticky
-          ? 'bg-white/90 backdrop-blur-md border-b border-black/5 shadow-[0_4px_30px_rgba(0,0,0,0.03)]'
+          ? 'md:bg-white/90 md:backdrop-blur-md md:border-b md:border-black/5 md:shadow-[0_4px_30px_rgba(0,0,0,0.03)]'
           : 'bg-transparent border-b border-transparent'}
-        flex items-center gap-6 py-6
+        flex items-center gap-6 py-4 md:py-6
       `}>
-        {/* 1. Play Now Button */}
-        <button
-          onClick={onPlay}
-          className="bg-vibaura-primary text-white rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold hover:bg-vibaura-primary-hover hover:scale-105 active:scale-95 transition-all shadow-lg shadow-vibaura-primary/20"
-        >
-          <FontAwesomeIcon icon={faPlay} className="text-xs" />
-          Play Now
-        </button>
+        {/* A. DESKTOP ACTION BAR BUTTONS */}
+        <div className="hidden md:flex items-center gap-6 flex-1">
+          {/* 1. Play Now Button */}
+          <button
+            onClick={onPlay}
+            className="bg-vibaura-primary text-white rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold hover:bg-vibaura-primary-hover hover:scale-105 active:scale-95 transition-all shadow-lg shadow-vibaura-primary/20"
+          >
+            <FontAwesomeIcon icon={faPlay} className="text-xs" />
+            Play Now
+          </button>
 
-        {/* 2. Shuffle Button */}
-        <button
-          onClick={onShuffle}
-          className={`
-            rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold transition-all active:scale-95 border-2
-            ${isShuffle
-              ? 'bg-vibaura-primary text-white border-vibaura-primary shadow-lg shadow-vibaura-primary/20'
-              : 'border-vibaura-primary/20 text-text-primary hover:bg-white/40 hover:border-vibaura-primary/40'}
-          `}
-        >
-          <FontAwesomeIcon icon={faShuffle} className={isShuffle ? 'text-white' : 'text-vibaura-primary'} />
-          Shuffle
-        </button>
+          {/* 2. Shuffle Button */}
+          <button
+            onClick={onShuffle}
+            className={`
+              rounded-full px-10 py-3 flex items-center gap-3 text-sm font-bold transition-all active:scale-95 border-2
+              ${isShuffle
+                ? 'bg-vibaura-primary text-white border-vibaura-primary shadow-lg shadow-vibaura-primary/20'
+                : 'border-vibaura-primary/20 text-text-primary hover:bg-white/40 hover:border-vibaura-primary/40'}
+            `}
+          >
+            <FontAwesomeIcon icon={faShuffle} className={isShuffle ? 'text-white' : 'text-vibaura-primary'} />
+            Shuffle
+          </button>
+        </div>
 
-        {/* 3. Three Dot Icon */}
-        <div className="relative">
+        {/* B. MOBILE COMPACT CIRCULAR ICON BUTTONS */}
+        <div className="flex md:hidden items-center justify-between w-full">
+          {/* Solid Play Circle Button on the Left */}
+          <button
+            onClick={onPlay}
+            className="w-12 h-12 bg-vibaura-primary text-white rounded-full flex items-center justify-center text-sm hover:scale-105 active:scale-95 transition-all shadow-lg shadow-vibaura-primary/25"
+          >
+            <FontAwesomeIcon icon={faPlay} className="ml-0.5" />
+          </button>
+
+          <div className="flex items-center gap-3">
+            {/* Shuffle Icon Button */}
+            <button
+              onClick={onShuffle}
+              className={`
+                w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 border
+                ${isShuffle
+                  ? 'bg-vibaura-primary border-vibaura-primary text-white shadow-md shadow-vibaura-primary/15'
+                  : 'border-black/5 bg-white/60 text-text-muted hover:text-text-primary'}
+              `}
+            >
+              <FontAwesomeIcon icon={faShuffle} className="text-sm" />
+            </button>
+
+            {/* Options Button */}
+            <div className="relative">
+              <button
+                ref={menuBtnRef}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={handleMenuToggle}
+                className={`
+                  w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 border
+                  ${isMenuOpen ? 'bg-vibaura-primary border-vibaura-primary text-white shadow-md' : 'border-black/5 bg-white/60 text-text-muted hover:text-vibaura-primary'}
+                `}
+              >
+                <FontAwesomeIcon icon={faEllipsisH} className="text-sm" />
+              </button>
+
+              <ContextMenu
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                item={item || { id: itemId }}
+                type={itemType}
+                onEdit={onEdit}
+                onNavigate={onNavigate}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* C. THREE DOT ICON (DESKTOP ONLY) */}
+        <div className="hidden md:block relative">
           <button
             ref={menuBtnRef}
             onMouseDown={(e) => e.stopPropagation()}

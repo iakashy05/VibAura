@@ -10,13 +10,25 @@ import { useAuthStore } from './store/authStore';
 import { useUIStore } from './store/uiStore';
 import { useLibraryStore } from './store/libraryStore';
 import FullscreenPlayer from './components/layout/FullscreenPlayer';
+import MobileFullscreenPlayer from './components/layout/MobileFullscreenPlayer';
 import { checkServerHealth } from './services/api';
+import { useVibSyncSocketManager } from './hooks/useVibSyncSocket';
+
+// Mobile-first Layout components
+import MobileNavbar from './components/layout/MobileNavbar';
+import MobileMiniplayer from './components/layout/MobileMiniplayer';
+import MobileHeader from './components/layout/MobileHeader';
+import MusicLoader from './components/ui/MusicLoader';
 
 const AuthPage = React.lazy(() => import('./pages/AuthPage'));
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { isAuthenticated, logout } = useAuthStore();
+  
+  // Persistent root-level VibSync Socket connection
+  useVibSyncSocketManager();
+  
+  const { isAuthenticated, logout, user, isSubscribed } = useAuthStore();
   const { isServerOffline, setServerOffline, setSidebarCollapsed } = useUIStore();
   const { fetchLibrary } = useLibraryStore();
 
@@ -49,6 +61,7 @@ function App() {
     const interval = setInterval(runHealthCheck, 10000); // Check every 10 seconds
     return () => clearInterval(interval);
   }, [setServerOffline]);
+
   const {
     currentPage,
     selectedData,
@@ -80,11 +93,7 @@ function App() {
   // If we are on the login page, render it full screen without layout
   if (currentPage === 'login') {
     return (
-      <Suspense fallback={
-        <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#0d0d1a]">
-          <div className="w-10 h-10 border-4 border-vibaura-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      }>
+      <Suspense fallback={<MusicLoader fullScreen={true} text="Syncing Aura..." />}>
         <AuthPage />
       </Suspense>
     );
@@ -101,44 +110,71 @@ function App() {
         </div>
       )}
 
-      {/* 1. Header with navigation controls */}
-      <Header
-        onNavigate={navigateTo}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        goBack={goBack}
-        goForward={goForward}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
+      {/* A. DESKTOP HEADER LAYOUT */}
+      <div className="hidden md:block">
+        <Header
+          onNavigate={navigateTo}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          goBack={goBack}
+          goForward={goForward}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+      </div>
 
-      {/* 2. Middle Row: Sidebar + Main Content Pod */}
-      <div className="flex flex-1 overflow-hidden pb-4">
-        <Sidebar onNavigate={navigateTo} currentPage={currentPage} />
+      {/* B. MOBILE HEADER LAYOUT */}
+      <div className="block md:hidden">
+        <MobileHeader
+          currentPage={currentPage}
+          selectedData={selectedData}
+          onNavigate={navigateTo}
+          goBack={goBack}
+          canGoBack={canGoBack}
+          user={user}
+          isSubscribed={isSubscribed}
+          onAvatarClick={() => navigateTo('profile')}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+      </div>
 
-        {/* The Rounded "Pod" (Main Content area) */}
-        <main className="flex-1 bg-vibaura-view-bg rounded-[40px] overflow-hidden flex flex-col mr-6 ml-2 pb-6 pt-0">
-          <div className="flex-1 overflow-y-auto no-scrollbar page-scroll-area relative pb-20">
+      {/* C. CORE VIEW SHELL (Single ViewRenderer Mount for high performance) */}
+      <div className="flex flex-1 overflow-hidden pb-16 md:pb-4 pt-14 md:pt-0">
+        <div className="hidden md:block">
+          <Sidebar onNavigate={navigateTo} currentPage={currentPage} />
+        </div>
 
-            {/* Modular View Management */}
+        {/* The Main Content "Pod" (Adaptive design between Desktop and Mobile) */}
+        <main className="flex-1 bg-vibaura-view-bg overflow-hidden flex flex-col w-full md:rounded-[40px] md:mr-6 md:ml-2 md:pb-6 pt-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar page-scroll-area mobile-scroll-area relative pb-32 md:pb-20 w-full">
             <ViewRenderer
               currentPage={currentPage}
               selectedData={selectedData}
               navigateTo={navigateTo}
               searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
             />
-
           </div>
         </main>
       </div>
 
-      {/* 3. Global PlayerBar */}
-      <PlayerBar onNavigate={navigateTo} />
+      {/* E. DESKTOP PLAYERBAR */}
+      <div className="hidden md:block">
+        <PlayerBar onNavigate={navigateTo} />
+      </div>
 
-      {/* Global Notifications */}
+      {/* F. MOBILE PLAYBACK CONTROLS & BOTTOM NAVBAR */}
+      <div className="block md:hidden">
+        <MobileMiniplayer />
+        <MobileNavbar currentPage={currentPage} onNavigate={navigateTo} />
+      </div>
+
+      {/* Global Overlays & Modals */}
       <Toast />
       <ConfirmModal />
       <FullscreenPlayer />
+      <MobileFullscreenPlayer />
     </div>
   );
 }

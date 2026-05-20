@@ -23,20 +23,20 @@ const VolumeToolsPod = ({
         padding: isCollapsed ? '0px 16px' : '0px 24px'
       }}
       transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-      className="pointer-events-auto flex items-center bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] h-[64px] justify-between transition-all duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden"
+      className="pointer-events-auto flex items-center bg-white/80 backdrop-blur-xl border border-white/50 rounded-[28px] h-[64px] justify-between transition-[width,padding] duration-500 shadow-[0_12px_40px_rgba(0,0,0,0.08)] overflow-hidden"
     >
       <div className="flex items-center gap-3 flex-shrink-0">
         <button
           ref={queueButtonRef}
           onClick={() => setIsQueueOpen(!isQueueOpen)}
-          className={`transition-all active:scale-95 active:opacity-70 ${isQueueOpen ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+          className={`transition-colors active:scale-95 active:opacity-70 ${isQueueOpen ? 'text-vibaura-primary' : 'text-[#888] hover:text-[#1A1A1A]'}`}
           title="Queue"
         >
           <FontAwesomeIcon icon={faListUl} size="sm" />
         </button>
         <button
           onClick={handleFullscreenClick}
-          className={`transition-all active:scale-95 active:opacity-70 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
+          className={`transition-colors active:scale-95 active:opacity-70 ${!isSubscribed ? 'text-vibaura-primary animate-pulse' : 'text-[#888] hover:text-[#1A1A1A]'}`}
           title={isSubscribed ? "Fullscreen" : "Pro Feature: Fullscreen"}
         >
           <FontAwesomeIcon icon={faExpand} size="sm" />

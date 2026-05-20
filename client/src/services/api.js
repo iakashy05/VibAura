@@ -42,12 +42,18 @@ api.interceptors.response.use(
   }
 );
 
+let isCurrentlyOffline = false;
+
 export const checkServerHealth = async () => {
   try {
     const response = await api.get('/health');
+    isCurrentlyOffline = false;
     return response.data;
   } catch (error) {
-    console.error('❌ Server Connection Error:', error.message);
+    if (!isCurrentlyOffline) {
+      console.error('❌ Server Connection Error:', error.message);
+      isCurrentlyOffline = true;
+    }
     return { status: 'offline', message: error.message };
   }
 };

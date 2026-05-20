@@ -50,6 +50,33 @@ export const useVibauraNavigation = () => {
     sessionStorage.setItem(INDEX_KEY, historyIndex.toString());
   }, [historyIndex]);
 
+  // Sync state with browser back/forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const page = params.get('page') || 'home';
+      const id = params.get('id');
+      const itemData = findItemById(id, page);
+
+      const savedHistory = sessionStorage.getItem(HISTORY_KEY);
+      if (savedHistory) {
+        const parsedHistory = JSON.parse(savedHistory);
+        const index = parsedHistory.findIndex(
+          h => h.page === page && String(h.dataId || '') === String(id || '')
+        );
+        if (index !== -1) {
+          setHistoryIndex(index);
+        }
+      }
+
+      setCurrentPage(page);
+      setSelectedData(itemData);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Sync URL visually with the browser bar
   const syncUrl = useCallback((page, data) => {
     const params = new URLSearchParams();

@@ -93,7 +93,7 @@ const Payment = ({ navigateTo }) => {
   };
 
   const SuccessView = () => (
-    <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+    <div className="min-h-[350px] h-full flex flex-col items-center justify-center p-4 md:p-8 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
       <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-200">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </div>
@@ -124,7 +124,7 @@ const Payment = ({ navigateTo }) => {
         onClick={closePayment}
       />
 
-      <div className="relative w-[750px] h-[480px] bg-vibaura-surface rounded-[24px] shadow-[0_32px_80px_rgba(0,0,0,0.3)] overflow-hidden animate-in fade-in zoom-in-95 duration-500 flex flex-col border border-white/10">
+      <div className="relative w-full max-w-[420px] md:max-w-[750px] h-auto max-h-[90vh] md:h-[480px] bg-vibaura-surface rounded-[24px] shadow-[0_32px_80px_rgba(0,0,0,0.3)] overflow-hidden animate-in fade-in zoom-in-95 duration-500 flex flex-col border border-white/10">
         
         {/* Close Button */}
         <button 
@@ -134,11 +134,11 @@ const Payment = ({ navigateTo }) => {
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
-        <div className="flex-1 p-8 md:p-10">
+        <div className="flex-1 p-6 pt-14 md:p-10 overflow-y-auto md:overflow-visible no-scrollbar">
           {successData ? (
             <SuccessView />
           ) : (
-            <div className="h-full relative">
+            <div className="min-h-full md:h-full relative">
               {verifying && (
                 <div className="absolute inset-0 z-50 bg-vibaura-surface/80 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-300 rounded-[20px]">
                   <div className="w-10 h-10 border-4 border-vibaura-primary border-t-transparent rounded-full animate-spin"></div>
@@ -146,14 +146,14 @@ const Payment = ({ navigateTo }) => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-10 items-center h-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center min-h-full">
                 {/* Left: Branding & Offer */}
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-vibaura-primary/10 text-vibaura-primary text-[10px] font-black tracking-widest uppercase">
                       Limited Time Offer
                     </div>
-                    <h1 className="text-4xl font-black text-text-primary leading-tight">
+                    <h1 className="text-2xl md:text-4xl font-black text-text-primary leading-tight">
                       Elevate your <span className="text-vibaura-primary">Vibe</span>
                     </h1>
                     <p className="text-sm text-text-secondary leading-relaxed">
@@ -176,7 +176,7 @@ const Payment = ({ navigateTo }) => {
                 </div>
 
                 {/* Right: Checkout Card */}
-                <div className="bg-white rounded-[24px] border border-black/5 shadow-xl p-8 space-y-6 h-full flex flex-col justify-between">
+                <div className="bg-white rounded-[24px] border border-black/5 shadow-xl p-6 md:p-8 space-y-5 md:space-y-6 h-auto md:h-full flex flex-col justify-between">
                   <div className="space-y-5">
                     <div className="pb-4 border-b border-black/5">
                       <p className="text-[10px] uppercase tracking-[0.2em] text-text-muted font-black mb-1">Order Summary</p>
