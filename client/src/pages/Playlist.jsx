@@ -141,6 +141,7 @@ const Playlist = ({ playlist, onNavigate }) => {
         isUserPlaylist={isOwner}
         isLikedPlaylist={data.isLikedPlaylist}
         isRecentlyPlayed={data.isRecentlyPlayed}
+        isInLibrary={storePlaylists.some(p => p.id === playlist?.id || p.id === data?.id)}
         type="playlist"
         meta={[
           "VibAura",
@@ -159,7 +160,7 @@ const Playlist = ({ playlist, onNavigate }) => {
         onNavigate={onNavigate}
       />
 
-      <div className="px-1 md:px-8 py-4 md:py-8 pb-12">
+      <div className="px-1 md:px-8 py-4 md:py-8 pb-40 md:pb-32">
         <TrackList tracks={displaySongs || []} playlistId={data.id} isOwner={isOwner} />
       </div>
 

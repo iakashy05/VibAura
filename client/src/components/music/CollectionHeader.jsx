@@ -14,6 +14,7 @@ const CollectionHeader = ({
   isUserPlaylist,
   isLikedPlaylist,
   isRecentlyPlayed,
+  isInLibrary = false,
   onNavigate
 }) => {
   const isArtist = type === 'artist';
@@ -81,9 +82,23 @@ const CollectionHeader = ({
       {/* Info Section */}
       <div className="flex flex-col text-left w-full flex-1 min-w-0 md:mb-2 mt-4 md:mt-0">
         {!isArtist && (
-          <span className="text-[8px] uppercase tracking-[0.2em] font-extrabold text-vibaura-primary mb-1.5 leading-none">
-            {isUserPlaylist ? 'User Playlist' : 'Public Playlist'}
-          </span>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="text-[8px] uppercase tracking-[0.2em] font-extrabold text-vibaura-primary leading-none">
+              {isUserPlaylist ? 'User Playlist' : 'Public Playlist'}
+            </span>
+            {isInLibrary && (
+              <span className="text-[8px] uppercase tracking-[0.15em] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/50 px-2 py-0.5 rounded-full leading-none">
+                In Library
+              </span>
+            )}
+          </div>
+        )}
+        {isArtist && isInLibrary && (
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="text-[8px] uppercase tracking-[0.15em] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/50 px-2 py-0.5 rounded-full leading-none">
+              Following
+            </span>
+          </div>
         )}
         
         <h1 className={`font-black text-text-primary tracking-tight leading-none mb-1.5 truncate

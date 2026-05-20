@@ -48,7 +48,7 @@ const Library = ({ onNavigate }) => {
     });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 pb-24 animate-page-in">
+    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 pb-40 md:pb-32 animate-page-in">
       {/* Page Header Row */}
       <div className="flex items-center justify-between px-1">
         <h1 className="text-3xl font-black text-text-primary tracking-tighter uppercase">Your Library</h1>

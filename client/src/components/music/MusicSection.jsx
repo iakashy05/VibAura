@@ -51,12 +51,13 @@ const MusicSection = ({ title, items, type, onCardClick, onItemContextClick }) =
         {/* Scroll Container - Native momentum snapping on touch devices */}
         <div 
           ref={scrollRef}
-          className="flex overflow-x-auto no-scrollbar gap-5 pb-4 px-6 snap-x snap-mandatory scroll-smooth"
+          className="flex overflow-x-auto no-scrollbar gap-5 pb-8 px-6 snap-x snap-mandatory scroll-smooth"
         >
           {items.map(item => (
             <div key={item.id} className="flex-shrink-0 w-[var(--card-size)] transition-all duration-300 snap-start scroll-ml-6">
               <Card 
                 {...item} 
+                type={type}
                 rounded={type === 'artist' ? "full" : "lg"} 
                 onClick={() => onCardClick(item)}
                 onOptionsClick={onItemContextClick ? (e) => onItemContextClick(e, item) : undefined}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../components/music/card';
 import MusicSection from '../components/music/MusicSection';
 import { getDiscoveryData } from '../services/discoveryService';
@@ -44,7 +44,7 @@ const Home = ({ onNavigate }) => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-10 space-y-6 md:space-y-10 pb-12 animate-page-in">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-10 space-y-6 md:space-y-10 pb-40 md:pb-32 animate-page-in">
       {sections.map(section => (
         <MusicSection 
           key={section.id || section.title} 

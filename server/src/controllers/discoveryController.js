@@ -9,7 +9,7 @@ class DiscoveryController {
    * GET /api/v1/discovery
    */
   getHomepage = asyncHandler(async (req, res) => {
-    const payload = await discoveryService.getHomepagePayload();
+    const payload = await discoveryService.getHomepagePayload(req.user);
     res.json(payload);
   });
 }

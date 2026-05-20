@@ -23,7 +23,7 @@ const Profile = ({ onNavigate }) => {
   const avatarLetter = displayName[0].toUpperCase();
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6 space-y-6 pb-24 animate-page-in">
+    <div className="max-w-xl mx-auto px-4 py-6 space-y-6 pb-40 md:pb-32 animate-page-in">
       {/* Page Header */}
       <div className="px-1">
         <h1 className="text-3xl font-black text-text-primary tracking-tighter uppercase">Your Account</h1>

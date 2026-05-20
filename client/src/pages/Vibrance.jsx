@@ -32,7 +32,7 @@ const Vibrance = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-8 py-16 space-y-16 animate-page-in">
+    <div className="max-w-4xl mx-auto px-8 py-16 pb-40 md:pb-32 space-y-16 animate-page-in">
       {/* Header */}
       <header className="border-b border-black/5 pb-8">
         <h1 className="text-4xl font-black text-text-primary tracking-tighter mb-2">

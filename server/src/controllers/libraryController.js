@@ -14,17 +14,17 @@ class LibraryController {
     const user = await User.findById(req.user.id)
       .populate({
         path: 'libraryPlaylists',
-        populate: {
-          path: 'songs',
-          populate: { path: 'artists', model: 'Artist' }
-        }
+        populate: [
+          { path: 'songs', populate: { path: 'artists', model: 'Artist' } },
+          { path: 'creator', select: 'name' }
+        ]
       })
       .populate({
         path: 'pinnedPlaylists',
-        populate: {
-          path: 'songs',
-          populate: { path: 'artists', model: 'Artist' }
-        }
+        populate: [
+          { path: 'songs', populate: { path: 'artists', model: 'Artist' } },
+          { path: 'creator', select: 'name' }
+        ]
       })
       .populate('pinnedArtists')
       .populate({

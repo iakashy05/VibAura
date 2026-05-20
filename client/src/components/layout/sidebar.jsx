@@ -31,18 +31,17 @@ import ContextMenu from '../ui/ContextMenu';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({ onNavigate, currentPage }) => {
-  const {
-    playlists,
-    artists,
-    pinnedPlaylists,
-    pinnedArtists,
-    likedSongs,
-    recentlyPlayed,
-    createPlaylistOptimistic,
-    deletePlaylistOptimistic,
-    togglePinPlaylistOptimistic,
-    toggleLikeSongOptimistic
-  } = useLibraryStore();
+  const playlists = useLibraryStore(state => state.playlists);
+  const artists = useLibraryStore(state => state.artists);
+  const pinnedPlaylists = useLibraryStore(state => state.pinnedPlaylists);
+  const pinnedArtists = useLibraryStore(state => state.pinnedArtists);
+  const likedSongs = useLibraryStore(state => state.likedSongs);
+  const recentlyPlayed = useLibraryStore(state => state.recentlyPlayed);
+  const createPlaylistOptimistic = useLibraryStore(state => state.createPlaylistOptimistic);
+  const deletePlaylistOptimistic = useLibraryStore(state => state.deletePlaylistOptimistic);
+  const togglePinPlaylistOptimistic = useLibraryStore(state => state.togglePinPlaylistOptimistic);
+  const toggleLikeSongOptimistic = useLibraryStore(state => state.toggleLikeSongOptimistic);
+  const isLoading = useLibraryStore(state => state.isLoading);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState(null);
@@ -287,47 +286,53 @@ const Sidebar = ({ onNavigate, currentPage }) => {
 
         {/* Playlist List (Scrollable) */}
         <div className="flex-1 overflow-y-auto space-y-1 pr-1 no-scrollbar w-full">
-          {/* Liked Songs synthetic playlist */}
-          <div
-            onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
-            className={`group flex items-center transition-all cursor-pointer mb-2 ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 mx-auto' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5'}`}
-            title="Liked Songs"
-          >
-            <div className={`flex items-center ${isCollapsed ? '' : 'gap-4'}`}>
-              <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary flex-shrink-0 bg-black/5 rounded-lg">
-                <FontAwesomeIcon icon={faHeart} size="lg" />
-              </div>
-              {!isCollapsed && (
-                <div className="flex flex-col overflow-hidden">
-                  <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight truncate">
-                    Liked Songs
-                  </span>
-                  <span className="text-[10px] text-[#777] font-bold truncate">
-                    Playlist • {likedSongs.length} songs
-                  </span>
+          {isLoading ? (
+            <LibrarySkeleton isCollapsed={isCollapsed} />
+          ) : (
+            <>
+              {/* Liked Songs synthetic playlist */}
+              <div
+                onClick={() => onNavigate('playlist', { id: 'liked-songs', title: 'Liked Songs', songs: likedSongs })}
+                className={`group flex items-center transition-all cursor-pointer mb-2 ${isCollapsed ? 'justify-center w-12 h-12 rounded-xl hover:bg-black/5 mx-auto' : 'justify-between px-4 py-3 rounded-[24px] hover:bg-black/5'}`}
+                title="Liked Songs"
+              >
+                <div className={`flex items-center ${isCollapsed ? '' : 'gap-4'}`}>
+                  <div className="w-10 h-10 flex items-center justify-center text-vibaura-primary flex-shrink-0 bg-black/5 rounded-lg">
+                    <FontAwesomeIcon icon={faHeart} size="lg" />
+                  </div>
+                  {!isCollapsed && (
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="font-bold text-[#1A1A1A] group-hover:text-vibaura-primary transition-colors text-[13px] tracking-tight truncate">
+                        Liked Songs
+                      </span>
+                      <span className="text-[10px] text-[#777] font-bold truncate">
+                        Playlist • {likedSongs.length} songs
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {unifiedLibrary.map(item => (
-            <LibraryItem
-              key={`${item.type}-${item.id}`}
-              item={item}
-              type={item.type}
-              onNavigate={onNavigate}
-              isPinned={(item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)) || (item.type === 'artist' && pinnedArtists.some(a => a.id === item.id))}
-              onTogglePin={handleTogglePin}
-              onEdit={setEditingPlaylist}
-              onDelete={handleDeleteOrRemove}
-              activeMenu={activeMenu}
-              setActiveMenu={setActiveMenu}
-              menuRef={menuRef}
-              user={user}
-              isCollapsed={isCollapsed}
-              setIsSortMenuOpen={setIsSortMenuOpen}
-            />
-          ))}
+              {unifiedLibrary.map(item => (
+                <LibraryItem
+                  key={`${item.type}-${item.id}`}
+                  item={item}
+                  type={item.type}
+                  onNavigate={onNavigate}
+                  isPinned={(item.type === 'playlist' && pinnedPlaylists.some(p => p.id === item.id)) || (item.type === 'artist' && pinnedArtists.some(a => a.id === item.id))}
+                  onTogglePin={handleTogglePin}
+                  onEdit={setEditingPlaylist}
+                  onDelete={handleDeleteOrRemove}
+                  activeMenu={activeMenu}
+                  setActiveMenu={setActiveMenu}
+                  menuRef={menuRef}
+                  user={user}
+                  isCollapsed={isCollapsed}
+                  setIsSortMenuOpen={setIsSortMenuOpen}
+                />
+              ))}
+            </>
+          )}
         </div>
       </div>
 
@@ -437,5 +442,32 @@ const SortOption = ({ active, onClick, label }) => (
     {active && <FontAwesomeIcon icon={faCheck} className="text-[8px]" />}
   </button>
 );
+
+const LibrarySkeleton = ({ isCollapsed }) => {
+  const items = Array.from({ length: 6 });
+  return (
+    <div className="space-y-1 w-full animate-pulse">
+      {items.map((_, i) => (
+        <div
+          key={i}
+          className={`flex items-center ${isCollapsed ? 'justify-center w-12 h-12 mx-auto mb-1' : 'px-4 py-3 rounded-[24px] gap-4 mb-1'}`}
+        >
+          {/* Image/Icon Placeholder */}
+          <div className={`w-10 h-10 bg-black/5 shrink-0 ${i % 3 === 0 ? 'rounded-full' : 'rounded-lg'}`} />
+          
+          {/* Text Placeholders (only visible when expanded) */}
+          {!isCollapsed && (
+            <div className="flex flex-col flex-1 min-w-0 gap-1.5">
+              {/* Title Line */}
+              <div className="h-3 bg-black/5 rounded-full w-[65%]" />
+              {/* Subtitle Line */}
+              <div className="h-2 bg-black/5 rounded-full w-[35%]" />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default Sidebar;

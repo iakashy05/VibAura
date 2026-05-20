@@ -31,6 +31,10 @@ const songSchema = new mongoose.Schema({
   album: {
     type: String,
     trim: true,
+  },
+  genre: {
+    type: [String],  // Array of genre tags e.g. ["Romantic", "Sufi", "Soulful"]
+    default: [],
   }
 }, {
   timestamps: true,
@@ -49,6 +53,8 @@ songSchema.virtual('artistNameString').get(function() {
 
 songSchema.index({ isFeatured: 1 });
 songSchema.index({ artists: 1 });
+songSchema.index({ genre: 1 });
+songSchema.index({ genre: 1, isFeatured: 1 }); // Compound for discovery queries
 
 const Song = mongoose.model('Song', songSchema);
 

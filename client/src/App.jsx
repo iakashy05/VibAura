@@ -147,7 +147,7 @@ function App() {
 
         {/* The Main Content "Pod" (Adaptive design between Desktop and Mobile) */}
         <main className="flex-1 bg-vibaura-view-bg overflow-hidden flex flex-col w-full md:rounded-[40px] md:mr-6 md:ml-2 md:pb-6 pt-0">
-          <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar page-scroll-area mobile-scroll-area relative pb-32 md:pb-20 w-full">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar page-scroll-area mobile-scroll-area relative w-full">
             <ViewRenderer
               currentPage={currentPage}
               selectedData={selectedData}

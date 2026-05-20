@@ -79,7 +79,7 @@ const VibSync = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 md:px-6 py-4 md:py-8 min-h-full flex flex-col justify-center animate-page-in">
+    <div className="max-w-md mx-auto px-4 md:px-6 py-4 md:py-8 pb-40 md:pb-32 min-h-full flex flex-col justify-center animate-page-in">
       {/* 1. Header Hero Card */}
       <div className="p-4 md:p-6 bg-gradient-to-tr from-vibaura-primary to-indigo-600 rounded-3xl text-white shadow-xl flex items-center gap-4 mb-4">
         <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md shadow-inner">

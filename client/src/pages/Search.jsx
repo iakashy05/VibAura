@@ -62,7 +62,7 @@ const Search = ({ query, setSearchQuery, onNavigate }) => {
   const otherSections = results.filter(r => r.type !== 'top' && r.type !== 'song');
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-10 pb-12">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-10 pb-40 md:pb-32">
       
       {/* Sub-container for search conditions */}
       <div className="space-y-8 md:space-y-16">

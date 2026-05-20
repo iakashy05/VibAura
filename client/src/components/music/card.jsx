@@ -1,8 +1,9 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
-
 const Card = ({ 
+  id,
+  type,
   title, 
   subtitle, 
   image, 
@@ -22,6 +23,7 @@ const Card = ({
         <img 
           src={image || 'https://placehold.co/400x400/E5E7EB/1E1E1E?text=VibAura'} 
           alt={title}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
         
@@ -29,7 +31,7 @@ const Card = ({
         {!isArtist && (
           <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
              <div className="w-9 h-9 bg-vibaura-primary text-white rounded-full flex items-center justify-center shadow-xl translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-               <FontAwesomeIcon icon={faPlay} className="text-[10px] ml-0.5" />
+                <FontAwesomeIcon icon={faPlay} className="text-[10px] ml-0.5" />
              </div>
           </div>
         )}
