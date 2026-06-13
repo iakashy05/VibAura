@@ -5,9 +5,14 @@ import { error, info, warn } from '../utils/logger.js';
 
 dotenv.config();
 
-// Fix for DNS resolution issues with MongoDB Atlas on some ISPs/Routers
+// Fix for DNS resolution issues with MongoDB Atlas on some ISPs/Routers/Windows
 // This ensures the app can resolve SRV records regardless of local network constraints
 dns.setDefaultResultOrder('ipv4first');
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+} catch (e) {
+  warn('Could not set custom DNS servers, using system default.');
+}
 
 /**
  * Establishes a connection to the MongoDB database using Mongoose.
